@@ -1,6 +1,8 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { listBundles } from "../../../lib/vegetable-bundles"
+import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 
-export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  res.status(200).json({ bundles: listBundles() })
+export async function GET(
+  req: MedusaRequest,
+  res: MedusaResponse
+) {
+  res.sendStatus(200);
 }

@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 
 import OrderOverview from "@modules/account/components/order-overview"
+import BundleHistory from "@modules/account/components/bundle-history"
 import { notFound } from "next/navigation"
 import { listOrders } from "@lib/data/orders"
 import Divider from "@modules/common/components/divider"
@@ -29,6 +30,8 @@ export default async function Orders() {
       </div>
       <div>
         <OrderOverview orders={orders} />
+        <Divider className="my-12" />
+        <BundleHistory orders={orders} />
         <Divider className="my-16" />
         <TransferRequestForm />
       </div>

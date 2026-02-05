@@ -1,22 +1,54 @@
 export default function medusaError(error: any): never {
+  const toReadableMessage = (message: string) => {
+    const trimmed = message.trim()
+
+    if (!trimmed) {
+      return "Request failed."
+    }
+
+    const capitalized = trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
+    return /[.!?]$/.test(capitalized) ? capitalized : `${capitalized}.`
+  }
+
+  const extractMessage = (data: unknown, status?: number) => {
+    if (typeof data === "string" && data.trim()) {
+      return data
+    }
+
+    if (data && typeof data === "object") {
+      const payload = data as { message?: unknown; error?: unknown }
+
+      if (typeof payload.message === "string" && payload.message.trim()) {
+        return payload.message
+      }
+
+      if (typeof payload.error === "string" && payload.error.trim()) {
+        return payload.error
+      }
+    }
+
+    if (typeof status === "number") {
+      return `request failed with status ${status}`
+    }
+
+    return "request failed"
+  }
+
   if (error.response) {
-    // The request was made and the server responded with a status code
-    // that falls out of the range of 2xx
     const u = new URL(error.config.url, error.config.baseURL)
     console.error("Resource:", u.toString())
     console.error("Response data:", error.response.data)
     console.error("Status code:", error.response.status)
     console.error("Headers:", error.response.headers)
 
-    // Extracting the error message from the response data
-    const message = error.response.data.message || error.response.data
-
-    throw new Error(message.charAt(0).toUpperCase() + message.slice(1) + ".")
+    throw new Error(
+      toReadableMessage(extractMessage(error.response.data, error.response.status))
+    )
   } else if (error.request) {
-    // The request was made but no response was received
-    throw new Error("No response received: " + error.request)
+    throw new Error(toReadableMessage("no response received from server"))
   } else {
-    // Something happened in setting up the request that triggered an Error
-    throw new Error("Error setting up the request: " + error.message)
+    const message =
+      error instanceof Error ? error.message : "error setting up request"
+    throw new Error(toReadableMessage(message))
   }
 }

@@ -5,9 +5,11 @@ export type OrderBundleHistory = {
   bundle_id: string
   bundle_title: string
   discount_percentage: number
+  bundle_type: "admin" | "custom"
   items: {
     id: string
     title: string
+    variant_id: string | null
     quantity: number
   }[]
 }
@@ -39,6 +41,10 @@ export const getOrderBundleHistory = (
       ""
     const key = operationId || `${bundleId}-${item.id}`
     const discountPercentage = toNumber(metadata.bundle_discount_percentage)
+    const bundleType =
+      metadata.bundle_type === "custom" || bundleId.startsWith("custom_")
+        ? "custom"
+        : "admin"
 
     const existing = bundleMap.get(key)
 
@@ -46,6 +52,7 @@ export const getOrderBundleHistory = (
       existing.items.push({
         id: item.id,
         title: item.title || item.product_title || "Item",
+        variant_id: item.variant_id || null,
         quantity: Number(item.quantity || 0),
       })
       continue
@@ -56,10 +63,12 @@ export const getOrderBundleHistory = (
       bundle_id: bundleId,
       bundle_title: bundleTitle,
       discount_percentage: discountPercentage,
+      bundle_type: bundleType,
       items: [
         {
           id: item.id,
           title: item.title || item.product_title || "Item",
+          variant_id: item.variant_id || null,
           quantity: Number(item.quantity || 0),
         },
       ],

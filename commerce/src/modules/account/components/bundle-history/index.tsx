@@ -1,12 +1,20 @@
-import { HttpTypes } from "@medusajs/types"
+"use client"
+
+import { addBundleToCart, addCustomBundleToCart } from "@lib/data/bundles"
 import { getOrderBundleHistory } from "@lib/util/bundle-history"
+import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { useState } from "react"
 
 type BundleHistoryProps = {
   orders: HttpTypes.StoreOrder[]
+  countryCode: string
 }
 
-const BundleHistory = ({ orders }: BundleHistoryProps) => {
+const BundleHistory = ({ orders, countryCode }: BundleHistoryProps) => {
+  const [isSubmittingKey, setIsSubmittingKey] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+
   const entries = orders.flatMap((order) =>
     getOrderBundleHistory(order).map((bundle) => ({
       orderId: order.id,
@@ -15,6 +23,37 @@ const BundleHistory = ({ orders }: BundleHistoryProps) => {
       bundle,
     }))
   )
+
+  const reorderBundle = async (bundle: (typeof entries)[number]["bundle"]) => {
+    setMessage(null)
+    setIsSubmittingKey(bundle.key)
+
+    try {
+      if (bundle.bundle_type === "admin") {
+        await addBundleToCart({
+          bundleId: bundle.bundle_id,
+          countryCode,
+        })
+      } else {
+        await addCustomBundleToCart({
+          countryCode,
+          title: bundle.bundle_title,
+          items: bundle.items
+            .filter((item) => !!item.variant_id)
+            .map((item) => ({
+              variant_id: item.variant_id as string,
+              quantity: item.quantity,
+            })),
+        })
+      }
+
+      setMessage(`Added "${bundle.bundle_title}" to cart.`)
+    } catch {
+      setMessage(`Could not re-order "${bundle.bundle_title}".`)
+    } finally {
+      setIsSubmittingKey(null)
+    }
+  }
 
   if (!entries.length) {
     return (
@@ -40,20 +79,29 @@ const BundleHistory = ({ orders }: BundleHistoryProps) => {
             {entry.bundle.bundle_title} ({entry.bundle.discount_percentage}% off)
           </p>
           <ul className="text-small-regular text-ui-fg-subtle mt-1">
-              {entry.bundle.items.map((item) => (
-                <li key={item.id}>
-                  {item.title} x {item.quantity}
-                </li>
-              ))}
-            </ul>
+            {entry.bundle.items.map((item) => (
+              <li key={item.id}>
+                {item.title} x {item.quantity}
+              </li>
+            ))}
+          </ul>
           <LocalizedClientLink
             href={`/account/orders/details/${entry.orderId}`}
             className="inline-block mt-2 text-small-regular text-ui-fg-base"
           >
             View order
           </LocalizedClientLink>
+          <button
+            type="button"
+            onClick={() => reorderBundle(entry.bundle)}
+            disabled={isSubmittingKey !== null}
+            className="ml-4 inline-block mt-2 text-small-regular text-ui-fg-base underline disabled:opacity-50"
+          >
+            {isSubmittingKey === entry.bundle.key ? "Adding..." : "Order again"}
+          </button>
         </article>
       ))}
+      {message ? <p className="text-ui-fg-subtle">{message}</p> : null}
     </div>
   )
 }

@@ -55,9 +55,11 @@ export const getRegion = async (countryCode: string) => {
       })
     })
 
+    const fallbackRegion =
+      regionMap.get("ae") || Array.from(regionMap.values())[0] || null
     const region = countryCode
-      ? regionMap.get(countryCode)
-      : regionMap.get("us")
+      ? regionMap.get(countryCode) || fallbackRegion
+      : fallbackRegion
 
     return region
   } catch (e: any) {

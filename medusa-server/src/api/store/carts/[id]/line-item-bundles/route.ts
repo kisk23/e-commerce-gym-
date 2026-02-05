@@ -7,6 +7,11 @@ import { BUNDLE_MODULE } from "../../../../../modules/bundle"
 
 type AddBundleToCartBody = {
   bundle_id?: string
+  title?: string
+  items?: {
+    variant_id?: string
+    quantity?: number
+  }[]
 }
 
 const toAmount = (value: unknown): number => {
@@ -33,45 +38,83 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     const cartModuleService: ICartModuleService = req.scope.resolve(Modules.CART)
     const workflowEngine = req.scope.resolve(Modules.WORKFLOW_ENGINE)
     const { id: cartId } = req.params
-    const bundleId = ((req.body || {}) as AddBundleToCartBody).bundle_id
-
-    if (!bundleId) {
-      throw new MedusaError(MedusaError.Types.INVALID_DATA, "bundle_id is required")
-    }
-
-    const bundle = await bundleModuleService.retrieveBundle(bundleId, {
-      relations: ["items"],
-    })
-
-    if (!bundle || !bundle.is_active) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        `Bundle ${bundleId} wasn't found`
-      )
-    }
-
-    if (!bundle.items?.length) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        "Bundle has no products to add to cart"
-      )
-    }
-
+    const body = (req.body || {}) as AddBundleToCartBody
+    const bundleId = body.bundle_id
     const operationId = randomUUID()
+    let bundleTitle = "Bundle"
+    let discountPercentage = 0
+    let itemsToAdd: {
+      variant_id: string
+      quantity: number
+      metadata: Record<string, unknown>
+    }[] = []
+
+    if (bundleId) {
+      const bundle = await bundleModuleService.retrieveBundle(bundleId, {
+        relations: ["items"],
+      })
+
+      if (!bundle || !bundle.is_active) {
+        throw new MedusaError(
+          MedusaError.Types.NOT_FOUND,
+          `Bundle ${bundleId} wasn't found`
+        )
+      }
+
+      if (!bundle.items?.length) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          "Bundle has no products to add to cart"
+        )
+      }
+
+      bundleTitle = bundle.title
+      discountPercentage = bundle.discount_percentage
+      itemsToAdd = bundle.items.map((item) => ({
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+        metadata: {
+          bundle_id: bundle.id,
+          bundle_title: bundle.title,
+          bundle_discount_percentage: bundle.discount_percentage,
+          bundle_operation_id: operationId,
+          bundle_type: "admin",
+        },
+      }))
+    } else {
+      const customItems = Array.isArray(body.items) ? body.items : []
+      const title = (body.title || "").trim() || "Custom Bundle"
+      const customBundleId = `custom_${operationId}`
+
+      itemsToAdd = customItems
+        .filter((item) => typeof item.variant_id === "string" && !!item.variant_id)
+        .map((item) => ({
+          variant_id: item.variant_id as string,
+          quantity: Math.max(1, Math.round(Number(item.quantity) || 1)),
+          metadata: {
+            bundle_id: customBundleId,
+            bundle_title: title,
+            bundle_discount_percentage: 0,
+            bundle_operation_id: operationId,
+            bundle_type: "custom",
+          },
+        }))
+
+      if (!itemsToAdd.length) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          "items are required when bundle_id is not provided"
+        )
+      }
+
+      bundleTitle = title
+      discountPercentage = 0
+    }
 
     await workflowEngine.run(addToCartWorkflowId, {
       input: {
         cart_id: cartId,
-        items: bundle.items.map((item) => ({
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-          metadata: {
-            bundle_id: bundle.id,
-            bundle_title: bundle.title,
-            bundle_discount_percentage: bundle.discount_percentage,
-            bundle_operation_id: operationId,
-          },
-        })),
+        items: itemsToAdd,
       },
     })
 
@@ -90,7 +133,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     }))
 
     const baseTotal = lineItemTotals.reduce((total, lineItem) => total + lineItem.total, 0)
-    const discountValue = Math.round((baseTotal * bundle.discount_percentage) / 100)
+    const discountValue = Math.round((baseTotal * discountPercentage) / 100)
     let remainingDiscount = discountValue
 
     if (discountValue > 0 && baseTotal > 0) {
@@ -104,9 +147,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
         return {
           item_id: lineItem.id,
-          code: `BUNDLE_${bundle.id}`,
+          code: `BUNDLE_${bundleId}`,
           amount: Math.max(0, appliedDiscount),
-          description: `${bundle.title} bundle discount (${bundle.discount_percentage}%)`,
+          description: `${bundleTitle} bundle discount (${discountPercentage}%)`,
         }
       })
 
@@ -124,18 +167,29 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     res.status(200).json({
       cart: updatedCart,
       bundle: {
-        id: bundle.id,
-        title: bundle.title,
-        discount_percentage: bundle.discount_percentage,
+        id: bundleId || `custom_${operationId}`,
+        title: bundleTitle,
+        discount_percentage: discountPercentage,
       },
     })
   } catch (error) {
     console.error("[line-item-bundles] Failed to add bundle to cart", error)
 
+    const errorType =
+      (error as { type?: string } | undefined)?.type ??
+      (error instanceof MedusaError ? error.type : undefined)
+
+    const statusCode =
+      errorType === MedusaError.Types.INVALID_DATA
+        ? 400
+        : errorType === MedusaError.Types.NOT_FOUND
+        ? 404
+        : 500
+
     const message =
       error instanceof Error ? error.message : "Failed to add bundle to cart"
 
-    res.status(500).json({
+    res.status(statusCode).json({
       type: "bundle_add_failed",
       message,
     })

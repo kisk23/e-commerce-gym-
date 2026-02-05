@@ -4,6 +4,7 @@ import { addBundleToCart } from "@lib/data/bundles"
 import { StoreBundle } from "@lib/types/bundle"
 import { Button } from "@medusajs/ui"
 import { useState } from "react"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type BundleCatalogProps = {
   bundles: StoreBundle[]
@@ -46,6 +47,14 @@ const BundleCatalog = ({ bundles, countryCode }: BundleCatalogProps) => {
       <p className="text-ui-fg-subtle">
         Order full bundles and get the discount automatically in cart.
       </p>
+      <div>
+        <LocalizedClientLink
+          href="/bundles/custom"
+          className="inline-flex rounded-md border border-ui-border-base px-4 py-2 text-ui-fg-base"
+        >
+          Build Your Own Bundle
+        </LocalizedClientLink>
+      </div>
       <div className="grid grid-cols-1 medium:grid-cols-2 gap-4">
         {bundles.map((bundle) => (
           <article

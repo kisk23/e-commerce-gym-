@@ -33,6 +33,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "bundle_type": {
+          "name": "bundle_type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "discount_percentage": {
           "name": "discount_percentage",
           "type": "integer",
@@ -51,6 +60,56 @@
           "nullable": false,
           "default": "true",
           "mappedType": "boolean"
+        },
+        "total_weight": {
+          "name": "total_weight",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "total_calories": {
+          "name": "total_calories",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "total_protein": {
+          "name": "total_protein",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "total_carbs": {
+          "name": "total_carbs",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "total_fat": {
+          "name": "total_fat",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
         },
         "created_at": {
           "name": "created_at",
@@ -176,6 +235,56 @@
           "primary": false,
           "nullable": false,
           "default": "1",
+          "mappedType": "integer"
+        },
+        "weight": {
+          "name": "weight",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "calories": {
+          "name": "calories",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "protein": {
+          "name": "protein",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "carbs": {
+          "name": "carbs",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "fat": {
+          "name": "fat",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
           "mappedType": "integer"
         },
         "bundle_id": {

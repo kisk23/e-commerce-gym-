@@ -1,6 +1,6 @@
 import { addToCartWorkflowId } from "@medusajs/core-flows"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { MedusaError, Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, MedusaError, Modules } from "@medusajs/framework/utils"
 import { ICartModuleService } from "@medusajs/types"
 import { randomUUID } from "node:crypto"
 import { BUNDLE_MODULE } from "../../../../../modules/bundle"
@@ -32,11 +32,94 @@ const toAmount = (value: unknown): number => {
   return 0
 }
 
+type VariantPriceQueryResponse = {
+  data: {
+    id: string
+    price_set?: {
+      prices?: {
+        amount: number
+        currency_code: string
+        price_list_id?: string | null
+      }[]
+    } | null
+  }[]
+}
+
+const roundValue = (value: number) => Math.round(value * 100) / 100
+const normalizeCurrencyCode = (value?: string | null) =>
+  typeof value === "string" && value.trim() ? value.trim().toLowerCase() : null
+
+const pickVariantPrice = (
+  prices: VariantPriceQueryResponse["data"][number]["price_set"]["prices"] | undefined,
+  currencyCode?: string | null
+) => {
+  const normalizedCurrency = normalizeCurrencyCode(currencyCode)
+  const validPrices = (prices || []).filter(
+    (price): price is { amount: number; currency_code: string; price_list_id?: string | null } =>
+      !!price && typeof price.amount === "number" && typeof price.currency_code === "string"
+  )
+
+  if (!validPrices.length) {
+    return 0
+  }
+
+  const byCurrency = normalizedCurrency
+    ? validPrices.filter((price) => price.currency_code.toLowerCase() === normalizedCurrency)
+    : validPrices
+
+  const basePrice =
+    byCurrency.find((price) => !price.price_list_id) ||
+    byCurrency[0] ||
+    validPrices.find((price) => !price.price_list_id) ||
+    validPrices[0]
+
+  return Math.max(0, basePrice?.amount ?? 0)
+}
+
+const getVariantPriceMap = async (
+  query: { graph: (input: Record<string, unknown>) => Promise<VariantPriceQueryResponse> },
+  variantIds: string[],
+  currencyCode?: string | null
+) => {
+  if (!variantIds.length) {
+    return new Map<string, number>()
+  }
+
+  const result: VariantPriceQueryResponse = await query.graph({
+    entity: "product_variant",
+    fields: [
+      "id",
+      "price_set.prices.amount",
+      "price_set.prices.currency_code",
+      "price_set.prices.price_list_id",
+    ],
+    filters: {
+      id: variantIds,
+    },
+  })
+
+  return new Map(
+    (result.data || []).map((variant) => [
+      variant.id,
+      pickVariantPrice(variant.price_set?.prices, currencyCode),
+    ])
+  )
+}
+
+
+// 1️ Gets bundle info (or custom bundle from request)
+// 2️ Converts bundle → cart line items
+// 3️ Adds them via Medusa workflow
+// 4️ Fetches new cart items
+// 5️ Calculates bundle discount
+// 6️ Applies discount proportionally to those items
+// 7️ Returns updated cart
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   try {
     const bundleModuleService = req.scope.resolve(BUNDLE_MODULE)
     const cartModuleService: ICartModuleService = req.scope.resolve(Modules.CART)
     const workflowEngine = req.scope.resolve(Modules.WORKFLOW_ENGINE)
+    const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
     const { id: cartId } = req.params
     const body = (req.body || {}) as AddBundleToCartBody
     const bundleId = body.bundle_id
@@ -46,8 +129,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     let itemsToAdd: {
       variant_id: string
       quantity: number
+      unit_price?: number
       metadata: Record<string, unknown>
     }[] = []
+
+    const cartSnapshot = await cartModuleService.retrieveCart(cartId)
+    const cartCurrency = cartSnapshot?.currency_code || "aed"
 
     if (bundleId) {
       const bundle = await bundleModuleService.retrieveBundle(bundleId, {
@@ -70,17 +157,33 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
       bundleTitle = bundle.title
       discountPercentage = bundle.discount_percentage
-      itemsToAdd = bundle.items.map((item) => ({
-        variant_id: item.variant_id,
-        quantity: item.quantity,
-        metadata: {
-          bundle_id: bundle.id,
-          bundle_title: bundle.title,
-          bundle_discount_percentage: bundle.discount_percentage,
-          bundle_operation_id: operationId,
-          bundle_type: "admin",
-        },
-      }))
+      const variantIds = Array.from(
+        new Set(bundle.items.map((item) => item.variant_id).filter(Boolean))
+      )
+      const priceMap = await getVariantPriceMap(query, variantIds, cartCurrency)
+
+      itemsToAdd = bundle.items.map((item) => {
+        const pricePer100g = priceMap.get(item.variant_id) ?? 0
+        const unitPrice =
+          item.weight > 0 ? roundValue((pricePer100g * item.weight) / 100) : undefined
+
+        return {
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+          ...(typeof unitPrice === "number" && unitPrice > 0
+            ? { unit_price: unitPrice }
+            : {}),
+          metadata: {
+            bundle_id: bundle.id,
+            bundle_title: bundle.title,
+            bundle_discount_percentage: bundle.discount_percentage,
+            bundle_operation_id: operationId,
+            bundle_type: "admin",
+            bundle_item_weight: item.weight,
+            bundle_price_per_100g: pricePer100g,
+          },
+        }
+      })
     } else {
       const customItems = Array.isArray(body.items) ? body.items : []
       const title = (body.title || "").trim() || "Custom Bundle"
@@ -163,7 +266,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     const updatedCart = await cartModuleService.retrieveCart(cartId, {
       relations: ["items", "items.adjustments"],
     })
-
+//{   "cart": { ...updated cart object... },
+//    "bundle": {
+//      "id": "bundle id or custom_operation_id",
+//      "title": "bundle title",
+//      "discount_percentage": "bundle discount percentage"
+// to add some info for user
+//    }
     res.status(200).json({
       cart: updatedCart,
       bundle: {

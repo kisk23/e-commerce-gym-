@@ -4,6 +4,7 @@ import Hero from "@modules/home/components/hero"
 import BundleCatalog from "@modules/home/components/bundle-catalog"
 import { listBundles } from "@lib/data/bundles"
 import VegetableCommerce from "@modules/home/components/vegetable-commerce"
+import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
   title: "Bundle Deals",
@@ -15,6 +16,8 @@ export default async function Home(props: {
 }) {
   const params = await props.params
   const bundles = await listBundles()
+  const region = await getRegion(params.countryCode)
+  const currencyCode = region?.currency_code || "aed"
 
   return (
     <>  
@@ -23,7 +26,11 @@ export default async function Home(props: {
     <VegetableCommerce vegetables={[]} bundles={[]} />
     
 
-      <BundleCatalog bundles={bundles} countryCode={params.countryCode} />
+      <BundleCatalog
+        bundles={bundles}
+        countryCode={params.countryCode}
+        currencyCode={currencyCode}
+      />
     </>
   )
 }

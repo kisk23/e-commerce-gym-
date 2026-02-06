@@ -5,13 +5,15 @@ import { StoreBundle } from "@lib/types/bundle"
 import { Button } from "@medusajs/ui"
 import { useState } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { convertToLocale } from "@lib/util/money"
 
 type BundleCatalogProps = {
   bundles: StoreBundle[]
   countryCode: string
+  currencyCode?: string
 }
 
-const BundleCatalog = ({ bundles, countryCode }: BundleCatalogProps) => {
+const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProps) => {
   const [isAddingId, setIsAddingId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -69,6 +71,21 @@ const BundleCatalog = ({ bundles, countryCode }: BundleCatalogProps) => {
               <p className="text-ui-fg-subtle text-sm mt-1">
                 Discount: {bundle.discount_percentage}% - {bundle.items.length} items
               </p>
+              {typeof bundle.total_price === "number" ? (
+                <p className="text-ui-fg-subtle text-sm mt-1">
+                  Total Price:{" "}
+                  {convertToLocale({
+                    amount: bundle.total_price,
+                    currency_code:
+                      bundle.currency_code || currencyCode || "aed",
+                  })}
+                </p>
+              ) : null}
+              {typeof bundle.total_weight === "number" ? (
+                <p className="text-ui-fg-subtle text-sm mt-1">
+                  Total Weight: {bundle.total_weight} g
+                </p>
+              ) : null}
             </div>
             <ul className="text-sm text-ui-fg-subtle">
               {bundle.items.map((item) => (

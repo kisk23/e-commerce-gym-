@@ -4,6 +4,7 @@ import { ContainerRegistrationKeys, MedusaError, Modules } from "@medusajs/frame
 import { ICartModuleService } from "@medusajs/types"
 import { randomUUID } from "node:crypto"
 import { BUNDLE_MODULE } from "../../../../../modules/bundle"
+import { roundValue, getVariantPriceMap, normalizeCurrencyCode, pickVariantPrice } from "../../../../../modules/bundle/utils/pricing"
 
 type AddBundleToCartBody = {
   bundle_id?: string
@@ -31,81 +32,6 @@ const toAmount = (value: unknown): number => {
 
   return 0
 }
-
-type VariantPriceQueryResponse = {
-  data: {
-    id: string
-    price_set?: {
-      prices?: {
-        amount: number
-        currency_code: string
-        price_list_id?: string | null
-      }[]
-    } | null
-  }[]
-}
-
-const roundValue = (value: number) => Math.round(value * 100) / 100
-const normalizeCurrencyCode = (value?: string | null) =>
-  typeof value === "string" && value.trim() ? value.trim().toLowerCase() : null
-
-const pickVariantPrice = (
-  prices: VariantPriceQueryResponse["data"][number]["price_set"]["prices"] | undefined,
-  currencyCode?: string | null
-) => {
-  const normalizedCurrency = normalizeCurrencyCode(currencyCode)
-  const validPrices = (prices || []).filter(
-    (price): price is { amount: number; currency_code: string; price_list_id?: string | null } =>
-      !!price && typeof price.amount === "number" && typeof price.currency_code === "string"
-  )
-
-  if (!validPrices.length) {
-    return 0
-  }
-
-  const byCurrency = normalizedCurrency
-    ? validPrices.filter((price) => price.currency_code.toLowerCase() === normalizedCurrency)
-    : validPrices
-
-  const basePrice =
-    byCurrency.find((price) => !price.price_list_id) ||
-    byCurrency[0] ||
-    validPrices.find((price) => !price.price_list_id) ||
-    validPrices[0]
-
-  return Math.max(0, basePrice?.amount ?? 0)
-}
-
-const getVariantPriceMap = async (
-  query: { graph: (input: Record<string, unknown>) => Promise<VariantPriceQueryResponse> },
-  variantIds: string[],
-  currencyCode?: string | null
-) => {
-  if (!variantIds.length) {
-    return new Map<string, number>()
-  }
-
-  const result: VariantPriceQueryResponse = await query.graph({
-    entity: "product_variant",
-    fields: [
-      "id",
-      "price_set.prices.amount",
-      "price_set.prices.currency_code",
-      "price_set.prices.price_list_id",
-    ],
-    filters: {
-      id: variantIds,
-    },
-  })
-
-  return new Map(
-    (result.data || []).map((variant) => [
-      variant.id,
-      pickVariantPrice(variant.price_set?.prices, currencyCode),
-    ])
-  )
-}
-
 
 // 1️ Gets bundle info (or custom bundle from request)
 // 2️ Converts bundle → cart line items

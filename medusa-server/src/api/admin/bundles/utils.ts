@@ -1,5 +1,6 @@
 import { MedusaError } from "@medusajs/framework/utils"
 
+
 type BundleItemInput = {
   product_id?: unknown
   variant_id?: unknown
@@ -17,24 +18,32 @@ type BundleInput = {
   items?: unknown
 }
 
-type ProductWithVariants = {
+export type ProductWithVariants = {
   id: string
   title: string
   thumbnail: string | null
   metadata?: Record<string, unknown> | null
-  variants?: {
-    id: string
-    title: string
-    price_set?: {
-      prices?: {
-        amount: number
-        currency_code: string
-        price_list_id?: string | null
-      }[]
-    } | null
-  }[]
+  variants?: (
+    | {
+        id: string
+        title: string
+        price_set?: {
+          prices?: (
+            | {
+                amount: number
+                currency_code: string
+                price_list_id?: string | null
+              }
+            | null
+          )[] | null
+        } | null
+      }
+    | null
+  )[] | null
 }
 
+type ProductVariantWithPrices =
+  NonNullable<NonNullable<ProductWithVariants["variants"]>[number]>
 type NutritionPer100g = {
   calories: number
   protein: number
@@ -111,8 +120,8 @@ const roundValue = (value: number) => Math.round(value * 100) / 100
 const normalizeCurrencyCode = (value?: string | null) =>
   typeof value === "string" && value.trim() ? value.trim().toLowerCase() : null
 
-const pickVariantPrice = (
-  variant: ProductWithVariants["variants"][number],
+const pickVariantPrice  = (
+  variant: ProductVariantWithPrices,
   currencyCode?: string | null
 ) => {
   const normalizedCurrency = normalizeCurrencyCode(currencyCode)
@@ -157,6 +166,8 @@ const normalizeNutrition = (value: unknown): NutritionPer100g => {
     fat: toNonNegativeNumber(payload.fat),
   }
 }
+
+
 
 export const normalizeBundleInput = (
   payload: BundleInput,
@@ -213,7 +224,10 @@ export const normalizeBundleInput = (
       )
     }
 
-    const variant = (product.variants || []).find((entry) => entry.id === variantId)
+    const variants = (product.variants || []).filter(
+      (entry): entry is ProductVariantWithPrices => !!entry
+    )
+    const variant = variants.find((entry) => entry.id === variantId)
 
     if (!variant) {
       throw new MedusaError(

@@ -5,10 +5,13 @@ import { BUNDLE_MODULE } from "../../../modules/bundle"
 type StoreQueryResponse = {
   data: {
     id: string
-    supported_currencies?: {
-      currency_code?: string | null
-      is_default?: boolean | null
-    }[] | null
+    supported_currencies?: (
+      | {
+          currency_code?: string | null
+          is_default?: boolean | null
+        }
+      | null
+    )[] | null
   }[]
 }
 

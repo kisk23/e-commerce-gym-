@@ -4,33 +4,18 @@ import { BUNDLE_MODULE } from "../../../modules/bundle"
 import { calculateBundleTotals, normalizeBundleInput } from "./utils"
 import { IProductModuleService } from "@medusajs/types"
 
-type ProductQueryResponse = {
-  data: {
-    id: string
-    title: string
-    thumbnail: string | null
-    metadata?: Record<string, unknown> | null
-    variants?: {
-      id: string
-      title: string
-      price_set?: {
-        prices?: {
-          amount: number
-          currency_code: string
-          price_list_id?: string | null
-        }[]
-      } | null
-    }[]
-  }[]
-}
+
 
 type StoreQueryResponse = {
   data: {
     id: string
-    supported_currencies?: {
-      currency_code?: string | null
-      is_default?: boolean | null
-    }[] | null
+    supported_currencies?: (
+      | {
+          currency_code?: string | null
+          is_default?: boolean | null
+        }
+      | null
+    )[] | null
   }[]
 }
 
@@ -80,7 +65,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     )
   )
 
-  const productsResult: ProductQueryResponse = await query.graph({
+  const productsResult = await query.graph({
     entity: "product",
     fields: [
       "id",

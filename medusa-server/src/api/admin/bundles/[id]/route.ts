@@ -10,29 +10,31 @@ type ProductQueryResponse = {
     title: string
     thumbnail: string | null
     metadata?: Record<string, unknown> | null
-    variants?: {
+    variants?: ({
       id: string
       title: string
       price_set?: {
-        prices?: {
+        prices?: ({
           amount: number
           currency_code: string
           price_list_id?: string | null
-        }[]
+        } | null)[]
       } | null
-    }[]
+    } | null)[]
   }[]
 }
+
 
 type StoreQueryResponse = {
   data: {
     id: string
-    supported_currencies?: {
+    supported_currencies?: ({
       currency_code?: string | null
       is_default?: boolean | null
-    }[] | null
+    } | null)[] | null
   }[]
 }
+
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const bundleModuleService = req.scope.resolve(BUNDLE_MODULE)

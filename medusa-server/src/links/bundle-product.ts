@@ -1,8 +1,8 @@
-// import { defineLink } from "@medusajs/framework/utils"
-// import {Bundle} from "../modules/bundle/models/bundle"
-// import ProductModule from "@medusajs/medusa/product"
+import { defineLink } from "@medusajs/framework/utils"
+import ProductModule from "@medusajs/medusa/product"
+import BundleModule from "../modules/bundle"
 
-// export default defineLink(
-//   ProductModule,
-//   Bundle
-// )
+export default defineLink(
+  { linkable: BundleModule.linkable.bundleItem, isList: true },
+  ProductModule.linkable.product
+)

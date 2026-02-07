@@ -92,6 +92,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         const pricePer100g = priceMap.get(item.variant_id) ?? 0
         const unitPrice =
           item.weight > 0 ? roundValue((pricePer100g * item.weight) / 100) : undefined
+        const weightValue = item.weight > 0 ? item.weight : undefined
 
         return {
           variant_id: item.variant_id,
@@ -107,6 +108,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_type: "admin",
             bundle_item_weight: item.weight,
             bundle_price_per_100g: pricePer100g,
+            ...(typeof weightValue === "number" ? { weight_g: weightValue } : {}),
           },
         }
       })

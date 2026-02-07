@@ -6,8 +6,8 @@ import Radio from "@modules/common/components/radio"
 
 import { isManual } from "@lib/constants"
 import SkeletonCardDetails from "@modules/skeletons/components/skeleton-card-details"
-import { CardElement } from "@stripe/react-stripe-js"
-import { StripeCardElementOptions } from "@stripe/stripe-js"
+import { PaymentElement } from "@stripe/react-stripe-js"
+import { StripePaymentElementOptions } from "@stripe/stripe-js"
 import PaymentTest from "../payment-test"
 import { StripeContext } from "../payment-wrapper/stripe-wrapper"
 
@@ -80,20 +80,9 @@ export const StripeCardContainer = ({
 }) => {
   const stripeReady = useContext(StripeContext)
 
-  const useOptions: StripeCardElementOptions = useMemo(() => {
+  const useOptions: StripePaymentElementOptions = useMemo(() => {
     return {
-      style: {
-        base: {
-          fontFamily: "Inter, sans-serif",
-          color: "#424270",
-          "::placeholder": {
-            color: "rgb(107 114 128)",
-          },
-        },
-      },
-      classes: {
-        base: "pt-3 pb-1 block w-full h-11 px-4 mt-0 bg-ui-bg-field border rounded-md appearance-none focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active border-ui-border-base hover:bg-ui-bg-field-hover transition-all duration-300 ease-in-out",
-      },
+      layout: "tabs",
     }
   }, [])
 
@@ -108,16 +97,29 @@ export const StripeCardContainer = ({
         (stripeReady ? (
           <div className="my-4 transition-all duration-150 ease-in-out">
             <Text className="txt-medium-plus text-ui-fg-base mb-1">
-              Enter your card details:
+              Enter your payment details:
             </Text>
-            <CardElement
-              options={useOptions as StripeCardElementOptions}
-              onChange={(e) => {
-                setCardBrand(
-                  e.brand && e.brand.charAt(0).toUpperCase() + e.brand.slice(1)
-                )
-                setError(e.error?.message || null)
-                setCardComplete(e.complete)
+            <PaymentElement
+              options={useOptions}
+              onChange={(event) => {
+                const type =
+                  typeof event.value?.type === "string" ? event.value.type : ""
+                const label = type
+                  ? type
+                      .replace(/_/g, " ")
+                      .replace(/^\w/, (char) => char.toUpperCase())
+                  : ""
+                setCardBrand(label)
+
+                // Check if there's an error when the element is incomplete
+                if (!event.complete && event.empty === false) {
+                  // Element has content but is invalid - there might be an error
+                  setError("Please complete your payment details")
+                } else {
+                  setError(null)
+                }
+
+                setCardComplete(event.complete)
               }}
             />
           </div>

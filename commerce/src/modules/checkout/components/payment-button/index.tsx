@@ -68,31 +68,26 @@ const StripePaymentButton = ({
 
   const stripe = useStripe()
   const elements = useElements()
-  const card = elements?.getElement("card")
-
-  const session = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending"
-  )
 
   const disabled = !stripe || !elements ? true : false
 
   const handlePayment = async () => {
     setSubmitting(true)
 
-    if (!stripe || !elements || !card || !cart) {
+    if (!stripe || !elements || !cart) {
       setSubmitting(false)
       return
     }
 
-    await stripe
-      .confirmCardPayment(session?.data.client_secret as string, {
-        payment_method: {
-          card: card,
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        payment_method_data: {
           billing_details: {
             name:
-              cart.billing_address?.first_name +
+              (cart.billing_address?.first_name || "") +
               " " +
-              cart.billing_address?.last_name,
+              (cart.billing_address?.last_name || ""),
             address: {
               city: cart.billing_address?.city ?? undefined,
               country: cart.billing_address?.country_code ?? undefined,
@@ -101,35 +96,38 @@ const StripePaymentButton = ({
               postal_code: cart.billing_address?.postal_code ?? undefined,
               state: cart.billing_address?.province ?? undefined,
             },
-            email: cart.email,
+            email: cart.email ?? undefined,
             phone: cart.billing_address?.phone ?? undefined,
           },
         },
-      })
-      .then(({ error, paymentIntent }) => {
-        if (error) {
-          const pi = error.payment_intent
+      },
+      redirect: "if_required",
+    })
 
-          if (
-            (pi && pi.status === "requires_capture") ||
-            (pi && pi.status === "succeeded")
-          ) {
-            onPaymentCompleted()
-          }
+    if (error) {
+      const pi = error.payment_intent
 
-          setErrorMessage(error.message || null)
-          return
-        }
+      if (
+        (pi && pi.status === "requires_capture") ||
+        (pi && pi.status === "succeeded")
+      ) {
+        await onPaymentCompleted()
+      }
 
-        if (
-          (paymentIntent && paymentIntent.status === "requires_capture") ||
-          paymentIntent.status === "succeeded"
-        ) {
-          return onPaymentCompleted()
-        }
+      setErrorMessage(error.message || null)
+      setSubmitting(false)
+      return
+    }
 
-        return
-      })
+    if (
+      (paymentIntent && paymentIntent.status === "requires_capture") ||
+      paymentIntent?.status === "succeeded"
+    ) {
+      await onPaymentCompleted()
+      return
+    }
+
+    setSubmitting(false)
   }
 
   return (

@@ -15,6 +15,23 @@ type AdminProduct = {
   }[]
   nutrition_per_100g: ProductNutrition
 }
+type AdminProductApi = {
+  id: string
+  title: string
+  metadata?: Record<string, unknown> | null
+  variants?: {
+    id: string
+    title: string
+    price_set?: {
+      prices?: {
+        amount: number
+        currency_code: string
+        price_list_id?: string | null
+      }[]
+    } | null
+  }[]
+}
+
 
 type ProductNutrition = {
   calories: number
@@ -262,20 +279,7 @@ const BundlesPage = () => {
     }
 
     const productsBody = (await productsResponse.json()) as {
-      products?: (AdminProduct & {
-        metadata?: Record<string, unknown> | null
-        variants?: {
-          id: string
-          title: string
-          price_set?: {
-            prices?: {
-              amount: number
-              currency_code: string
-              price_list_id?: string | null
-            }[]
-          } | null
-        }[]
-      })[]
+      products?: AdminProductApi[],
       currency_code?: string | null
     }
 

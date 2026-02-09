@@ -25,9 +25,7 @@ export const retrieveCustomer =
       ...authHeaders,
     }
 
-    const next = {
-      ...(await getCacheOptions("customers")),
-    }
+
 
     return await sdk.client
       .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
@@ -36,8 +34,8 @@ export const retrieveCustomer =
           fields: "*orders",
         },
         headers,
-        next,
-        cache: "force-cache",
+        
+        cache: "no-store",
       })
       .then(({ customer }) => customer)
       .catch(() => null)
@@ -107,6 +105,8 @@ export async function signup(_currentState: unknown, formData: FormData) {
 export async function login(_currentState: unknown, formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+   const rawRedirect = formData.get("redirect")?.toString()
+   const redirectTo = rawRedirect && rawRedirect.startsWith("/") ? rawRedirect : "/"
 
   try {
     await sdk.auth
@@ -125,6 +125,8 @@ export async function login(_currentState: unknown, formData: FormData) {
   } catch (error: any) {
     return error.toString()
   }
+
+  redirect(redirectTo+"?step=address")
 }
 
 export async function signout(countryCode: string) {

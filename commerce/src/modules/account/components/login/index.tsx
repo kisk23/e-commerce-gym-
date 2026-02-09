@@ -7,9 +7,10 @@ import { useActionState } from "react"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
+  redirectTo?: string
 }
 
-const Login = ({ setCurrentView }: Props) => {
+const Login = ({ setCurrentView, redirectTo }: Props) => {
   const [message, formAction] = useActionState(login, null)
 
   return (
@@ -23,6 +24,8 @@ const Login = ({ setCurrentView }: Props) => {
       </p>
       <form className="w-full" action={formAction}>
         <div className="flex flex-col w-full gap-y-2">
+          <input type="hidden" name="redirect" value={redirectTo ?? "/"} />
+
           <Input
             label="Email"
             name="email"

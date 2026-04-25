@@ -26,7 +26,7 @@ const CardDetails = [
 
 const Hero = () => {
   return (
-    <section className="w-full bg-gradient-to-br from-[#213C02]/5 via-[#DFD0BD]/30 to-[#CD995F]/10 py-12 md:py-16 lg:py-20">
+    <section className="w-full bg-gradient-to-br from-primary/5 via-beige/30 to-secondary/10 py-12 md:py-16 lg:py-20">
       {/* Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-14">
         {/* Top Section */}
@@ -34,14 +34,14 @@ const Hero = () => {
           {/* LEFT */}
           <div className="flex flex-col gap-6 max-w-xl w-full">
             {/* Badge */}
-            <div className="bg-[#E9ECE6] text-[#213C02] text-sm px-4 py-2 rounded-full w-fit ">
+            <div className="bg-beige text-primary text-sm px-4 py-2 rounded-full w-fit ">
               🌱 Smart Nutrition Shopping
             </div>
 
             {/* Heading */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
               Shop Fresh Food <br />
-              Based on Your <span className="text-[#213C02]">Health Goals</span>
+              Based on Your <span className="text-primary">Health Goals</span>
             </h1>
 
             {/* Description */}
@@ -52,7 +52,7 @@ const Hero = () => {
             </p>
 
             {/* CTA */}
-            <div className="flex items-center gap-2 text-[#213C02] font-medium">
+            <div className="flex items-center gap-2 text-primary font-medium">
               <Image
                 src="/icons/setting.svg"
                 alt="settings"
@@ -75,10 +75,10 @@ const Hero = () => {
 
               {/* Floating Card */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 lg:left-[-100px] lg:translate-x-0 bg-white shadow-lg rounded-xl px-4 py-3 flex items-center gap-3">
-                <div className="bg-[#E9ECE6] p-3 rounded-full">🌿</div>
+                <div className="bg-beige p-3 rounded-full">🌿</div>
                 <div>
                   <p className="font-semibold text-sm">500+</p>
-                  <p className="text-xs text-gray-500">Happy Customers</p>
+                  <p className="text-xs text-primary/70">Happy Customers</p>
                 </div>
               </div>
             </div>

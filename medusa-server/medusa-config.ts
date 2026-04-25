@@ -78,6 +78,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/bundle",
     },
     {
+      resolve: "./src/modules/subscription",
+    },
+    {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [

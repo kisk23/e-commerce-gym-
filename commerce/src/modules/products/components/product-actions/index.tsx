@@ -19,6 +19,9 @@ type ProductActionsProps = {
   disabled?: boolean
 }
 
+const WEIGHT_STEP_G = 100
+const DEFAULT_WEIGHT_G = 100
+
 const optionsAsKeymap = (
   variantOptions: HttpTypes.StoreProductVariant["options"]
 ) => {
@@ -38,6 +41,7 @@ export default function ProductActions({
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [weightG, setWeightG] = useState(DEFAULT_WEIGHT_G)
   const countryCode = useParams().countryCode as string
 
   // If there is only 1 variant, preselect the options
@@ -119,6 +123,19 @@ export default function ProductActions({
   const actionsRef = useRef<HTMLDivElement>(null)
 
   const inView = useIntersection(actionsRef, "0px")
+  const quantityByWeight = Math.max(1, Math.round(weightG / WEIGHT_STEP_G))
+
+  const onWeightChange = (value: string) => {
+    const parsed = Number(value)
+
+    if (!Number.isFinite(parsed)) {
+      setWeightG(DEFAULT_WEIGHT_G)
+      return
+    }
+
+    const roundedToStep = Math.round(parsed / WEIGHT_STEP_G) * WEIGHT_STEP_G
+    setWeightG(Math.max(WEIGHT_STEP_G, roundedToStep))
+  }
 
   // add the selected variant to the cart
   const handleAddToCart = async () => {
@@ -128,8 +145,13 @@ export default function ProductActions({
 
     await addToCart({
       variantId: selectedVariant.id,
-      quantity: 1,
+      quantity: quantityByWeight,
       countryCode,
+      metadata: {
+        weight_g: WEIGHT_STEP_G,
+        selected_weight_g: quantityByWeight * WEIGHT_STEP_G,
+        selected_weight_unit_g: WEIGHT_STEP_G,
+      },
     })
 
     setIsAdding(false)
@@ -161,6 +183,21 @@ export default function ProductActions({
         </div>
 
         <ProductPrice product={product} variant={selectedVariant} />
+        <label className="mt-2 flex flex-col gap-y-1 text-sm">
+          <span className="text-ui-fg-subtle">Amount (g)</span>
+          <input
+            type="number"
+            min={WEIGHT_STEP_G}
+            step={WEIGHT_STEP_G}
+            value={weightG}
+            onChange={(event) => onWeightChange(event.target.value)}
+            className="rounded-md border border-ui-border-base px-3 py-2"
+            disabled={!!disabled || isAdding}
+          />
+          <span className="text-xs text-ui-fg-subtle">
+            {quantityByWeight} unit(s) of 100g
+          </span>
+        </label>
 
         <Button
           onClick={handleAddToCart}

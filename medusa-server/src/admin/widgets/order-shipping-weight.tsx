@@ -8,7 +8,7 @@ const toNumber = (value: unknown) => {
 
 const formatWeight = (value: number) => {
   if (!Number.isFinite(value) || value <= 0) {
-    return "—"
+    return "-"
   }
 
   if (value >= 1000) {
@@ -20,13 +20,18 @@ const formatWeight = (value: number) => {
 
 const getItemWeight = (item: AdminOrder["items"][number]) => {
   const metadata = (item.metadata || {}) as Record<string, unknown>
-  const weight =
+  const unitWeight =
     metadata.weight_g ??
     metadata.bundle_item_weight ??
     metadata.bundle_item_weight_g ??
     metadata.weight
 
-  return Math.max(0, toNumber(weight))
+  return Math.max(0, toNumber(unitWeight))
+}
+
+const getSelectedTotalWeight = (item: AdminOrder["items"][number]) => {
+  const metadata = (item.metadata || {}) as Record<string, unknown>
+  return Math.max(0, toNumber(metadata.selected_weight_g))
 }
 
 const OrderShippingWeightWidget = ({ data }: DetailWidgetProps<AdminOrder>) => {
@@ -34,7 +39,8 @@ const OrderShippingWeightWidget = ({ data }: DetailWidgetProps<AdminOrder>) => {
   const rows = items.map((item) => {
     const unitWeight = getItemWeight(item)
     const quantity = Math.max(0, Number(item.quantity) || 0)
-    const totalWeight = unitWeight * quantity
+    const selectedTotalWeight = getSelectedTotalWeight(item)
+    const totalWeight = selectedTotalWeight > 0 ? selectedTotalWeight : unitWeight * quantity
 
     return {
       id: item.id,
@@ -64,11 +70,9 @@ const OrderShippingWeightWidget = ({ data }: DetailWidgetProps<AdminOrder>) => {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="font-medium">
                   {row.title}
-                  {row.variant ? ` · ${row.variant}` : ""}
+                  {row.variant ? ` - ${row.variant}` : ""}
                 </div>
-                <div className="text-ui-fg-subtle">
-                  Qty: {row.quantity}
-                </div>
+                <div className="text-ui-fg-subtle">Qty: {row.quantity}</div>
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-4 text-ui-fg-subtle">
                 <span>Unit: {formatWeight(row.unitWeight)}</span>

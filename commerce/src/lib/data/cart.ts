@@ -146,12 +146,7 @@ export async function addToCart({
   }
 
   await sdk.store.cart
-    .createLineItem(
-      cart.id,
-      lineItem,
-      {},
-      headers
-    )
+    .createLineItem(cart.id, lineItem, {}, headers)
     .then(async () => {
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)

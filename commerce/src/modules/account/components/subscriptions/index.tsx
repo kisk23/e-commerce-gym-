@@ -1,7 +1,10 @@
 "use client"
 
 import { subscribeToPlan } from "@lib/data/subscriptions"
-import { StoreCustomerSubscription, StoreSubscriptionPlan } from "@lib/types/subscription"
+import {
+  StoreCustomerSubscription,
+  StoreSubscriptionPlan,
+} from "@lib/types/subscription"
 import { Button } from "@medusajs/ui"
 import { useMemo, useState } from "react"
 
@@ -25,11 +28,12 @@ const formatDate = (value?: string | null) => {
 }
 
 const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
-  const [isSubmittingPlanId, setIsSubmittingPlanId] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
-  const [currentActive, setCurrentActive] = useState<StoreCustomerSubscription | null>(
-    activeSubscription
+  const [isSubmittingPlanId, setIsSubmittingPlanId] = useState<string | null>(
+    null
   )
+  const [message, setMessage] = useState<string | null>(null)
+  const [currentActive, setCurrentActive] =
+    useState<StoreCustomerSubscription | null>(activeSubscription)
 
   const remainingText = useMemo(() => {
     if (!currentActive || currentActive.status !== "active") {
@@ -54,7 +58,11 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
           : `Subscribed to ${plan.title}.`
       )
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not subscribe to this plan.")
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not subscribe to this plan."
+      )
     } finally {
       setIsSubmittingPlanId(null)
     }
@@ -67,7 +75,8 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
       {currentActive ? (
         <div className="rounded-md border border-ui-border-base p-3 bg-ui-bg-subtle">
           <p className="text-base-regular">
-            <span className="font-semibold">Current plan:</span> {currentActive.plan_title}
+            <span className="font-semibold">Current plan:</span>{" "}
+            {currentActive.plan_title}
           </p>
           <p className="text-small-regular text-ui-fg-subtle mt-1">
             Discount: {currentActive.discount_percentage}% - {remainingText}
@@ -77,7 +86,9 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
           </p>
         </div>
       ) : (
-        <p className="text-ui-fg-subtle">No active subscription. Choose a plan below.</p>
+        <p className="text-ui-fg-subtle">
+          No active subscription. Choose a plan below.
+        </p>
       )}
 
       <div className="grid grid-cols-1 small:grid-cols-2 gap-3">
@@ -88,10 +99,13 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
           >
             <h3 className="text-base-semi">{plan.title}</h3>
             {plan.description ? (
-              <p className="text-small-regular text-ui-fg-subtle">{plan.description}</p>
+              <p className="text-small-regular text-ui-fg-subtle">
+                {plan.description}
+              </p>
             ) : null}
             <p className="text-small-regular text-ui-fg-subtle">
-              {plan.duration_months} month(s) - {plan.discount_percentage}% discount
+              {plan.duration_months} month(s) - {plan.discount_percentage}%
+              discount
             </p>
             <Button
               variant="secondary"
@@ -111,4 +125,3 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
 }
 
 export default Subscriptions
-

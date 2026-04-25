@@ -9,7 +9,8 @@ import BundleRecommender from "@modules/home/components/bundle-recommendation"
 
 export const metadata: Metadata = {
   title: "Bundle Deals",
-  description: "Create discounted product bundles and let customers order bundles in one click.",
+  description:
+    "Create discounted product bundles and let customers order bundles in one click.",
 }
 
 export default async function Home(props: {
@@ -21,11 +22,15 @@ export default async function Home(props: {
   const currencyCode = region?.currency_code || "aed"
 
   return (
-    <>  
-    <Hero />
-    
-    {/* <VegetableCommerce vegetables={[]} bundles={[]} /> */}
-    <BundleRecommender bundles={bundles} countryCode={params.countryCode} currencyCode={currencyCode} />
+    <>
+      <Hero />
+
+      {/* <VegetableCommerce vegetables={[]} bundles={[]} /> */}
+      <BundleRecommender
+        bundles={bundles}
+        countryCode={params.countryCode}
+        currencyCode={currencyCode}
+      />
 
       <BundleCatalog
         bundles={bundles}
@@ -33,7 +38,5 @@ export default async function Home(props: {
         currencyCode={currencyCode}
       />
     </>
-    
   )
-
 }

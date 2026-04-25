@@ -12,6 +12,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "baseUrl": ".",
+    
     "allowArbitraryExtensions": true,
 
     "resolveJsonModule": true,
@@ -20,6 +21,7 @@
     "incremental": true,
 
     "paths": {
+      "@/*": ["./src/*"],
       "@lib/*": ["./src/lib/*"],
       "@modules/*": ["./src/modules/*"],
       "@pages/*": ["./src/pages/*"],

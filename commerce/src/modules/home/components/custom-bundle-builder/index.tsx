@@ -30,7 +30,10 @@ const createEmptyItem = (): BundleItemForm => ({
   quantity: 1,
 })
 
-const CustomBundleBuilder = ({ countryCode, products }: CustomBundleBuilderProps) => {
+const CustomBundleBuilder = ({
+  countryCode,
+  products,
+}: CustomBundleBuilderProps) => {
   const [title, setTitle] = useState("My Custom Bundle")
   const [items, setItems] = useState<BundleItemForm[]>([createEmptyItem()])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -43,7 +46,9 @@ const CustomBundleBuilder = ({ countryCode, products }: CustomBundleBuilderProps
 
   const updateItem = (index: number, nextItem: BundleItemForm) => {
     setItems((previousItems) =>
-      previousItems.map((item, itemIndex) => (itemIndex === index ? nextItem : item))
+      previousItems.map((item, itemIndex) =>
+        itemIndex === index ? nextItem : item
+      )
     )
   }
 
@@ -181,7 +186,9 @@ const CustomBundleBuilder = ({ countryCode, products }: CustomBundleBuilderProps
                 type="number"
                 min={1}
                 value={item.quantity}
-                onChange={(event) => onQuantityChange(index, event.target.value)}
+                onChange={(event) =>
+                  onQuantityChange(index, event.target.value)
+                }
                 className="rounded-md border border-ui-border-base px-3 py-2"
               />
               <button

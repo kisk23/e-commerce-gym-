@@ -73,10 +73,12 @@ const BundleHistory = ({ orders, countryCode }: BundleHistoryProps) => {
           className="rounded-md border border-ui-border-base p-3"
         >
           <p className="text-small-regular text-ui-fg-subtle">
-            Order #{entry.orderDisplayId} - {new Date(entry.createdAt).toDateString()}
+            Order #{entry.orderDisplayId} -{" "}
+            {new Date(entry.createdAt).toDateString()}
           </p>
           <p className="text-base-regular mt-1">
-            {entry.bundle.bundle_title} ({entry.bundle.discount_percentage}% off)
+            {entry.bundle.bundle_title} ({entry.bundle.discount_percentage}%
+            off)
           </p>
           <ul className="text-small-regular text-ui-fg-subtle mt-1">
             {entry.bundle.items.map((item) => (

@@ -26,7 +26,8 @@ export const getOrderBundleHistory = (
 
   for (const item of order.items || []) {
     const metadata = (item.metadata || {}) as Record<string, unknown>
-    const bundleId = typeof metadata.bundle_id === "string" ? metadata.bundle_id : ""
+    const bundleId =
+      typeof metadata.bundle_id === "string" ? metadata.bundle_id : ""
 
     if (!bundleId) {
       continue

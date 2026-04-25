@@ -7,7 +7,8 @@ import CustomBundleBuilder from "@modules/home/components/custom-bundle-builder"
 
 export const metadata: Metadata = {
   title: "Custom Bundle Builder",
-  description: "Create your own bundle from products and add it to cart in one click.",
+  description:
+    "Create your own bundle from products and add it to cart in one click.",
 }
 
 export default async function CustomBundlePage(props: {

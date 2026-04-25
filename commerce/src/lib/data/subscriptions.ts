@@ -4,9 +4,14 @@ import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { revalidateTag } from "next/cache"
 import { getAuthHeaders, getCacheTag } from "./cookies"
-import { StoreCustomerSubscription, StoreSubscriptionPlan } from "@lib/types/subscription"
+import {
+  StoreCustomerSubscription,
+  StoreSubscriptionPlan,
+} from "@lib/types/subscription"
 
-export const listSubscriptionPlans = async (): Promise<StoreSubscriptionPlan[]> => {
+export const listSubscriptionPlans = async (): Promise<
+  StoreSubscriptionPlan[]
+> => {
   return sdk.client
     .fetch<{ plans: StoreSubscriptionPlan[] }>("/store/subscriptions/plans", {
       method: "GET",
@@ -73,4 +78,3 @@ export const subscribeToPlan = async (planId: string) => {
 
   return result
 }
-

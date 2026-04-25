@@ -22,4 +22,3 @@ export type StoreCustomerSubscription = {
   remaining_hours?: number
   is_active?: boolean
 }
-

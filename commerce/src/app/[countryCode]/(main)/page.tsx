@@ -6,6 +6,7 @@ import { listBundles } from "@lib/data/bundles"
 // import VegetableCommerce from "@modules/home/components/vegetable-commerce"
 import { getRegion } from "@lib/data/regions"
 import BundleRecommender from "@modules/home/components/bundle-recommendation"
+import FreshPopular from "@/modules/home/components/fresh-popular"
 
 export const metadata: Metadata = {
   title: "Bundle Deals",
@@ -24,6 +25,7 @@ export default async function Home(props: {
   return (
     <>
       <Hero />
+      <FreshPopular collection={"fresh"} region={region} />
 
       {/* <VegetableCommerce vegetables={[]} bundles={[]} /> */}
       <BundleRecommender

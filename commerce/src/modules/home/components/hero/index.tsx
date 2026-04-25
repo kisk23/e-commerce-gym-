@@ -10,7 +10,7 @@ const CardDetails = [
       "Pick exactly what your body needs. Select fresh vegetables and fruits, control your calories, and build a bundle tailored to your health goal.",
     imageSrc: "/images/build.png",
     buttonText: "Start Building",
-    href: "/build",
+    href: "/bundles/custom",
   },
   {
     id: "bundles",
@@ -74,8 +74,8 @@ const Hero = () => {
               />
 
               {/* Floating Card */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 lg:left-[-100px] lg:translate-x-0 bg-white shadow-lg rounded-xl px-4 py-3 flex items-center gap-3">
-                <div className="bg-beige p-3 rounded-full">🌿</div>
+              <div className="absolute bottom-9 left-1/2 -translate-x-1/2 lg:left-[-100px] lg:translate-x-0 bg-white shadow-lg rounded-xl p-2 flex items-center gap-3">
+                <div className="bg-primary/20 p-3 rounded-full">🌿</div>
                 <div>
                   <p className="font-semibold text-sm">500+</p>
                   <p className="text-xs text-primary/70">Happy Customers</p>

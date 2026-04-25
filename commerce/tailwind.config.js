@@ -34,6 +34,28 @@ module.exports = {
           80: "#1F2937",
           90: "#111827",
         },
+        // ── Brand Palette ──────────────────────────────────────────
+        primary: {
+          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
+          light:   "rgb(var(--primary-light) / <alpha-value>)",
+          dark:    "rgb(var(--primary-dark) / <alpha-value>)",
+        },
+        secondary: {
+          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
+          light:   "rgb(var(--secondary-light) / <alpha-value>)",
+          dark:    "rgb(var(--secondary-dark) / <alpha-value>)",
+        },
+        accent: {
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
+          light:   "rgb(var(--accent-light) / <alpha-value>)",
+          dark:    "rgb(var(--accent-dark) / <alpha-value>)",
+        },
+        beige: {
+          DEFAULT: "rgb(var(--beige) / <alpha-value>)",
+          light:   "rgb(var(--beige-light) / <alpha-value>)",
+          dark:    "rgb(var(--beige-dark) / <alpha-value>)",
+        },
+        // ───────────────────────────────────────────────────────────
       },
       borderRadius: {
         none: "0px",

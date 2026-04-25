@@ -2,6 +2,30 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* ── Brand Color Palette (raw RGB channels for Tailwind opacity support) ── */
+:root {
+  /* Primary – dark forest green  #213C02 */
+  --primary:          33 60 2;
+  --primary-light:    46 82 3;
+  --primary-dark:     21 38 1;
+
+  /* Secondary – warm caramel  #CD995F */
+  --secondary:        205 153 95;
+  --secondary-light:  217 171 122;
+  --secondary-dark:   181 125 64;
+
+  /* Accent 1 – deep red  #830010 */
+  --accent:           131 0 16;
+  --accent-light:     163 0 26;
+  --accent-dark:      92 0 9;
+
+  /* Accent 2 – warm beige  #DFD0BD */
+  --beige:            223 208 189;
+  --beige-light:      236 224 208;
+  --beige-dark:       201 184 158;
+}
+/* ──────────────────────────────────────────────────────────────────────── */
+
 @layer utilities {
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {

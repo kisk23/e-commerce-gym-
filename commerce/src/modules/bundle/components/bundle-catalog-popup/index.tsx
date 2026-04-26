@@ -6,6 +6,10 @@ import { Button } from "@medusajs/ui"
 import { useState } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { convertToLocale } from "@lib/util/money"
+import {
+  calculateBundleOriginalPrice,
+  calculateBundleSavings,
+} from "@modules/bundle/utils/bundle-calculations"
 
 type BundleCatalogProps = {
   bundles: StoreBundle[]
@@ -38,24 +42,6 @@ const BundleCatalog = ({
     }
   }
 
-  const calculateOriginalPrice = (bundle: StoreBundle) => {
-    if (
-      typeof bundle.total_price !== "number" ||
-      bundle.discount_percentage === 0
-    ) {
-      return bundle.total_price || 0
-    }
-    // Calculate original price from discounted price
-    const discountMultiplier = 1 - bundle.discount_percentage / 100
-    return bundle.total_price / discountMultiplier
-  }
-
-  const calculateSavings = (bundle: StoreBundle) => {
-    const originalPrice = calculateOriginalPrice(bundle)
-    const discountedPrice = bundle.total_price || 0
-    return originalPrice - discountedPrice
-  }
-
   if (!bundles.length) {
     return (
       <section className="content-container py-8">
@@ -85,8 +71,8 @@ const BundleCatalog = ({
 
       <div className="grid grid-cols-1 medium:grid-cols-2 large:grid-cols-3 gap-6">
         {bundles.map((bundle) => {
-          const originalPrice = calculateOriginalPrice(bundle)
-          const savings = calculateSavings(bundle)
+          const originalPrice = calculateBundleOriginalPrice(bundle)
+          const savings = calculateBundleSavings(bundle)
           const hasDiscount = bundle.discount_percentage > 0
 
           return (

@@ -5,6 +5,10 @@ import { useState } from "react"
 import { Button } from "@medusajs/ui"
 import { convertToLocale } from "@lib/util/money"
 import { addBundleToCart } from "@lib/data/bundles"
+import {
+  calculateBundleOriginalPrice,
+  calculateBundleSavings,
+} from "@modules/bundle/utils/bundle-calculations"
 
 type BundleRecommenderProps = {
   bundles: StoreBundle[]
@@ -91,23 +95,6 @@ const BundleRecommender = ({
 
     // If no exact matches, return all bundles
     return matchingBundles.length > 0 ? matchingBundles : bundles
-  }
-
-  const calculateOriginalPrice = (bundle: StoreBundle) => {
-    if (
-      typeof bundle.total_price !== "number" ||
-      bundle.discount_percentage === 0
-    ) {
-      return bundle.total_price || 0
-    }
-    const discountMultiplier = 1 - bundle.discount_percentage / 100
-    return bundle.total_price / discountMultiplier
-  }
-
-  const calculateSavings = (bundle: StoreBundle) => {
-    const originalPrice = calculateOriginalPrice(bundle)
-    const discountedPrice = bundle.total_price || 0
-    return originalPrice - discountedPrice
   }
 
   const resetSelection = () => {
@@ -230,8 +217,8 @@ const BundleRecommender = ({
         <>
           <div className="grid grid-cols-1 medium:grid-cols-2 large:grid-cols-3 gap-6">
             {recommendedBundles.map((bundle) => {
-              const originalPrice = calculateOriginalPrice(bundle)
-              const savings = calculateSavings(bundle)
+              const originalPrice = calculateBundleOriginalPrice(bundle)
+              const savings = calculateBundleSavings(bundle)
               const hasDiscount = bundle.discount_percentage > 0
 
               return (

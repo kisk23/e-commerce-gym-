@@ -7,6 +7,7 @@ import { listBundles } from "@lib/data/bundles"
 import { getRegion } from "@lib/data/regions"
 import BundleRecommender from "@modules/home/components/bundle-recommendation"
 import FreshPopular from "@/modules/home/components/fresh-popular"
+import WhyComponent from "@/modules/home/components/why-component"
 
 export const metadata: Metadata = {
   title: "Bundle Deals",
@@ -21,11 +22,15 @@ export default async function Home(props: {
   const bundles = await listBundles()
   const region = await getRegion(params.countryCode)
   const currencyCode = region?.currency_code || "aed"
+  if (!region) {
+  throw new Error("Region not found")
+}
 
   return (
     <>
       <Hero />
-      <FreshPopular collection={"fresh"} region={region} />
+      <FreshPopular collection={null} region={region} />
+      <WhyComponent />
 
       {/* <VegetableCommerce vegetables={[]} bundles={[]} /> */}
       <BundleRecommender

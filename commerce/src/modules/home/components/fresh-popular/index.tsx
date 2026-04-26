@@ -7,7 +7,7 @@ export default async function FreshPopular({
   region,
 }: {
   collection: HttpTypes.StoreCollection | null
-  region: HttpTypes.StoreRegion
+  region: HttpTypes.StoreRegion 
 }) {
   const {
     response: { products: pricedProducts },

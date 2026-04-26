@@ -25,7 +25,7 @@ export default function WhyComponent() {
   ]
 
   return (
-    <section className="py-10 sm:py-12">
+    <section className="py-10 sm:py-12 mb-9">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-10">
 
         {/* HEADER */}

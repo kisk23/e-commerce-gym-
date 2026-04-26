@@ -14,7 +14,7 @@ type ProductMetadata = {
 
 export default function ProductPreview({
   product,
-  region,
+
 }: {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
@@ -24,8 +24,8 @@ export default function ProductPreview({
   const metadata = product.metadata as ProductMetadata | null
 
   const calories = metadata?.nutrition_per_100g?.calories
-  console.log("calories: "+calories)
-  const category = metadata?.category ?? "food"
+
+const categoryName = product.categories?.[0]?.name ?? null
 
   return (
     <LocalizedClientLink
@@ -48,7 +48,7 @@ export default function ProductPreview({
 
           {/* BADGE */}
           <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-medium text-primary capitalize">
-            {category}
+            {categoryName}
           </div>
         </div>
 

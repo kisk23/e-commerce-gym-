@@ -3,7 +3,7 @@ import { sdk } from "@lib/config"
 import { getAuthHeaders } from "@lib/data/cookies"
 import { getRegion } from "@lib/data/regions"
 import { HttpTypes } from "@medusajs/types"
-import CustomBundleBuilder from "@modules/home/components/custom-bundle-builder"
+import CustomBundleBuilder from "@/modules/bundle/components/custom-bundle-builder"
 
 export const metadata: Metadata = {
   title: "Custom Bundle Builder",

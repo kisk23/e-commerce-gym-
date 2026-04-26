@@ -53,7 +53,7 @@ export default function ProductPreview({
         </div>
 
         {/* CONTENT */}
-        <div className="flex flex-col gap-4 px-6 py-5">
+        <div className="flex flex-col gap-2 px-6 py-5">
 
           {/* TITLE + DESCRIPTION */}
           <div className="flex flex-col gap-1">

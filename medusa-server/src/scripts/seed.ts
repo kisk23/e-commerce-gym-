@@ -62,6 +62,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const fulfillmentModuleService = container.resolve(Modules.FULFILLMENT);
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
+  const taxModuleService = container.resolve(Modules.TAX);
 
   const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
 
@@ -98,9 +99,31 @@ export default async function seedDemoData({ container }: ExecArgs) {
         {
           currency_code: "usd",
         },
-      ],
+      ];
+
+  const { data: existingProducts } = await query.graph({
+    entity: "product",
+    fields: ["id", "handle"],
+    filters: {
+      handle: products.map((product) => product.handle),
     },
   });
+  const existingProductHandles = new Set(
+    (existingProducts ?? [])
+      .map((product) => product.handle)
+      .filter((handle): handle is string => Boolean(handle))
+  );
+  const productsToCreate = products.filter(
+    (product) => !existingProductHandles.has(product.handle)
+  );
+
+  if (productsToCreate.length) {
+    await createProductsWorkflow(container).run({
+      input: {
+        products: productsToCreate,
+      },
+    });
+  }
 
   await updateStoresWorkflow(container).run({
     input: {
@@ -111,28 +134,65 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
   logger.info("Seeding region data...");
-  const { result: regionResult } = await createRegionsWorkflow(container).run({
-    input: {
-      regions: [
-        {
-          name: "Europe",
-          currency_code: "eur",
-          countries,
-          payment_providers: ["pp_system_default"],
-        },
-      ],
-    },
-  });
-  const region = regionResult[0];
+  let region: { id: string };
+  try {
+    const { result: regionResult } = await createRegionsWorkflow(container).run({
+      input: {
+        regions: [
+          {
+            name: "Europe",
+            currency_code: "eur",
+            countries,
+            payment_providers: ["pp_system_default"],
+          },
+        ],
+      },
+    });
+    region = regionResult[0];
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : JSON.stringify(error);
+
+    if (errorMessage.includes("already assigned to a region")) {
+      const { data: existingRegions } = await query.graph({
+        entity: "region",
+        fields: ["id"],
+        filters: { name: "Europe" },
+      });
+
+      if (!existingRegions?.[0]?.id) {
+        throw error;
+      }
+
+      region = { id: existingRegions[0].id };
+    } else {
+      throw error;
+    }
+  }
   logger.info("Finished seeding regions.");
 
   logger.info("Seeding tax regions...");
-  await createTaxRegionsWorkflow(container).run({
-    input: countries.map((country_code) => ({
-      country_code,
-      provider_id: "tp_system",
-    })),
+  const existingTaxRegions = await taxModuleService.listTaxRegions({
+    country_code: countries,
   });
+  const existingTaxRegionCountryCodes = new Set(
+    existingTaxRegions
+      .map((taxRegion) => taxRegion.country_code?.toLowerCase())
+      .filter((countryCode): countryCode is string => Boolean(countryCode))
+  );
+
+  const missingTaxRegionCountries = countries.filter(
+    (countryCode) => !existingTaxRegionCountryCodes.has(countryCode.toLowerCase())
+  );
+
+  if (missingTaxRegionCountries.length) {
+    await createTaxRegionsWorkflow(container).run({
+      input: missingTaxRegionCountries.map((country_code) => ({
+        country_code,
+        provider_id: "tp_system",
+      })),
+    });
+  }
   logger.info("Finished seeding tax regions.");
 
   logger.info("Seeding stock location data...");
@@ -163,14 +223,22 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
 
-  await link.create({
-    [Modules.STOCK_LOCATION]: {
-      stock_location_id: stockLocation.id,
-    },
-    [Modules.FULFILLMENT]: {
-      fulfillment_provider_id: "manual_manual",
-    },
-  });
+  try {
+    await link.create({
+      [Modules.STOCK_LOCATION]: {
+        stock_location_id: stockLocation.id,
+      },
+      [Modules.FULFILLMENT]: {
+        fulfillment_provider_id: "manual_manual",
+      },
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : JSON.stringify(error);
+    if (!errorMessage.includes("Cannot create multiple links")) {
+      throw error;
+    }
+  }
 
   logger.info("Seeding fulfillment data...");
   const shippingProfiles = await fulfillmentModuleService.listShippingProfiles({
@@ -193,54 +261,84 @@ export default async function seedDemoData({ container }: ExecArgs) {
     shippingProfile = shippingProfileResult[0];
   }
 
-  const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-    name: "European Warehouse delivery",
-    type: "shipping",
-    service_zones: [
-      {
-        name: "Europe",
-        geo_zones: [
-          {
-            country_code: "gb",
-            type: "country",
-          },
-          {
-            country_code: "de",
-            type: "country",
-          },
-          {
-            country_code: "dk",
-            type: "country",
-          },
-          {
-            country_code: "se",
-            type: "country",
-          },
-          {
-            country_code: "fr",
-            type: "country",
-          },
-          {
-            country_code: "es",
-            type: "country",
-          },
-          {
-            country_code: "it",
-            type: "country",
-          },
-        ],
-      },
-    ],
-  });
+  let fulfillmentSet: { id: string; service_zones: { id: string }[] };
+  try {
+    fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
+      name: "European Warehouse delivery",
+      type: "shipping",
+      service_zones: [
+        {
+          name: "Europe",
+          geo_zones: [
+            {
+              country_code: "gb",
+              type: "country",
+            },
+            {
+              country_code: "de",
+              type: "country",
+            },
+            {
+              country_code: "dk",
+              type: "country",
+            },
+            {
+              country_code: "se",
+              type: "country",
+            },
+            {
+              country_code: "fr",
+              type: "country",
+            },
+            {
+              country_code: "es",
+              type: "country",
+            },
+            {
+              country_code: "it",
+              type: "country",
+            },
+          ],
+        },
+      ],
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : JSON.stringify(error);
 
-  await link.create({
-    [Modules.STOCK_LOCATION]: {
-      stock_location_id: stockLocation.id,
-    },
-    [Modules.FULFILLMENT]: {
-      fulfillment_set_id: fulfillmentSet.id,
-    },
-  });
+    if (errorMessage.includes("Fulfillment set with name")) {
+      const existingFulfillmentSets =
+        await fulfillmentModuleService.listFulfillmentSets(
+          { name: "European Warehouse delivery" },
+          { relations: ["service_zones"] }
+        );
+
+      if (!existingFulfillmentSets?.[0]?.id) {
+        throw error;
+      }
+
+      fulfillmentSet = existingFulfillmentSets[0];
+    } else {
+      throw error;
+    }
+  }
+
+  try {
+    await link.create({
+      [Modules.STOCK_LOCATION]: {
+        stock_location_id: stockLocation.id,
+      },
+      [Modules.FULFILLMENT]: {
+        fulfillment_set_id: fulfillmentSet.id,
+      },
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : JSON.stringify(error);
+    if (!errorMessage.includes("Cannot create multiple links")) {
+      throw error;
+    }
+  }
 
   await createShippingOptionsWorkflow(container).run({
     input: [
@@ -372,39 +470,67 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   logger.info("Seeding product data...");
 
-  const { result: categoryResult } = await createProductCategoriesWorkflow(
-    container
-  ).run({
-    input: {
-      product_categories: [
-        {
-          name: "Shirts",
-          is_active: true,
-        },
-        {
-          name: "Sweatshirts",
-          is_active: true,
-        },
-        {
-          name: "Pants",
-          is_active: true,
-        },
-        {
-          name: "Merch",
-          is_active: true,
-        },
-      ],
+  const desiredProductCategories = [
+    {
+      name: "vegetables",
+      is_active: true,
+    },
+    {
+      name: "fruits",
+      is_active: true,
+    },
+    {
+      name: "nuts",
+      is_active: true,
+    },
+    {
+      name: "food",
+      is_active: true,
+    },
+  ];
+
+  const desiredCategoryNames = desiredProductCategories.map(
+    (category) => category.name
+  );
+  const { data: existingCategories } = await query.graph({
+    entity: "product_category",
+    fields: ["id", "name", "handle"],
+    filters: {
+      handle: desiredCategoryNames,
     },
   });
 
-  await createProductsWorkflow(container).run({
-    input: {
-      products: [
+  const existingCategoryHandles = new Set(
+    (existingCategories ?? [])
+      .map((category) => category.handle)
+      .filter((handle): handle is string => Boolean(handle))
+  );
+  const categoriesToCreate = desiredProductCategories.filter(
+    (category) => !existingCategoryHandles.has(category.name)
+  );
+
+  let createdCategories: { id: string; name: string }[] = [];
+  if (categoriesToCreate.length) {
+    const { result } = await createProductCategoriesWorkflow(container).run({
+      input: {
+        product_categories: categoriesToCreate,
+      },
+    });
+    createdCategories = result;
+  }
+
+  const categoryResult = [
+    ...(existingCategories ?? []),
+    ...createdCategories,
+  ] as { id: string; name: string }[];
+  const categoryIdByName = Object.fromEntries(
+    categoryResult.map((category) => [category.name, category.id])
+  );
+
+  const products = [
         {
           title: "Medusa T-Shirt",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Shirts")!.id,
-          ],
+          category_ids: [categoryIdByName["vegetables"]],
           description:
             "Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.",
           handle: "t-shirt",
@@ -589,9 +715,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
         },
         {
           title: "Medusa Sweatshirt",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Sweatshirts")!.id,
-          ],
+          category_ids: [categoryIdByName["fruits"]],
           description:
             "Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.",
           handle: "sweatshirt",
@@ -690,9 +814,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
         },
         {
           title: "Medusa Sweatpants",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Pants")!.id,
-          ],
+          category_ids: [categoryIdByName["nuts"]],
           description:
             "Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.",
           handle: "sweatpants",
@@ -791,9 +913,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
         },
         {
           title: "Medusa Shorts",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Merch")!.id,
-          ],
+          category_ids: [categoryIdByName["food"]],
           description:
             "Reimagine the feeling of classic shorts. With our cotton shorts, everyday essentials no longer have to be ordinary.",
           handle: "shorts",

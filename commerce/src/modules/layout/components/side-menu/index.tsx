@@ -1,7 +1,7 @@
 "use client"
 
 import { Popover, PopoverPanel, Transition } from "@headlessui/react"
-import { ArrowRightMini, XMark } from "@medusajs/icons"
+import { ArrowRightMini, BarsThree, ShoppingCart, XMark } from "@medusajs/icons"
 import { Text, clx, useToggleState } from "@medusajs/ui"
 import { Fragment } from "react"
 
@@ -13,9 +13,10 @@ import { Locale } from "@lib/data/locales"
 
 const SideMenuItems = {
   Home: "/",
-  Store: "/store",
+  Bundles: "/bundles",
+  "Build Bundle": "/bundles/custom",
+  Subscription: "/subscription",
   Account: "/account",
-  Cart: "/cart",
 }
 
 type SideMenuProps = {
@@ -39,7 +40,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                   data-testid="nav-menu-button"
                   className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base"
                 >
-                  Menu
+                  <BarsThree/>
                 </Popover.Button>
               </div>
 
@@ -61,23 +62,23 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                 leaveFrom="opacity-100 backdrop-blur-2xl"
                 leaveTo="opacity-0"
               >
-                <PopoverPanel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-[51] inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
+                <PopoverPanel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/2 2xl:w-1/4 sm:min-w-min h-[calc(100vh-2rem)] z-[51] inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
                   <div
                     data-testid="nav-menu-popup"
-                    className="flex flex-col h-full bg-[rgba(3,7,18,0.5)] rounded-rounded justify-between p-6"
+                    className="flex flex-col h-full bg-secondary/30 text-primary rounded-rounded p-6"
                   >
                     <div className="flex justify-end" id="xmark">
                       <button data-testid="close-menu-button" onClick={close}>
                         <XMark />
                       </button>
                     </div>
-                    <ul className="flex flex-col gap-6 items-start justify-start">
+                    <ul className="flex flex-col gap-6 p-5 pt-10">
                       {Object.entries(SideMenuItems).map(([name, href]) => {
                         return (
                           <li key={name}>
                             <LocalizedClientLink
                               href={href}
-                              className="text-3xl leading-10 hover:text-ui-fg-disabled"
+                              className="text-xl leading-10 hover:text-ui-fg-disabled"
                               onClick={close}
                               data-testid={`${name.toLowerCase()}-link`}
                             >
@@ -86,8 +87,24 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                           </li>
                         )
                       })}
+                      <li>
+
+                      <LocalizedClientLink
+                        href="/cart"
+                        className="text-xl leading-10 hover:text-ui-fg-disabled"
+                        onClick={close}
+                        data-testid="cart-link"
+                        >
+                          <div className="outline outline-1 outline-primary/50 w-fit flex items-center gap-2 rounded-rounded px-2">
+                            <ShoppingCart />
+                            Cart
+                          </div>
+                      </LocalizedClientLink>
+                        </li>
                     </ul>
-                    <div className="flex flex-col gap-y-6">
+                    {/*Country and Language Selection 
+                    note: change hidden to flex when you want it to show*/}
+                    <div className="hidden flex-col gap-y-6">
                       {!!locales?.length && (
                         <div
                           className="flex justify-between"

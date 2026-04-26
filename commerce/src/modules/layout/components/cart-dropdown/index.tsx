@@ -7,6 +7,7 @@ import {
   Transition,
 } from "@headlessui/react"
 import { convertToLocale } from "@lib/util/money"
+import { ShoppingCart } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import DeleteButton from "@modules/common/components/delete-button"
@@ -82,10 +83,10 @@ const CartDropdown = ({
       <Popover className="relative h-full">
         <PopoverButton className="h-full">
           <LocalizedClientLink
-            className="hover:text-ui-fg-base"
+            className="hover:text-ui-fg-base flex items-center gap-1 outline outline-1 outline-primary/30 rounded-lg p-1 px-2"
             href="/cart"
             data-testid="nav-cart-link"
-          >{`Cart (${totalItems})`}</LocalizedClientLink>
+          ><ShoppingCart/> {`Cart (${totalItems})`}</LocalizedClientLink>
         </PopoverButton>
         <Transition
           show={cartDropdownOpen}
@@ -210,10 +211,10 @@ const CartDropdown = ({
                   </div>
                   <span>Your shopping bag is empty.</span>
                   <div>
-                    <LocalizedClientLink href="/store">
+                    <LocalizedClientLink href="/bundles">
                       <>
-                        <span className="sr-only">Go to all products page</span>
-                        <Button onClick={close}>Explore products</Button>
+                        <span className="sr-only">Go to Bundles page</span>
+                        <Button onClick={close}>Explore Bundles</Button>
                       </>
                     </LocalizedClientLink>
                   </div>

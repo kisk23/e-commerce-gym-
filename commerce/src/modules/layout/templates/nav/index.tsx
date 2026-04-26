@@ -7,6 +7,9 @@ import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
+import Image from "next/image"
+import { ShoppingCart } from "@medusajs/icons"
+import NavLinks from "@modules/layout/components/nav-links"
 
 export default async function Nav() {
   const [regions, locales, currentLocale] = await Promise.all([
@@ -17,26 +20,32 @@ export default async function Nav() {
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 group">
-      <header className="relative h-16 mx-auto border-b duration-200 bg-white border-ui-border-base">
-        <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full h-full text-small-regular">
-          <div className="flex-1 basis-0 h-full flex items-center">
-            <div className="h-full">
-              <SideMenu regions={regions} locales={locales} currentLocale={currentLocale} />
-            </div>
-          </div>
+      <header className="relative mx-auto border-b duration-200 bg-white border-ui-border-base">
+        <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex flex-wrap items-center justify-between w-full h-full text-small-regular">
 
-          <div className="flex items-center h-full">
+          <div className="flex items-center h-full py-3 w-1/2 md:w-1/4">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase"
+              className="txt-compact-xlarge-plus hover:text-ui-fg-base capitalize"
               data-testid="nav-store-link"
-            >
-             gym store
+              >
+              <Image src="/Logo.svg" alt="Logo" width={120} height={60} />
+              <p className="text-sm text-secondary">Food Stuff Trading</p>
             </LocalizedClientLink>
           </div>
 
-          <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
-            <div className="hidden small:flex items-center gap-x-6 h-full">
+              <div className="flex md:hidden h-full justify-content-end items-center">
+                <div className="h-full">
+                  <SideMenu regions={regions} locales={locales} currentLocale={currentLocale} />
+                </div>
+              </div>
+
+          <div className="hidden md:flex items-center h-full justify-center mx-auto md:w-1/2 w-full">
+            <NavLinks/>
+          </div>
+
+          <div className="hidden md:flex items-center w-1/2 md:w-1/4 gap-x-6 h-full flex-1 basis-0 justify-end">
+            <div className="flex items-center gap-x-6 h-full">
               <LocalizedClientLink
                 className="hover:text-ui-fg-base"
                 href="/account"
@@ -52,7 +61,8 @@ export default async function Nav() {
                   href="/cart"
                   data-testid="nav-cart-link"
                 >
-                  Cart (0)
+                  <ShoppingCart/>
+                  Cart
                 </LocalizedClientLink>
               }
             >

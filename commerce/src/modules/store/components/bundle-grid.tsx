@@ -1,0 +1,86 @@
+"use client"
+
+import { useState, useMemo } from "react"
+import { StoreBundle } from "@lib/types/bundle"
+import BundleView from "@/modules/products/components/bundle-view"
+import { Funnel } from "@medusajs/icons"
+
+export default function BundleGrid({
+  bundles,
+}: {
+  bundles: StoreBundle[]
+}) {
+  const [activeFilter, setActiveFilter] = useState("All Bundles")
+
+  // Dynamically extract unique bundle types from the fetched bundles
+  const filters = useMemo(() => {
+    const types = new Set(
+      bundles
+        .map((b) => b.bundle_type)
+        .filter((type): type is string => typeof type === "string" && type.trim().length > 0)
+    )
+    return ["All Bundles", ...Array.from(types)]
+  }, [bundles])
+
+  const filteredBundles = activeFilter === "All Bundles"
+    ? bundles
+    : bundles.filter(b => {
+        // the bundle_type might be formatted differently or lowercase in the DB
+        // so we do a case-insensitive comparison
+        return b.bundle_type?.toLowerCase() === activeFilter.toLowerCase()
+      })
+
+  return (
+    <>
+      {/* filter section */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full my-6">
+        <div className="flex items-center">
+          <Funnel color="#717182" />
+          <p className="text-[#717182] ms-1 font-medium">Filter:</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {filters.map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`px-6 py-2 border border-gray-200 rounded-md text-sm font-semibold transition-colors ${
+                activeFilter === filter
+                  ? "bg-primary text-white"
+                  : "hover:bg-gray-200"
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* showing products count */}
+      <div className="text-lg text-gray-500 my-6">
+        Showing {filteredBundles.length > 0 ? 1 : 0} - {filteredBundles.length} of {bundles.length} bundles
+      </div>
+
+      {/* products grid */}
+      <ul
+        className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 justify-items-center"
+        data-testid="products-list"
+      >
+        {filteredBundles.map((bundle) => {
+          return (
+            <li key={bundle.id}>
+              <BundleView bundle={bundle} />
+            </li>
+          )
+        })}
+      </ul>
+      
+      {bundles.length === 0 && (
+        <div className="text-center w-full py-12 text-gray-500">
+          No bundles found.
+        </div>
+      )}
+    </>
+  )
+}
+

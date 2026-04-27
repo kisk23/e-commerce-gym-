@@ -22,6 +22,18 @@ const BundleContext = createContext<BundleContextValue | null>(null)
 
 const toBundleItemKey = (productId: string, variantId: string) =>
   `${productId}:${variantId}`
+const WEIGHT_STEP_G = 100
+const MIN_ITEM_WEIGHT_G = 1000
+const toSafeWeight = (value: number) => {
+  const parsed = Number(value)
+
+  if (!Number.isFinite(parsed)) {
+    return MIN_ITEM_WEIGHT_G
+  }
+
+  const roundedToStep = Math.round(parsed / WEIGHT_STEP_G) * WEIGHT_STEP_G
+  return Math.max(MIN_ITEM_WEIGHT_G, roundedToStep)
+}
 
 export const BundleProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<BundleSelectionItem[]>([])
@@ -31,7 +43,7 @@ export const BundleProvider = ({ children }: { children: React.ReactNode }) => {
       return
     }
 
-    const safeQuantity = Math.max(1, Math.round(Number(quantity) || 1))
+    const safeQuantity = toSafeWeight(quantity)
     const key = toBundleItemKey(product.id, variantId)
 
     setItems((previousItems) => {
@@ -64,7 +76,7 @@ export const BundleProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const updateQuantity = (key: string, quantity: number) => {
-    const safeQuantity = Math.max(1, Math.round(Number(quantity) || 1))
+    const safeQuantity = toSafeWeight(quantity)
 
     setItems((previousItems) =>
       previousItems.map((item) =>

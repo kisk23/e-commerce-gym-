@@ -18,6 +18,9 @@ type BundleSummaryProps = {
   message: string | null
 }
 
+const WEIGHT_STEP_G = 100
+const MIN_ITEM_WEIGHT_G = 1000
+
 export default function BundleSummary({
   title,
   onTitleChange,
@@ -38,7 +41,7 @@ export default function BundleSummary({
     <aside className="rounded-lg border border-ui-border-base p-4 md:sticky md:top-24 bg-white h-fit">
       <h2 className="text-large-semi">Bundle Summary</h2>
       <p className="text-ui-fg-subtle text-sm mt-1">
-        {items.length} selections • {totalItems} total quantity
+        {items.length} selections • {totalItems}g total weight
       </p>
 
       <div className="mt-4">
@@ -109,10 +112,11 @@ export default function BundleSummary({
                 </div>
 
                 <div className="mt-2">
-                  <label className="text-xs text-ui-fg-subtle">Quantity</label>
+                  <label className="text-xs text-ui-fg-subtle">Amount (g)</label>
                   <input
                     type="number"
-                    min={1}
+                    min={MIN_ITEM_WEIGHT_G}
+                    step={WEIGHT_STEP_G}
                     value={item.quantity}
                     onChange={(event) =>
                       updateQuantity(item.key, Number(event.target.value))

@@ -23,9 +23,12 @@ type Props = {
   onAdd?: (_payload: BundleCardAddPayload) => void
 }
 
+const WEIGHT_STEP_G = 100
+const MIN_ITEM_WEIGHT_G = 1000
+
 export default function BundleCard({ product, onAdd }: Props) {
   const defaultVariant = useMemo(() => getDefaultVariant(product), [product])
-  const [quantity, setQuantity] = useState(100)
+  const [quantity, setQuantity] = useState(MIN_ITEM_WEIGHT_G)
   const [variantId, setVariantId] = useState(defaultVariant?.id || "")
 
   useEffect(() => {
@@ -101,25 +104,19 @@ export default function BundleCard({ product, onAdd }: Props) {
           </div>
         </div>
       </div>
-
-      <select
-        value={variantId}
-        onChange={(event) => setVariantId(event.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none"
-      >
-        {(product.variants || []).map((variant) => (
-          <option key={variant.id} value={variant.id}>
-            {variant.title || "Default"}
-          </option>
-        ))}
-      </select>
-
       <input
         type="number"
-        min={1}
+        min={MIN_ITEM_WEIGHT_G}
+        step={WEIGHT_STEP_G}
         value={quantity}
         onChange={(event) =>
-          setQuantity(Math.max(1, Math.round(Number(event.target.value) || 1)))
+          setQuantity(
+            Math.max(
+              MIN_ITEM_WEIGHT_G,
+              Math.round((Number(event.target.value) || MIN_ITEM_WEIGHT_G) / WEIGHT_STEP_G) *
+                WEIGHT_STEP_G
+            )
+          )
         }
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none"
       />

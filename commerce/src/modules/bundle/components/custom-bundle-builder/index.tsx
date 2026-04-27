@@ -15,6 +15,10 @@ type CustomBundleBuilderProps = {
   products: HttpTypes.StoreProduct[]
 }
 
+const WEIGHT_STEP_G = 100
+const MIN_ITEM_WEIGHT_G = 1000
+const MIN_ITEM_UNITS = Math.round(MIN_ITEM_WEIGHT_G / WEIGHT_STEP_G)
+
 const BuilderContent = ({ countryCode, products }: CustomBundleBuilderProps) => {
   const { items, addItem, clearItems } = useBundleContext()
   const [title, setTitle] = useState("My Custom Bundle")
@@ -43,7 +47,10 @@ const BuilderContent = ({ countryCode, products }: CustomBundleBuilderProps) => 
       .filter((item) => !!item.variantId)
       .map((item) => ({
         variant_id: item.variantId,
-        quantity: Math.max(1, Math.round(Number(item.quantity) || 1)),
+        quantity: Math.max(
+          MIN_ITEM_UNITS,
+          Math.round((Number(item.quantity) || MIN_ITEM_WEIGHT_G) / WEIGHT_STEP_G)
+        ),
       }))
 
     if (!sanitizedItems.length) {
@@ -107,8 +114,8 @@ const BuilderContent = ({ countryCode, products }: CustomBundleBuilderProps) => 
 
       {items.length > 0 ? (
         <p className="mt-4 text-sm text-ui-fg-subtle">
-          Tip: adding the same variant multiple times will merge quantities in
-          the summary.
+          Tip: adding the same variant multiple times will merge weights in the
+          summary.
         </p>
       ) : null}
     </section>

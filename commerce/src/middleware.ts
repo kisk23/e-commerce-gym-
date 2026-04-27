@@ -117,8 +117,7 @@ export async function middleware(request: NextRequest) {
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
   const pathCountryCode = request.nextUrl.pathname.split("/")[1]?.toLowerCase()
 
-  const urlHasCountryCode =
-    !!countryCode && pathCountryCode === countryCode
+  const urlHasCountryCode = !!countryCode && pathCountryCode === countryCode
 
   // if one of the country codes is in the url and the cache id is set, return next
   if (urlHasCountryCode && cacheIdCookie) {
@@ -147,7 +146,9 @@ export async function middleware(request: NextRequest) {
   const normalizedPath = shouldStripInvalidCountryPrefix
     ? pathSegments.slice(1)
     : pathSegments
-  const redirectPath = normalizedPath.length ? `/${normalizedPath.join("/")}` : ""
+  const redirectPath = normalizedPath.length
+    ? `/${normalizedPath.join("/")}`
+    : ""
 
   const queryString = request.nextUrl.search ? request.nextUrl.search : ""
 

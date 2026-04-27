@@ -46,7 +46,11 @@ const OrderCard = ({ order }: OrderCardProps) => {
         <span className="pl-2">{`${numberOfLines} ${
           numberOfLines > 1 ? "items" : "item"
         }`}</span>
-        {bundleCount ? <span className="pl-2">{`${bundleCount} bundle${bundleCount > 1 ? "s" : ""}`}</span> : null}
+        {bundleCount ? (
+          <span className="pl-2">{`${bundleCount} bundle${
+            bundleCount > 1 ? "s" : ""
+          }`}</span>
+        ) : null}
       </div>
       <div className="grid grid-cols-2 small:grid-cols-4 gap-4 my-4">
         {order.items?.slice(0, 3).map((i) => {

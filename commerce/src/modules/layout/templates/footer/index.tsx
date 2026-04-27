@@ -50,7 +50,7 @@ export default async function Footer() {
                         <li>
                         <LocalizedClientLink
                           className="hover:text-white cursor-pointer"
-                          href={`/bundles/custom`}
+                          href={`/bundles/create`}
                           data-testid="category-link"
                         >
                          Build Bundle

@@ -1,15 +1,20 @@
 import { Metadata } from "next"
 
 import Hero from "@modules/home/components/hero"
-import BundleCatalog from "@modules/home/components/bundle-catalog"
+import BundleCatalog from "@/modules/bundle/components/bundle-catalog-popup"
 import { listBundles } from "@lib/data/bundles"
 // import VegetableCommerce from "@modules/home/components/vegetable-commerce"
 import { getRegion } from "@lib/data/regions"
 import BundleRecommender from "@modules/home/components/bundle-recommendation"
+import FreshPopular from "@/modules/home/components/fresh-popular"
+import WhyComponent from "@/modules/home/components/why-component"
+import SaveMore from "@/modules/home/components/save-More"
+import MemberAchieved from "@/modules/home/components/member-achieved"
 
 export const metadata: Metadata = {
   title: "Bundle Deals",
-  description: "Create discounted product bundles and let customers order bundles in one click.",
+  description:
+    "Create discounted product bundles and let customers order bundles in one click.",
 }
 
 export default async function Home(props: {
@@ -19,13 +24,24 @@ export default async function Home(props: {
   const bundles = await listBundles()
   const region = await getRegion(params.countryCode)
   const currencyCode = region?.currency_code || "aed"
+  if (!region) {
+  throw new Error("Region not found")
+}
 
   return (
-    <>  
-    <Hero />
-    
-    {/* <VegetableCommerce vegetables={[]} bundles={[]} /> */}
-    <BundleRecommender bundles={bundles} countryCode={params.countryCode} currencyCode={currencyCode} />
+    <>
+      <Hero />
+      <FreshPopular collection={null} region={region} />
+      <WhyComponent />
+      <SaveMore />
+      <MemberAchieved />
+
+      {/* <VegetableCommerce vegetables={[]} bundles={[]} /> */}
+      <BundleRecommender
+        bundles={bundles}
+        countryCode={params.countryCode}
+        currencyCode={currencyCode}
+      />
 
       <BundleCatalog
         bundles={bundles}
@@ -33,7 +49,5 @@ export default async function Home(props: {
         currencyCode={currencyCode}
       />
     </>
-    
   )
-
 }

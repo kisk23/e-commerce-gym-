@@ -2,8 +2,13 @@ import { Metadata } from "next"
 
 import OrderOverview from "@modules/account/components/order-overview"
 import BundleHistory from "@modules/account/components/bundle-history"
+import Subscriptions from "@modules/account/components/subscriptions"
 import { notFound } from "next/navigation"
 import { listOrders } from "@lib/data/orders"
+import {
+  listMySubscriptions,
+  listSubscriptionPlans,
+} from "@lib/data/subscriptions"
 import Divider from "@modules/common/components/divider"
 import TransferRequestForm from "@modules/account/components/transfer-request-form"
 
@@ -17,6 +22,10 @@ export default async function Orders(props: {
 }) {
   const params = await props.params
   const orders = await listOrders()
+  const [plans, mySubscriptions] = await Promise.all([
+    listSubscriptionPlans(),
+    listMySubscriptions(),
+  ])
 
   if (!orders) {
     notFound()
@@ -33,6 +42,11 @@ export default async function Orders(props: {
       </div>
       <div>
         <OrderOverview orders={orders} />
+        <Divider className="my-12" />
+        <Subscriptions
+          plans={plans}
+          activeSubscription={mySubscriptions.active_subscription}
+        />
         <Divider className="my-12" />
         <BundleHistory orders={orders} countryCode={params.countryCode} />
         <Divider className="my-16" />

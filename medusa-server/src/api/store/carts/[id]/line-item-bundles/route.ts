@@ -5,6 +5,8 @@ import { ICartModuleService } from "@medusajs/types"
 import { randomUUID } from "node:crypto"
 import { BUNDLE_MODULE } from "../../../../../modules/bundle"
 import { roundValue, getVariantPriceMap, normalizeCurrencyCode, pickVariantPrice } from "../../../../../modules/bundle/utils/pricing"
+import { SUBSCRIPTION_MODULE } from "../../../../../modules/subscription"
+import SubscriptionModuleService from "../../../../../modules/subscription/service"
 
 type AddBundleToCartBody = {
   bundle_id?: string
@@ -43,6 +45,9 @@ const toAmount = (value: unknown): number => {
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   try {
     const bundleModuleService = req.scope.resolve(BUNDLE_MODULE)
+    const subscriptionModuleService: SubscriptionModuleService = req.scope.resolve(
+      SUBSCRIPTION_MODULE
+    )
     const cartModuleService: ICartModuleService = req.scope.resolve(Modules.CART)
     const workflowEngine = req.scope.resolve(Modules.WORKFLOW_ENGINE)
     const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
@@ -61,6 +66,22 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
     const cartSnapshot = await cartModuleService.retrieveCart(cartId)
     const cartCurrency = cartSnapshot?.currency_code || "aed"
+    const activeSubscription =
+      cartSnapshot?.customer_id
+        ? await subscriptionModuleService.getActiveSubscriptionForCustomer(cartSnapshot.customer_id)
+        : null
+    const subscriptionDiscountPercentage = Math.max(
+      0,
+      Math.round(Number(activeSubscription?.discount_percentage || 0))
+    )
+    const subscriptionMetadata = activeSubscription
+      ? {
+          subscription_id: activeSubscription.id,
+          subscription_plan_title: activeSubscription.plan_title,
+          subscription_discount_percentage: subscriptionDiscountPercentage,
+          subscription_ends_at: activeSubscription.ends_at,
+        }
+      : {}
 
     if (bundleId) {
       const bundle = await bundleModuleService.retrieveBundle(bundleId, {
@@ -108,6 +129,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_type: "admin",
             bundle_item_weight: item.weight,
             bundle_price_per_100g: pricePer100g,
+            ...subscriptionMetadata,
             ...(typeof weightValue === "number" ? { weight_g: weightValue } : {}),
           },
         }
@@ -128,6 +150,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_discount_percentage: 0,
             bundle_operation_id: operationId,
             bundle_type: "custom",
+            ...subscriptionMetadata,
           },
         }))
 
@@ -140,6 +163,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
       bundleTitle = title
       discountPercentage = 0
+    }
+
+    if (subscriptionDiscountPercentage > 0) {
+      discountPercentage = Math.min(99, discountPercentage + subscriptionDiscountPercentage)
     }
 
     await workflowEngine.run(addToCartWorkflowId, {
@@ -208,6 +235,14 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         title: bundleTitle,
         discount_percentage: discountPercentage,
       },
+      subscription: activeSubscription
+        ? {
+            id: activeSubscription.id,
+            plan_title: activeSubscription.plan_title,
+            discount_percentage: subscriptionDiscountPercentage,
+            ends_at: activeSubscription.ends_at,
+          }
+        : null,
     })
   } catch (error) {
     console.error("[line-item-bundles] Failed to add bundle to cart", error)

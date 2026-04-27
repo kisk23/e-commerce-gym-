@@ -1,5 +1,10 @@
 import { Text, clx } from "@medusajs/ui"
-import { VariantPrice } from "types/global"
+
+type VariantPrice = {
+  price_type: string
+  original_price: string
+  calculated_price: string
+}
 
 export default async function PreviewPrice({ price }: { price: VariantPrice }) {
   if (!price) {

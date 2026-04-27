@@ -6,5 +6,13 @@ export default defineMiddlewares({
       matcher: /^\/admin\/bundles(?:\/.*)?$/,
       middlewares: [authenticate("user", ["session", "bearer"])],
     },
+    {
+      matcher: /^\/admin\/subscriptions(?:\/.*)?$/,
+      middlewares: [authenticate("user", ["session", "bearer"])],
+    },
+    {
+      matcher: /^\/store\/customers\/me\/subscriptions(?:\/.*)?$/,
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
   ],
 })

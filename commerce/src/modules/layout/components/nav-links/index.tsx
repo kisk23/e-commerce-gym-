@@ -7,7 +7,7 @@ import Link from "next/link"
 const navItems = [
   { label: "Home", href: "/" },
   { label: "Bundles", href: "/bundles" },
-  { label: "Build Bundle", href: "/bundles/custom" },
+  { label: "Build Bundle", href: "/bundles/create" },
   { label: "Subscription", href: "/subscription" },
 ]
 

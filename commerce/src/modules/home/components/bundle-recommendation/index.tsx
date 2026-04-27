@@ -12,7 +12,13 @@ type BundleRecommenderProps = {
   currencyCode?: string
 }
 
-type FitnessGoal = "bulk" | "cut" | "maintenance" | "performance" | "general" | null
+type FitnessGoal =
+  | "bulk"
+  | "cut"
+  | "maintenance"
+  | "performance"
+  | "general"
+  | null
 
 const goalOptions = [
   {
@@ -24,7 +30,8 @@ const goalOptions = [
   {
     id: "cut" as const,
     title: "Lose Fat (Cut)",
-    description: "Reduce body fat while maintaining muscle with controlled calories",
+    description:
+      "Reduce body fat while maintaining muscle with controlled calories",
     icon: "🔥",
   },
   {
@@ -47,7 +54,11 @@ const goalOptions = [
   },
 ]
 
-const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecommenderProps) => {
+const BundleRecommender = ({
+  bundles,
+  countryCode,
+  currencyCode,
+}: BundleRecommenderProps) => {
   const [selectedGoal, setSelectedGoal] = useState<FitnessGoal>(null)
   const [isAddingId, setIsAddingId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -71,10 +82,11 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
 
   const getRecommendedBundles = () => {
     if (!selectedGoal) return []
-    
+
     // Filter bundles by goal
     const matchingBundles = bundles.filter(
-      (bundle) => bundle.bundle_type?.toLowerCase() === selectedGoal.toLowerCase()
+      (bundle) =>
+        bundle.bundle_type?.toLowerCase() === selectedGoal.toLowerCase()
     )
 
     // If no exact matches, return all bundles
@@ -82,10 +94,13 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
   }
 
   const calculateOriginalPrice = (bundle: StoreBundle) => {
-    if (typeof bundle.total_price !== "number" || bundle.discount_percentage === 0) {
+    if (
+      typeof bundle.total_price !== "number" ||
+      bundle.discount_percentage === 0
+    ) {
       return bundle.total_price || 0
     }
-    const discountMultiplier = 1 - (bundle.discount_percentage / 100)
+    const discountMultiplier = 1 - bundle.discount_percentage / 100
     return bundle.total_price / discountMultiplier
   }
 
@@ -108,7 +123,8 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
           <div className="text-center mb-10">
             <h1 className="text-3xl-semi mb-3">What's Your Fitness Goal?</h1>
             <p className="text-ui-fg-subtle text-lg">
-              Tell us what you're working towards, and we'll recommend the perfect bundles for you.
+              Tell us what you're working towards, and we'll recommend the
+              perfect bundles for you.
             </p>
           </div>
 
@@ -242,20 +258,25 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
                       </p>
                     )}
 
-                    {bundle.bundle_type && bundle.bundle_type.toLowerCase() === selectedGoal && (
-                      <div className="mt-2">
-                        <span className="inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          Perfect Match
-                        </span>
-                      </div>
-                    )}
+                    {bundle.bundle_type &&
+                      bundle.bundle_type.toLowerCase() === selectedGoal && (
+                        <div className="mt-2">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+                            <svg
+                              className="w-3 h-3"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Perfect Match
+                          </span>
+                        </div>
+                      )}
                   </div>
 
                   {/* Pricing Section */}
@@ -265,11 +286,16 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
                         {hasDiscount ? (
                           <>
                             <div className="flex items-baseline justify-between">
-                              <span className="text-sm text-ui-fg-subtle">Original Price:</span>
+                              <span className="text-sm text-ui-fg-subtle">
+                                Original Price:
+                              </span>
                               <span className="text-sm text-ui-fg-subtle line-through">
                                 {convertToLocale({
                                   amount: originalPrice,
-                                  currency_code: bundle.currency_code || currencyCode || "aed",
+                                  currency_code:
+                                    bundle.currency_code ||
+                                    currencyCode ||
+                                    "aed",
                                 })}
                               </span>
                             </div>
@@ -280,34 +306,47 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
                               <span className="text-2xl font-bold text-green-700">
                                 {convertToLocale({
                                   amount: bundle.total_price,
-                                  currency_code: bundle.currency_code || currencyCode || "aed",
+                                  currency_code:
+                                    bundle.currency_code ||
+                                    currencyCode ||
+                                    "aed",
                                 })}
                               </span>
                             </div>
                             <div className="flex items-baseline justify-between pt-2 border-t border-ui-border-base">
-                              <span className="text-sm font-medium text-green-700">You Save:</span>
+                              <span className="text-sm font-medium text-green-700">
+                                You Save:
+                              </span>
                               <span className="text-sm font-semibold text-green-700">
                                 {convertToLocale({
                                   amount: savings,
-                                  currency_code: bundle.currency_code || currencyCode || "aed",
+                                  currency_code:
+                                    bundle.currency_code ||
+                                    currencyCode ||
+                                    "aed",
                                 })}
                               </span>
                             </div>
                           </>
                         ) : (
                           <div className="flex items-baseline justify-between">
-                            <span className="text-base font-semibold text-ui-fg-base">Price:</span>
+                            <span className="text-base font-semibold text-ui-fg-base">
+                              Price:
+                            </span>
                             <span className="text-2xl font-bold text-ui-fg-base">
                               {convertToLocale({
                                 amount: bundle.total_price,
-                                currency_code: bundle.currency_code || currencyCode || "aed",
+                                currency_code:
+                                  bundle.currency_code || currencyCode || "aed",
                               })}
                             </span>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <p className="text-sm text-ui-fg-subtle">Price not available</p>
+                      <p className="text-sm text-ui-fg-subtle">
+                        Price not available
+                      </p>
                     )}
                   </div>
 
@@ -319,7 +358,9 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
                     <div className="grid grid-cols-2 gap-3">
                       {typeof bundle.total_weight === "number" && (
                         <div className="flex flex-col">
-                          <span className="text-xs text-ui-fg-subtle">Weight</span>
+                          <span className="text-xs text-ui-fg-subtle">
+                            Weight
+                          </span>
                           <span className="text-sm font-semibold text-ui-fg-base">
                             {bundle.total_weight}g
                           </span>
@@ -327,7 +368,9 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
                       )}
                       {typeof bundle.total_calories === "number" && (
                         <div className="flex flex-col">
-                          <span className="text-xs text-ui-fg-subtle">Calories</span>
+                          <span className="text-xs text-ui-fg-subtle">
+                            Calories
+                          </span>
                           <span className="text-sm font-semibold text-ui-fg-base">
                             {bundle.total_calories}
                           </span>
@@ -335,7 +378,9 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
                       )}
                       {typeof bundle.total_protein === "number" && (
                         <div className="flex flex-col">
-                          <span className="text-xs text-ui-fg-subtle">Protein</span>
+                          <span className="text-xs text-ui-fg-subtle">
+                            Protein
+                          </span>
                           <span className="text-sm font-semibold text-ui-fg-base">
                             {bundle.total_protein}g
                           </span>
@@ -343,7 +388,9 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
                       )}
                       {typeof bundle.total_carbs === "number" && (
                         <div className="flex flex-col">
-                          <span className="text-xs text-ui-fg-subtle">Carbs</span>
+                          <span className="text-xs text-ui-fg-subtle">
+                            Carbs
+                          </span>
                           <span className="text-sm font-semibold text-ui-fg-base">
                             {bundle.total_carbs}g
                           </span>
@@ -367,16 +414,28 @@ const BundleRecommender = ({ bundles, countryCode, currencyCode }: BundleRecomme
                     </h4>
                     <ul className="space-y-1">
                       {bundle.items.map((item) => (
-                        <li key={item.id} className="text-sm text-ui-fg-subtle flex items-start gap-2">
+                        <li
+                          key={item.id}
+                          className="text-sm text-ui-fg-subtle flex items-start gap-2"
+                        >
                           <span className="text-ui-fg-muted mt-0.5">•</span>
                           <span className="flex-1">
-                            <span className="font-medium text-ui-fg-base">{item.product_title}</span>
+                            <span className="font-medium text-ui-fg-base">
+                              {item.product_title}
+                            </span>
                             {item.quantity > 1 && (
-                              <span className="text-ui-fg-muted"> × {item.quantity}</span>
+                              <span className="text-ui-fg-muted">
+                                {" "}
+                                × {item.quantity}
+                              </span>
                             )}
-                            {typeof item.weight === "number" && item.weight > 0 && (
-                              <span className="text-ui-fg-muted"> ({item.weight}g)</span>
-                            )}
+                            {typeof item.weight === "number" &&
+                              item.weight > 0 && (
+                                <span className="text-ui-fg-muted">
+                                  {" "}
+                                  ({item.weight}g)
+                                </span>
+                              )}
                           </span>
                         </li>
                       ))}

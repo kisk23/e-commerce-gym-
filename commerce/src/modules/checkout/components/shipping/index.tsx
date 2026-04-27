@@ -183,9 +183,7 @@ const Shipping: React.FC<ShippingProps> = ({
                   >
                     <div className="flex items-center gap-x-4">
                       <MedusaRadio checked={option.id === shippingMethodId} />
-                      <span className="text-base-regular">
-                        {option.name}
-                      </span>
+                      <span className="text-base-regular">{option.name}</span>
                     </div>
 
                     <span className="justify-self-end text-ui-fg-base">

@@ -59,7 +59,7 @@ export const listProducts = async ({
           offset,
           region_id: region?.id,
           fields:
-          "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,",
+            "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*categories",
           ...queryParams,
         },
         headers,
@@ -113,6 +113,7 @@ export const listProductsWithSort = async ({
   })
 
   const sortedProducts = sortProducts(products, sortBy)
+  console.log( sortedProducts)
 
   const pageParam = (page - 1) * limit
 

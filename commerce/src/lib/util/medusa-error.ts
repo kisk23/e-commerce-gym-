@@ -42,7 +42,9 @@ export default function medusaError(error: any): never {
     console.error("Headers:", error.response.headers)
 
     throw new Error(
-      toReadableMessage(extractMessage(error.response.data, error.response.status))
+      toReadableMessage(
+        extractMessage(error.response.data, error.response.status)
+      )
     )
   } else if (error.request) {
     throw new Error(toReadableMessage("no response received from server"))

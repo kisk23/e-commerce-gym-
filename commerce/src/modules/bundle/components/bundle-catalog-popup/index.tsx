@@ -13,7 +13,11 @@ type BundleCatalogProps = {
   currencyCode?: string
 }
 
-const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProps) => {
+const BundleCatalog = ({
+  bundles,
+  countryCode,
+  currencyCode,
+}: BundleCatalogProps) => {
   const [isAddingId, setIsAddingId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -35,11 +39,14 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
   }
 
   const calculateOriginalPrice = (bundle: StoreBundle) => {
-    if (typeof bundle.total_price !== "number" || bundle.discount_percentage === 0) {
+    if (
+      typeof bundle.total_price !== "number" ||
+      bundle.discount_percentage === 0
+    ) {
       return bundle.total_price || 0
     }
     // Calculate original price from discounted price
-    const discountMultiplier = 1 - (bundle.discount_percentage / 100)
+    const discountMultiplier = 1 - bundle.discount_percentage / 100
     return bundle.total_price / discountMultiplier
   }
 
@@ -66,7 +73,7 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
           Order full bundles and get the discount automatically in cart.
         </p>
       </div>
-      
+
       <div>
         <LocalizedClientLink
           href="/bundles/custom"
@@ -99,7 +106,7 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
                     </span>
                   )}
                 </div>
-                
+
                 {bundle.description && (
                   <p className="text-ui-fg-subtle text-sm leading-relaxed">
                     {bundle.description}
@@ -122,11 +129,14 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
                     {hasDiscount ? (
                       <>
                         <div className="flex items-baseline justify-between">
-                          <span className="text-sm text-ui-fg-subtle">Original Price:</span>
+                          <span className="text-sm text-ui-fg-subtle">
+                            Original Price:
+                          </span>
                           <span className="text-sm text-ui-fg-subtle line-through">
                             {convertToLocale({
                               amount: originalPrice,
-                              currency_code: bundle.currency_code || currencyCode || "aed",
+                              currency_code:
+                                bundle.currency_code || currencyCode || "aed",
                             })}
                           </span>
                         </div>
@@ -137,34 +147,43 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
                           <span className="text-2xl font-bold text-green-700">
                             {convertToLocale({
                               amount: bundle.total_price,
-                              currency_code: bundle.currency_code || currencyCode || "aed",
+                              currency_code:
+                                bundle.currency_code || currencyCode || "aed",
                             })}
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between pt-2 border-t border-ui-border-base">
-                          <span className="text-sm font-medium text-green-700">You Save:</span>
+                          <span className="text-sm font-medium text-green-700">
+                            You Save:
+                          </span>
                           <span className="text-sm font-semibold text-green-700">
                             {convertToLocale({
                               amount: savings,
-                              currency_code: bundle.currency_code || currencyCode || "aed",
+                              currency_code:
+                                bundle.currency_code || currencyCode || "aed",
                             })}
                           </span>
                         </div>
                       </>
                     ) : (
                       <div className="flex items-baseline justify-between">
-                        <span className="text-base font-semibold text-ui-fg-base">Price:</span>
+                        <span className="text-base font-semibold text-ui-fg-base">
+                          Price:
+                        </span>
                         <span className="text-2xl font-bold text-ui-fg-base">
                           {convertToLocale({
                             amount: bundle.total_price,
-                            currency_code: bundle.currency_code || currencyCode || "aed",
+                            currency_code:
+                              bundle.currency_code || currencyCode || "aed",
                           })}
                         </span>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-ui-fg-subtle">Price not available</p>
+                  <p className="text-sm text-ui-fg-subtle">
+                    Price not available
+                  </p>
                 )}
               </div>
 
@@ -176,7 +195,9 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
                 <div className="grid grid-cols-2 gap-3">
                   {typeof bundle.total_weight === "number" && (
                     <div className="flex flex-col">
-                      <span className="text-xs text-ui-fg-subtle">Total Weight</span>
+                      <span className="text-xs text-ui-fg-subtle">
+                        Total Weight
+                      </span>
                       <span className="text-sm font-semibold text-ui-fg-base">
                         {bundle.total_weight}g
                       </span>
@@ -184,7 +205,9 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
                   )}
                   {typeof bundle.total_calories === "number" && (
                     <div className="flex flex-col">
-                      <span className="text-xs text-ui-fg-subtle">Calories</span>
+                      <span className="text-xs text-ui-fg-subtle">
+                        Calories
+                      </span>
                       <span className="text-sm font-semibold text-ui-fg-base">
                         {bundle.total_calories} kcal
                       </span>
@@ -224,15 +247,26 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
                 </h4>
                 <ul className="space-y-1">
                   {bundle.items.map((item) => (
-                    <li key={item.id} className="text-sm text-ui-fg-subtle flex items-start gap-2">
+                    <li
+                      key={item.id}
+                      className="text-sm text-ui-fg-subtle flex items-start gap-2"
+                    >
                       <span className="text-ui-fg-muted mt-0.5">•</span>
                       <span className="flex-1">
-                        <span className="font-medium text-ui-fg-base">{item.product_title}</span>
+                        <span className="font-medium text-ui-fg-base">
+                          {item.product_title}
+                        </span>
                         {item.quantity > 1 && (
-                          <span className="text-ui-fg-muted"> × {item.quantity}</span>
+                          <span className="text-ui-fg-muted">
+                            {" "}
+                            × {item.quantity}
+                          </span>
                         )}
                         {typeof item.weight === "number" && item.weight > 0 && (
-                          <span className="text-ui-fg-muted"> ({item.weight}g)</span>
+                          <span className="text-ui-fg-muted">
+                            {" "}
+                            ({item.weight}g)
+                          </span>
                         )}
                       </span>
                     </li>
@@ -249,7 +283,9 @@ const BundleCatalog = ({ bundles, countryCode, currencyCode }: BundleCatalogProp
                   disabled={isAddingId !== null}
                   onClick={() => onAddBundle(bundle.id)}
                 >
-                  {isAddingId === bundle.id ? "Adding..." : "Add Bundle to Cart"}
+                  {isAddingId === bundle.id
+                    ? "Adding..."
+                    : "Add Bundle to Cart"}
                 </Button>
               </div>
             </article>

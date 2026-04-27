@@ -1,3 +1,4 @@
+import BundleView from "@/modules/products/components/bundle-view"
 import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import ProductPreview from "@modules/products/components/product-preview"
@@ -65,17 +66,22 @@ export default async function PaginatedProducts({
   })
 
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
+ 
 
   return (
     <>
+    <div className="text-lg text-gray-500 my-6">
+      Showing 1 - {products.length} of {count} bundles
+    </div>
       <ul
-        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
+        className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 justify-items-center"
         data-testid="products-list"
       >
         {products.map((p) => {
           return (
             <li key={p.id}>
-              <ProductPreview product={p} region={region} />
+              {/* <ProductPreview product={p} region={region} /> */}
+              <BundleView product={p} region={region} />
             </li>
           )
         })}

@@ -78,36 +78,53 @@ export async function addCustomBundleToCart({
   }
 
   const cart = await getOrSetCart(countryCode)
-
   if (!cart) {
     throw new Error("Error retrieving or creating cart")
   }
 
-  const headers = {
-    ...(await getAuthHeaders()),
-  }
-  const safeTitle = (title || "Custom Bundle").trim() || "Custom Bundle"
+  const headers = await getAuthHeaders()
+
   const safeItems = items
     .filter((item) => !!item.variant_id)
-    .map((item) => ({
-      variant_id: item.variant_id,
-      quantity: Math.max(1, Math.round(Number(item.quantity) || 1)),
-    }))
+    .map((item) => {
+      if (!Number.isFinite(item.quantity) || item.quantity <= 0) {
+        throw new Error("Invalid quantity")
+      }
 
-  await sdk.client
-    .fetch(`/store/carts/${cart.id}/line-item-bundles`, {
-      method: "POST",
-      body: {
-        title: safeTitle,
-        items: safeItems,
-      },
-      headers,
+      return {
+        variant_id: item.variant_id,
+        quantity: Math.round(item.quantity),
+      }
     })
-    .catch(medusaError)
 
-  const cartCacheTag = await getCacheTag("carts")
-  revalidateTag(cartCacheTag)
+  if (!safeItems.length) {
+    throw new Error("Custom bundle must include at least one valid item")
+  }
 
-  const fulfillmentCacheTag = await getCacheTag("fulfillment")
-  revalidateTag(fulfillmentCacheTag)
+  const safeTitle = (title || "Custom Bundle").trim() || "Custom Bundle"
+
+  try {
+    const res = await sdk.client.fetch(
+      `/store/carts/${cart.id}/line-item-bundles`,
+      {
+        method: "POST",
+        body: {
+          title: safeTitle,
+          items: safeItems,
+        },
+        headers,
+      }
+    )
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    revalidateTag(fulfillmentCacheTag)
+
+    return res
+  } catch (err) {
+    medusaError(err)
+    throw err
+  }
 }

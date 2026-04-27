@@ -3,7 +3,7 @@ import { sdk } from "@lib/config"
 import { getAuthHeaders } from "@lib/data/cookies"
 import { getRegion } from "@lib/data/regions"
 import { HttpTypes } from "@medusajs/types"
-import CustomBundleBuilder from "@/modules/bundle/components/custom-bundle-builder"
+import CustomBundleBuilder from "@modules/bundle/components/custom-bundle-builder"
 
 export const metadata: Metadata = {
   title: "Custom Bundle Builder",
@@ -29,7 +29,7 @@ export default async function CustomBundlePage(props: {
             region_id: region.id,
             limit: 100,
             fields:
-              "id,title,thumbnail,*variants.id,*variants.title,*variants.calculated_price",
+              "id,title,thumbnail,+metadata,*categories.id,*categories.name,*variants.id,*variants.title,*variants.calculated_price",
           },
           headers,
           cache: "no-store",
@@ -56,15 +56,11 @@ export default async function CustomBundlePage(props: {
 
   const bundleProducts = (products || [])
     .map((product) => ({
-      id: product.id,
+      ...product,
       title: product.title || "Untitled product",
-      variants: (product.variants || [])
-        .filter((variant) => hasCalculatedAmount(variant))
-        .map((variant) => ({
-          id: variant.id,
-          title: variant.title || "Default",
-        }))
-        .filter((variant) => !!variant.id),
+      variants: (product.variants || []).filter((variant) =>
+        hasCalculatedAmount(variant)
+      ),
     }))
     .filter((product) => product.variants.length > 0)
 

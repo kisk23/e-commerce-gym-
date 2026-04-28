@@ -55,16 +55,8 @@ const Item = ({
   const [removing, setRemoving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const sourceItems = groupedItems && groupedItems.length ? groupedItems : [item]
-  const quantityUnits = Math.max(
-    1,
-    sourceItems.reduce(
-      (sum, lineItem) => sum + Math.max(0, Number(lineItem.quantity || 0)),
-      0
-    )
-  )
-  const quantityKg = quantityUnits / 10
-
+  const sourceItems =
+    groupedItems && groupedItems.length ? groupedItems : [item]
   const metadata = (item.metadata || {}) as Record<string, unknown>
   const bundleId =
     typeof metadata.bundle_id === "string" ? metadata.bundle_id : ""
@@ -99,8 +91,11 @@ const Item = ({
 
   const totalCalories = sourceItems.reduce((sum, lineItem, index) => {
     const nutritionPer100g =
-      ((lineItem.variant?.product?.metadata as Record<string, unknown> | undefined)
-        ?.nutrition_per_100g as Record<string, unknown> | undefined) || undefined
+      ((
+        lineItem.variant?.product?.metadata as
+          | Record<string, unknown>
+          | undefined
+      )?.nutrition_per_100g as Record<string, unknown> | undefined) || undefined
 
     if (
       !nutritionPer100g ||
@@ -110,7 +105,10 @@ const Item = ({
       return sum
     }
 
-    return sum + (toNumber(nutritionPer100g.calories) * selectedWeightByLine[index]) / 100
+    return (
+      sum +
+      (toNumber(nutritionPer100g.calories) * selectedWeightByLine[index]) / 100
+    )
   }, 0)
 
   const hasCalories = totalCalories > 0
@@ -119,21 +117,32 @@ const Item = ({
     0
   )
   const bundleLineEntries = Array.from(
-    sourceItems.reduce((map, lineItem) => {
-      const key =
-        lineItem.variant_id ||
-        lineItem.product_id ||
-        lineItem.product_title ||
-        lineItem.id
-      if (!map.has(key)) {
-        map.set(key, {
-          lineItem,
-          stepUnits: getBundleStepUnits(lineItem),
-        })
-      }
-      return map
-    }, new Map<string, { lineItem: HttpTypes.StoreCartLineItem; stepUnits: number }>())
+    sourceItems
+      .reduce((map, lineItem) => {
+        const key =
+          lineItem.variant_id ||
+          lineItem.product_id ||
+          lineItem.product_title ||
+          lineItem.id
+        if (!map.has(key)) {
+          map.set(key, {
+            lineItem,
+            stepUnits: getBundleStepUnits(lineItem),
+          })
+        }
+        return map
+      }, new Map<string, { lineItem: HttpTypes.StoreCartLineItem; stepUnits: number }>())
       .values()
+  )
+  const bundleCount = Math.max(
+    1,
+    Math.round(
+      Math.min(
+        ...bundleLineEntries.map(({ lineItem, stepUnits }) =>
+          Math.max(1, Number(lineItem.quantity || 0)) / Math.max(1, stepUnits)
+        )
+      )
+    )
   )
 
   const changeQuantity = async (quantity: number) => {
@@ -188,18 +197,20 @@ const Item = ({
     setError(null)
     setUpdating(true)
 
-    await Promise.all(bundleLineEntries.map(async ({ lineItem, stepUnits }) => {
-      const currentQuantity = Math.max(1, Number(lineItem.quantity || 0))
-      if (currentQuantity <= stepUnits) {
-        await deleteLineItem(lineItem.id)
-        return
-      }
+    await Promise.all(
+      bundleLineEntries.map(async ({ lineItem, stepUnits }) => {
+        const currentQuantity = Math.max(1, Number(lineItem.quantity || 0))
+        if (currentQuantity <= stepUnits) {
+          await deleteLineItem(lineItem.id)
+          return
+        }
 
-      await updateLineItem({
-        lineId: lineItem.id,
-        quantity: currentQuantity - stepUnits,
+        await updateLineItem({
+          lineId: lineItem.id,
+          quantity: currentQuantity - stepUnits,
+        })
       })
-    }))
+    )
       .catch((err) => {
         setError(err.message)
       })
@@ -210,15 +221,15 @@ const Item = ({
 
   const removeLineItem = async () => {
     setRemoving(true)
-    await Promise.all(sourceItems.map((lineItem) => deleteLineItem(lineItem.id))).finally(
-      () => setRemoving(false)
-    )
+    await Promise.all(
+      sourceItems.map((lineItem) => deleteLineItem(lineItem.id))
+    ).finally(() => setRemoving(false))
   }
 
   if (type === "full" && hasBundleMetadata) {
     return (
       <Table.Row className="w-full" data-testid="product-row">
-        <Table.Cell className="!pl-0 !pr-0 py-4" colSpan={5}>
+        <Table.Cell className="!pl-0 !pr-0 py-4">
           <div className="rounded-[20px] border border-[#E6E6E6] p-6 flex gap-4 items-start">
             <LocalizedClientLink
               href={`/products/${item.product_handle}`}
@@ -235,7 +246,9 @@ const Item = ({
               <div className="flex items-start justify-between border-b border-[#E6E6E6] pb-6">
                 <div className="flex flex-col gap-3">
                   <div>
-                    <p className="text-xs leading-4 text-[#717182]">{bundleLabel}</p>
+                    <p className="text-xs leading-4 text-[#717182]">
+                      {bundleLabel}
+                    </p>
                     <h3 className="text-[18px] leading-7 font-semibold text-[#0A0A0A]">
                       {bundleTitle}
                     </h3>
@@ -246,9 +259,13 @@ const Item = ({
                   </div>
                   <div className="text-xs leading-4 text-[#717182]">
                     {includes.slice(0, 4).map((entry) => (
-                      <p key={entry.id}>- {entry.title} ({entry.weightG}g)</p>
+                      <p key={entry.id}>
+                        - {entry.title} ({entry.weightG}g)
+                      </p>
                     ))}
-                    {includes.length > 4 ? <p>- +{includes.length - 4} more</p> : null}
+                    {includes.length > 4 ? (
+                      <p>- +{includes.length - 4} more</p>
+                    ) : null}
                   </div>
                 </div>
 
@@ -275,7 +292,7 @@ const Item = ({
                     -
                   </button>
                   <span className="min-w-8 text-center text-base font-medium text-[#0A0A0A]">
-                    {Number.isInteger(quantityKg) ? quantityKg : quantityKg.toFixed(1)}
+                    {bundleCount}
                   </span>
                   <button
                     type="button"
@@ -343,7 +360,9 @@ const Item = ({
               <button
                 type="button"
                 onClick={decrementBy100g}
-                disabled={updating || Math.max(1, Number(item.quantity || 0)) <= 1}
+                disabled={
+                  updating || Math.max(1, Number(item.quantity || 0)) <= 1
+                }
                 className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
                 data-testid="product-decrement-100g"
               >
@@ -352,7 +371,10 @@ const Item = ({
               <span className="text-sm text-ui-fg-subtle min-w-[52px] text-center">
                 {Number.isInteger(Math.max(1, Number(item.quantity || 0)) / 10)
                   ? Math.max(1, Number(item.quantity || 0)) / 10
-                  : (Math.max(1, Number(item.quantity || 0)) / 10).toFixed(1)} kg
+                  : (Math.max(1, Number(item.quantity || 0)) / 10).toFixed(
+                      1
+                    )}{" "}
+                kg
               </span>
               <button
                 type="button"
@@ -391,7 +413,10 @@ const Item = ({
               <Text className="text-ui-fg-muted">
                 {Number.isInteger(Math.max(1, Number(item.quantity || 0)) / 10)
                   ? Math.max(1, Number(item.quantity || 0)) / 10
-                  : (Math.max(1, Number(item.quantity || 0)) / 10).toFixed(1)} kg
+                  : (Math.max(1, Number(item.quantity || 0)) / 10).toFixed(
+                      1
+                    )}{" "}
+                kg
               </Text>
               <LineItemUnitPrice
                 item={item}

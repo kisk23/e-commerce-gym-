@@ -21,7 +21,7 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
           <Table.Row className="text-ui-fg-subtle txt-medium-plus">
             <Table.HeaderCell className="!pl-0">Item</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>
-            <Table.HeaderCell>Quantity</Table.HeaderCell>
+            <Table.HeaderCell>Amount</Table.HeaderCell>
             <Table.HeaderCell className="hidden small:table-cell">
               Price
             </Table.HeaderCell>

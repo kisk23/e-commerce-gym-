@@ -3,7 +3,6 @@
 import { Table, Text, clx } from "@medusajs/ui"
 import { updateLineItem } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
-import CartItemSelect from "@modules/cart/components/cart-item-select"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import DeleteButton from "@modules/common/components/delete-button"
 import LineItemOptions from "@modules/common/components/line-item-options"
@@ -24,6 +23,9 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const quantityUnits = Math.max(1, Number(item.quantity || 1))
+  const quantityKg = quantityUnits / 10
+
   const changeQuantity = async (quantity: number) => {
     setError(null)
     setUpdating(true)
@@ -40,9 +42,16 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
       })
   }
 
-  // TODO: Update this to grab the actual max inventory
-  const maxQtyFromInventory = 10
-  const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
+  const incrementBy100g = () => {
+    void changeQuantity(quantityUnits + 1)
+  }
+
+  const decrementBy100g = () => {
+    if (quantityUnits <= 1) {
+      return
+    }
+    void changeQuantity(quantityUnits - 1)
+  }
 
   return (
     <Table.Row className="w-full" data-testid="product-row">
@@ -74,31 +83,32 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
       {type === "full" && (
         <Table.Cell>
-          <div className="flex gap-2 items-center w-28">
+          <div className="flex flex-col gap-2 items-start min-w-[170px]">
             <DeleteButton id={item.id} data-testid="product-delete-button" />
-            <CartItemSelect
-              value={item.quantity}
-              onChange={(value) => changeQuantity(parseInt(value.target.value))}
-              className="w-14 h-10 p-4"
-              data-testid="product-select-button"
-            >
-              {/* TODO: Update this with the v2 way of managing inventory */}
-              {Array.from(
-                {
-                  length: Math.min(maxQuantity, 10),
-                },
-                (_, i) => (
-                  <option value={i + 1} key={i}>
-                    {i + 1}
-                  </option>
-                )
-              )}
-
-              <option value={1} key={1}>
-                1
-              </option>
-            </CartItemSelect>
-            {updating && <Spinner />}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={decrementBy100g}
+                disabled={updating || quantityUnits <= 1}
+                className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
+                data-testid="product-decrement-100g"
+              >
+                -100g
+              </button>
+              <span className="text-sm text-ui-fg-subtle min-w-[52px] text-center">
+                {Number.isInteger(quantityKg) ? quantityKg : quantityKg.toFixed(1)} kg
+              </span>
+              <button
+                type="button"
+                onClick={incrementBy100g}
+                disabled={updating}
+                className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
+                data-testid="product-increment-100g"
+              >
+                +100g
+              </button>
+              {updating ? <Spinner /> : null}
+            </div>
           </div>
           <ErrorMessage error={error} data-testid="product-error-message" />
         </Table.Cell>
@@ -122,7 +132,9 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         >
           {type === "preview" && (
             <span className="flex gap-x-1 ">
-              <Text className="text-ui-fg-muted">{item.quantity}x </Text>
+              <Text className="text-ui-fg-muted">
+                {Number.isInteger(quantityKg) ? quantityKg : quantityKg.toFixed(1)} kg
+              </Text>
               <LineItemUnitPrice
                 item={item}
                 style="tight"

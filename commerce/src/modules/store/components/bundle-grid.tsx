@@ -2,15 +2,20 @@
 
 import { useState, useMemo } from "react"
 import { StoreBundle } from "@lib/types/bundle"
-import BundleView from "@/modules/products/components/bundle-view"
+import BundleView from "@/modules/bundle/components/bundle-view"
 import { Funnel } from "@medusajs/icons"
+import { addToCart } from "@lib/data/cart"
 
 export default function BundleGrid({
   bundles,
+  countryCode,
 }: {
   bundles: StoreBundle[]
+  countryCode: string
 }) {
   const [activeFilter, setActiveFilter] = useState("All Bundles")
+  const [isAddingId, setIsAddingId] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
 
   // Dynamically extract unique bundle types from the fetched bundles
   const filters = useMemo(() => {
@@ -29,6 +34,53 @@ export default function BundleGrid({
         // so we do a case-insensitive comparison
         return b.bundle_type?.toLowerCase() === activeFilter.toLowerCase()
       })
+
+  const addBundleItemsToCart = async (bundle: StoreBundle) => {
+    if (!bundle.items?.length) {
+      setMessage("This bundle has no items to add.")
+      return
+    }
+
+    setIsAddingId(bundle.id)
+    setMessage(null)
+
+    const operationId = `bundle_${Date.now()}`
+
+    try {
+      for (const item of bundle.items) {
+        if (!item.variant_id) {
+          continue
+        }
+
+        await addToCart({
+          variantId: item.variant_id,
+          quantity: Math.max(1, Math.round(Number(item.quantity) || 1)),
+          countryCode,
+          metadata: {
+            bundle_id: bundle.id,
+            bundle_title: bundle.title,
+            bundle_discount_percentage: Math.max(
+              0,
+              Math.round(Number(bundle.discount_percentage || 0))
+            ),
+            bundle_operation_id: operationId,
+            bundle_type: "admin",
+            ...(typeof item.weight === "number" && item.weight > 0
+              ? { bundle_item_weight: item.weight, weight_g: item.weight }
+              : {}),
+          },
+        })
+      }
+
+      setMessage(`Added "${bundle.title}" to cart.`)
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Could not add bundle to cart."
+      )
+    } finally {
+      setIsAddingId(null)
+    }
+  }
 
   return (
     <>
@@ -69,12 +121,21 @@ export default function BundleGrid({
         {filteredBundles.map((bundle) => {
           return (
             <li key={bundle.id}>
-              <BundleView bundle={bundle} />
+              <BundleView
+                bundle={bundle}
+                onAddToCart={() => addBundleItemsToCart(bundle)}
+                isAdding={isAddingId === bundle.id}
+              />
             </li>
           )
         })}
       </ul>
-      
+
+      {message ? (
+        <p className="mt-4 text-sm text-ui-fg-subtle" role="status">
+          {message}
+        </p>
+      ) : null}
       {bundles.length === 0 && (
         <div className="text-center w-full py-12 text-gray-500">
           No bundles found.

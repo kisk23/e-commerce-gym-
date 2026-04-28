@@ -127,6 +127,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_discount_percentage: bundle.discount_percentage,
             bundle_operation_id: operationId,
             bundle_type: "admin",
+            bundle_item_units: item.quantity,
             bundle_item_weight: item.weight,
             bundle_price_per_100g: pricePer100g,
             ...subscriptionMetadata,
@@ -150,6 +151,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_discount_percentage: 0,
             bundle_operation_id: operationId,
             bundle_type: "custom",
+            bundle_item_units: Math.max(1, Math.round(Number(item.quantity) || 1)),
             ...subscriptionMetadata,
           },
         }))

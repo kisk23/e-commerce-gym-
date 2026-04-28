@@ -65,6 +65,7 @@ export default function BundleGrid({
             ),
             bundle_operation_id: operationId,
             bundle_type: "admin",
+            bundle_item_units: Math.max(1, Math.round(Number(item.quantity) || 1)),
             ...(typeof item.weight === "number" && item.weight > 0
               ? { bundle_item_weight: item.weight, weight_g: item.weight }
               : {}),

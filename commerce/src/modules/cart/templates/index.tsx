@@ -13,7 +13,18 @@ const CartTemplate = ({
   customer: HttpTypes.StoreCustomer | null
 }) => {
   return (
-    <div className="py-12">
+    <div className="py-12 pt-0">
+      <div className="bg-gradient-to-r from-primary/5 via-beige/30 to-secondary/10 border-b border-[#e2e0d8] py-16 m">
+          <div className="content-container">
+            <h1
+              className="text-3xl font-bold">
+              Shopping Cart
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Complete your order and get fresh produce delivered
+            </p>
+          </div>
+        </div>
       <div className="content-container" data-testid="cart-container">
         {cart?.items?.length ? (
           <div className="grid grid-cols-1 small:grid-cols-[1fr_360px] gap-x-40">
@@ -24,6 +35,7 @@ const CartTemplate = ({
                   <Divider />
                 </>
               )}
+              
               <ItemsTemplate cart={cart} />
             </div>
             <div className="relative">

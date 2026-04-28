@@ -1,28 +1,94 @@
-import { Heading } from "@medusajs/ui"
+"use client"
 
-import ItemsPreviewTemplate from "@modules/cart/templates/preview"
-import DiscountCode from "@modules/checkout/components/discount-code"
-import CartTotals from "@modules/common/components/cart-totals"
-import Divider from "@modules/common/components/divider"
+import { HttpTypes } from "@medusajs/types"
+import { convertToLocale } from "@lib/util/money"
+import PaymentButton from "@modules/checkout/components/payment-button"
+import { useCheckout } from "@modules/checkout/components/checkout-context"
 
-const CheckoutSummary = ({ cart }: { cart: any }) => {
+const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
+  const { errors } = useCheckout()
+
+  const subtotal = convertToLocale({
+    amount: cart.subtotal ?? 0,
+    currency_code: cart.currency_code,
+  })
+
+  const deliveryTotal = convertToLocale({
+    amount: cart.shipping_total ?? 0,
+    currency_code: cart.currency_code,
+  })
+
+  const grandTotal = convertToLocale({
+    amount: cart.total ?? 0,
+    currency_code: cart.currency_code,
+  })
+
   return (
-    <div className="sticky top-0 flex flex-col-reverse small:flex-col gap-y-8 py-8 small:py-0 ">
-      <div className="w-full bg-white flex flex-col">
-        <Divider className="my-6 small:hidden" />
-        <Heading
-          level="h2"
-          className="flex flex-row text-3xl-regular items-baseline"
-        >
-          In your Cart
-        </Heading>
-        <Divider className="my-6" />
-        <CartTotals totals={cart} />
-        <ItemsPreviewTemplate cart={cart} />
-        <div className="my-6">
-          <DiscountCode cart={cart} />
+    <div className="rounded-2xl border w-full lg:max-w-fit max-w-[700px] p-6 shadow-sm sticky top-6">
+      <h2 className="text-base font-semibold mb-5 tracking-tight">
+        Order Summary
+      </h2>
+
+      {/* Line items */}
+      <div className="space-y-2 mb-5 pb-5 border-b border-[#f0ede4]">
+        {cart.items?.map((item) => (
+          <div key={item.id} className="flex justify-between items-center text-sm">
+            <span className="text-gray-500">
+              {item.title} × {item.quantity}
+            </span>
+            <span className="font-medium">
+              {convertToLocale({
+                amount: item.unit_price * item.quantity,
+                currency_code: cart.currency_code,
+              })}
+            </span>
+          </div>
+        ))}
+        {!cart.items?.length && (
+          <p className="text-sm text-[#b0ad9e]">Your cart is empty.</p>
+        )}
+      </div>
+
+      {/* Totals */}
+      <div className="space-y-2.5 mb-6">
+        <div className="flex justify-between text-sm ">
+          <span className="text-gray-500 ">Subtotal</span>
+          <span>{subtotal}</span>
+        </div>
+        <div className="flex justify-between text-sm ">
+          <span className="text-gray-500">Delivery</span>
+          <span>{deliveryTotal}</span>
+        </div>
+        <div className="flex justify-between text-base font-bold pt-3 border-t border-[#f0ede4]">
+          <span>Total</span>
+          <span className="text-xl">{grandTotal}</span>
         </div>
       </div>
+
+      {/* Validation errors */}
+      {errors.length > 0 && (
+        <div
+          id="checkout-errors"
+          className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 space-y-1"
+        >
+          <p className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-1">
+            Please fix the following:
+          </p>
+          {errors.map((err, i) => (
+            <p key={i} className="text-xs text-red-500 flex items-start gap-1.5">
+              <span className="mt-px">•</span>
+              {err}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* CTA — always active */}
+      <PaymentButton cart={cart} data-testid="submit-order-button" />
+
+      <p className="text-center text-xs text-gray-500 mt-3 flex items-center justify-center gap-1.5">
+        Your payment information is secure and encrypted
+      </p>
     </div>
   )
 }

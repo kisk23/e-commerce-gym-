@@ -44,7 +44,7 @@ const PaymentWrapper: React.FC<PaymentWrapperProps> = ({ cart, children }) => {
     )
   }
 
-  return <div>{children}</div>
+  return <div className="w-full  max-w-[700px] lg:max-w-[600px] xl:max-w-[800px]">{children}</div>
 }
 
 export default PaymentWrapper

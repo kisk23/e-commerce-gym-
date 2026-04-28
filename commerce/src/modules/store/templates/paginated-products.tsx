@@ -1,6 +1,6 @@
 import { listBundles } from "@lib/data/bundles"
 import { getRegion } from "@lib/data/regions"
-import BundleGrid from "@modules/store/components/bundle-grid"
+import BundleGrid from "@/modules/bundle/components/bundle-grid/bundle-grid"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
 export default async function PaginatedProducts({

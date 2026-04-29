@@ -25,8 +25,8 @@ export default async function Home(props: {
   const region = await getRegion(params.countryCode)
   const currencyCode = region?.currency_code || "aed"
   if (!region) {
-  throw new Error("Region not found")
-}
+    throw new Error("Region not found")
+  }
 
   return (
     <>

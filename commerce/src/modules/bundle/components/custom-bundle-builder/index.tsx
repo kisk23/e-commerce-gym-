@@ -19,7 +19,10 @@ const WEIGHT_STEP_G = 100
 const MIN_ITEM_WEIGHT_G = 1000
 const MIN_ITEM_UNITS = Math.round(MIN_ITEM_WEIGHT_G / WEIGHT_STEP_G)
 
-const BuilderContent = ({ countryCode, products }: CustomBundleBuilderProps) => {
+const BuilderContent = ({
+  countryCode,
+  products,
+}: CustomBundleBuilderProps) => {
   const { items, addItem, clearItems } = useBundleContext()
   const [title, setTitle] = useState("My Custom Bundle")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -49,7 +52,9 @@ const BuilderContent = ({ countryCode, products }: CustomBundleBuilderProps) => 
         variant_id: item.variantId,
         quantity: Math.max(
           MIN_ITEM_UNITS,
-          Math.round((Number(item.quantity) || MIN_ITEM_WEIGHT_G) / WEIGHT_STEP_G)
+          Math.round(
+            (Number(item.quantity) || MIN_ITEM_WEIGHT_G) / WEIGHT_STEP_G
+          )
         ),
       }))
 
@@ -84,8 +89,8 @@ const BuilderContent = ({ countryCode, products }: CustomBundleBuilderProps) => 
       <div className="mb-6">
         <h1 className="text-2xl-semi">Build Your Custom Bundle</h1>
         <p className="text-ui-fg-subtle mt-1">
-          Add products from the catalog, adjust quantities, and checkout with one
-          bundle line item.
+          Add products from the catalog, adjust quantities, and checkout with
+          one bundle line item.
         </p>
       </div>
 

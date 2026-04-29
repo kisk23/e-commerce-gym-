@@ -59,8 +59,7 @@ export const getDefaultVariant = (product: HttpTypes.StoreProduct) => {
 
   return (
     variants.find(
-      (variant) =>
-        toNumber(variant?.calculated_price?.calculated_amount) > 0
+      (variant) => toNumber(variant?.calculated_price?.calculated_amount) > 0
     ) ||
     variants[0] ||
     null
@@ -88,7 +87,8 @@ export const getUnitPriceForVariant = (
   product: HttpTypes.StoreProduct,
   variantId?: string
 ) => {
-  const variant = getVariantById(product, variantId) || getDefaultVariant(product)
+  const variant =
+    getVariantById(product, variantId) || getDefaultVariant(product)
   return toNumber(variant?.calculated_price?.calculated_amount)
 }
 
@@ -96,7 +96,8 @@ export const getCurrencyCodeForVariant = (
   product: HttpTypes.StoreProduct,
   variantId?: string
 ) => {
-  const variant = getVariantById(product, variantId) || getDefaultVariant(product)
+  const variant =
+    getVariantById(product, variantId) || getDefaultVariant(product)
   return (variant?.calculated_price?.currency_code || "aed").toLowerCase()
 }
 

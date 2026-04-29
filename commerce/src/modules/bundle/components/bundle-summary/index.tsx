@@ -1,12 +1,12 @@
-﻿"use client"
+"use client"
 
 import { convertToLocale } from "@lib/util/money"
 import { Button } from "@medusajs/ui"
+import Image from "next/image"
 import {
   calculateBundleTotals,
   calculateProductTotals,
   getCurrencyCodeForVariant,
-  getVariantById,
 } from "@modules/bundle/utils/bundle-calculations"
 import { useBundleContext } from "@modules/bundle/store/bundle-context"
 
@@ -18,167 +18,196 @@ type BundleSummaryProps = {
   message: string | null
 }
 
-const WEIGHT_STEP_G = 100
-const MIN_ITEM_WEIGHT_G = 1000
+const RECOMMENDED_CALORIES = 2000
 
 export default function BundleSummary({
   title,
-  onTitleChange,
+  onTitleChange: _onTitleChange,
   onSubmit,
   isSubmitting,
   message,
 }: BundleSummaryProps) {
-  const { items, updateQuantity, removeItem, clearItems } = useBundleContext()
+  const { items, removeItem, clearItems } = useBundleContext()
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
+  const totalWeightG = items.reduce((sum, item) => sum + item.quantity, 0)
   const totals = calculateBundleTotals(items)
+  const roundedCalories = Math.round(totals.calories)
+  const calorieProgressPct = Math.max(
+    0,
+    Math.min(100, (roundedCalories / RECOMMENDED_CALORIES) * 100)
+  )
+  const remainingCalories = Math.max(0, RECOMMENDED_CALORIES - roundedCalories)
+
   const currencyCode =
     items[0] && items[0].variantId
       ? getCurrencyCodeForVariant(items[0].product, items[0].variantId)
       : "aed"
 
   return (
-    <aside className="rounded-lg border border-ui-border-base p-4 md:sticky md:top-24 bg-white h-fit">
-      <h2 className="text-large-semi">Bundle Summary</h2>
-      <p className="text-ui-fg-subtle text-sm mt-1">
-        {items.length} selections • {totalItems}g total weight
-      </p>
+    <aside className="w-full max-w-[302px] md:sticky md:top-24 flex flex-col gap-4">
+      <div className="rounded-xl p-3 bg-[linear-gradient(135deg,rgba(223,208,189,0.4)_0%,rgba(223,208,189,0.2)_100%)]">
+        <div className="flex flex-col gap-[18px]">
+          <div className="flex items-center justify-between gap-9">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#D3D8CC]" />
+              <div>
+                <p className="text-sm leading-5 font-medium text-[#0A0A0A]">
+                  Total Calories
+                </p>
+                <p className="text-xs leading-4 text-[#717182]">
+                  Recommended: {RECOMMENDED_CALORIES} cal
+                </p>
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl leading-8 font-semibold text-[rgb(var(--primary))]">
+                {roundedCalories}
+              </p>
+              <p className="text-xs leading-4 text-[#717182]">calories</p>
+            </div>
+          </div>
 
-      <div className="mt-4">
-        <label className="text-sm text-ui-fg-subtle">Bundle Title</label>
-        <input
-          value={title}
-          onChange={(event) => onTitleChange(event.target.value)}
-          className="mt-1 w-full rounded-md border border-ui-border-base px-3 py-2"
-          placeholder="My Custom Bundle"
-        />
+          <div className="w-full h-2 bg-[#D3D8CC] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[rgb(var(--primary))] rounded-full transition-all"
+              style={{ width: `${calorieProgressPct}%` }}
+            />
+          </div>
+        </div>
+
+        <p className="mt-3 text-xs leading-4 font-medium text-center text-[#717182]">
+          {remainingCalories} cal remaining
+        </p>
       </div>
 
-      {!items.length ? (
-        <p className="mt-4 rounded-md bg-ui-bg-subtle p-3 text-sm text-ui-fg-subtle">
-          Add products from the list to build your custom bundle.
-        </p>
-      ) : (
-        <ul className="mt-4 space-y-3">
-          {items.map((item) => {
-            const variant = getVariantById(item.product, item.variantId)
-            const itemTotals = calculateProductTotals({
-              product: item.product,
-              quantity: item.quantity,
-              variantId: item.variantId,
-            })
+      <div className="rounded-xl border border-[#E6E6E6] bg-white px-5 py-6">
+        <h2 className="text-[20px] leading-7 font-semibold text-[#0A0A0A]">
+          Your Bundle
+        </h2>
+        <p className="text-xs leading-4 text-[#717182] mt-1">{title}</p>
 
-            return (
-              <li
-                key={item.key}
-                className="rounded-md border border-ui-border-base p-3"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-ui-fg-base">
-                      {item.product.title}
-                    </p>
-                    <p className="text-xs text-ui-fg-subtle mt-1">
-                      {variant?.title || "Default"}
-                    </p>
-                    <p className="text-xs text-ui-fg-subtle mt-1">
-                      {Math.round(itemTotals.calories)} cal
-                    </p>
-                    <p className="text-xs text-ui-fg-subtle mt-1">
-                      C {Math.round(itemTotals.carbs)}g • F{" "}
-                      {Math.round(itemTotals.fat)}g • P{" "}
-                      {Math.round(itemTotals.protein)}g
-                    </p>
-                  </div>
+        <div className="mt-6 px-0.5">
+          {!items.length ? (
+            <p className="text-sm leading-5 text-[#717182] text-center py-8">
+              Add products from the list to build your custom bundle.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-2.5 pb-6 border-b border-[#E6E6E6]">
+                {items.map((item) => {
+                  const itemTotals = calculateProductTotals({
+                    product: item.product,
+                    quantity: item.quantity,
+                    variantId: item.variantId,
+                  })
+                  const itemCurrency = getCurrencyCodeForVariant(
+                    item.product,
+                    item.variantId
+                  )
 
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-ui-fg-base">
-                      {convertToLocale({
-                        amount: itemTotals.price,
-                        currency_code: getCurrencyCodeForVariant(
-                          item.product,
-                          item.variantId
-                        ),
-                      })}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.key)}
-                      className="text-xs text-ui-fg-subtle hover:text-ui-fg-base"
+                  return (
+                    <div
+                      key={item.key}
+                      className="w-full bg-[#FAF5EF] p-3 flex items-center justify-between gap-3"
                     >
-                      Remove
-                    </button>
+                      <div className="flex items-center gap-[11px] min-w-0">
+                        <Image
+                          src={item.product.thumbnail || "/placeholder.png"}
+                          alt={item.product.title || "Bundle item"}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-xl object-cover shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm leading-5 font-medium text-[#0A0A0A] truncate">
+                            {item.product.title}
+                          </p>
+                          <p className="text-xs leading-4 text-[#717182]">
+                            {item.quantity}g - {Math.round(itemTotals.calories)}{" "}
+                            cal -{" "}
+                            {convertToLocale({
+                              amount: itemTotals.price,
+                              currency_code: itemCurrency,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.key)}
+                        className="w-8 h-8 rounded-xl shrink-0"
+                        aria-label={`Remove ${item.product.title}`}
+                      >
+                        <span className="block w-4 h-4 mx-auto" />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="flex flex-col gap-[10px]">
+                <div className="pb-4 border-b border-[#E6E6E6] flex flex-col gap-[10px]">
+                  <div className="flex items-center justify-between text-sm leading-5">
+                    <span className="text-[#717182]">Total Items</span>
+                    <span className="font-medium text-[#0A0A0A]">
+                      {items.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm leading-5">
+                    <span className="text-[#717182]">Total Weight</span>
+                    <span className="font-medium text-[#0A0A0A]">
+                      {totalWeightG}g
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm leading-5">
+                    <span className="text-[#717182]">Total Calories</span>
+                    <span className="font-medium text-[#0A0A0A]">
+                      {roundedCalories}
+                    </span>
                   </div>
                 </div>
-
-                <div className="mt-2">
-                  <label className="text-xs text-ui-fg-subtle">Amount (g)</label>
-                  <input
-                    type="number"
-                    min={MIN_ITEM_WEIGHT_G}
-                    step={WEIGHT_STEP_G}
-                    value={item.quantity}
-                    onChange={(event) =>
-                      updateQuantity(item.key, Number(event.target.value))
-                    }
-                    className="mt-1 w-full rounded-md border border-ui-border-base px-2 py-1 text-sm"
-                  />
+                <div className="flex items-center justify-between">
+                  <span className="text-base leading-6 font-semibold text-[#0A0A0A]">
+                    Total Price
+                  </span>
+                  <span className="text-[20px] leading-7 font-semibold text-[rgb(var(--primary))]">
+                    {convertToLocale({
+                      amount: totals.price,
+                      currency_code: currencyCode,
+                    })}
+                  </span>
                 </div>
-              </li>
-            )
-          })}
-        </ul>
-      )}
+              </div>
+            </div>
+          )}
+        </div>
 
-      <div className="mt-4 rounded-md bg-ui-bg-subtle p-3">
-        <div className="flex justify-between text-sm text-ui-fg-subtle">
-          <span>Total Calories</span>
-          <span>{Math.round(totals.calories)} cal</span>
+        <div className="mt-6 flex flex-col gap-3">
+          <Button
+            onClick={onSubmit}
+            isLoading={isSubmitting}
+            disabled={isSubmitting || !items.length}
+            className="w-full h-10 rounded-[10px] bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary-light))] text-white text-sm font-medium"
+          >
+            Add to Cart
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={clearItems}
+            disabled={!items.length || isSubmitting}
+            className="w-full h-8 rounded-[10px] border border-[#E6E6E6] bg-white text-sm font-medium text-[#0A0A0A]"
+          >
+            Clear All
+          </Button>
         </div>
-        <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-ui-fg-subtle">
-          <div className="rounded bg-white px-2 py-1 text-center">
-            Carbs: {Math.round(totals.carbs)}g
-          </div>
-          <div className="rounded bg-white px-2 py-1 text-center">
-            Fat: {Math.round(totals.fat)}g
-          </div>
-          <div className="rounded bg-white px-2 py-1 text-center">
-            Protein: {Math.round(totals.protein)}g
-          </div>
-        </div>
-        <div className="mt-2 flex justify-between text-base font-semibold text-ui-fg-base">
-          <span>Total Price</span>
-          <span>
-            {convertToLocale({
-              amount: totals.price,
-              currency_code: currencyCode,
-            })}
-          </span>
-        </div>
+
+        {message ? (
+          <p className="mt-3 text-sm text-[#717182]" role="status">
+            {message}
+          </p>
+        ) : null}
       </div>
-
-      <div className="mt-4 flex flex-col gap-2">
-        <Button
-          onClick={onSubmit}
-          isLoading={isSubmitting}
-          disabled={isSubmitting || !items.length}
-        >
-          Add Custom Bundle to Cart
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={clearItems}
-          disabled={!items.length || isSubmitting}
-        >
-          Clear Bundle
-        </Button>
-      </div>
-
-      {message ? (
-        <p className="mt-3 text-sm text-ui-fg-subtle" role="status">
-          {message}
-        </p>
-      ) : null}
     </aside>
   )
 }

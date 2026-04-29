@@ -32,7 +32,10 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
       {/* Line items */}
       <div className="space-y-2 mb-5 pb-5 border-b border-[#f0ede4]">
         {cart.items?.map((item) => (
-          <div key={item.id} className="flex justify-between items-center text-sm">
+          <div
+            key={item.id}
+            className="flex justify-between items-center text-sm"
+          >
             <span className="text-gray-500">
               {item.title} × {item.quantity}
             </span>
@@ -75,7 +78,10 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
             Please fix the following:
           </p>
           {errors.map((err, i) => (
-            <p key={i} className="text-xs text-red-500 flex items-start gap-1.5">
+            <p
+              key={i}
+              className="text-xs text-red-500 flex items-start gap-1.5"
+            >
               <span className="mt-px">•</span>
               {err}
             </p>

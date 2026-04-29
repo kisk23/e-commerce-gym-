@@ -6,9 +6,7 @@ import Link from "next/link"
 export default function SaveMore() {
   return (
     <section className="w-full py-12 sm:py-16 md:py-20 bg-gradient-to-br from-[rgb(var(--primary))] to-[rgba(33,60,2,0.8)]">
-      
       <div className="content-container flex flex-col items-center text-center gap-6 sm:gap-8">
-
         {/* ICON */}
         <div className="w-14 h-14 sm:w-16 sm:h-16 opacity-90">
           <Image
@@ -22,16 +20,14 @@ export default function SaveMore() {
 
         {/* TEXT BLOCK */}
         <div className="flex flex-col items-center gap-3 sm:gap-4 max-w-xl">
-
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white">
             Save More with Subscription
           </h2>
 
           <p className="text-sm sm:text-base md:text-lg text-white/90">
-            Get up to 12% off on all orders with our flexible subscription plans. 
-            Cancel anytime, no commitment required.
+            Get up to 12% off on all orders with our flexible subscription
+            plans. Cancel anytime, no commitment required.
           </p>
-
         </div>
 
         {/* CTA */}
@@ -42,7 +38,6 @@ export default function SaveMore() {
           View all
           <span className="text-lg">→</span>
         </Link>
-
       </div>
     </section>
   )

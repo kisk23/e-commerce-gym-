@@ -26,8 +26,5 @@ export default async function PaginatedProducts({
 
   // Fetch bundles instead of generic products
   const bundles = await listBundles()
-  return (
-    <BundleGrid bundles={bundles} countryCode={countryCode} />
-  )
+  return <BundleGrid bundles={bundles} countryCode={countryCode} />
 }
-

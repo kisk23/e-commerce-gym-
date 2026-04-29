@@ -159,8 +159,9 @@ const CartDropdown = ({
 
     try {
       const targetLineItem =
-        groupedItem.lineItems.find((lineItem) => Number(lineItem.quantity || 0) > 1) ||
-        groupedItem.lineItems[0]
+        groupedItem.lineItems.find(
+          (lineItem) => Number(lineItem.quantity || 0) > 1
+        ) || groupedItem.lineItems[0]
 
       if (!targetLineItem) {
         return
@@ -194,8 +195,12 @@ const CartDropdown = ({
             className="relative hover:text-ui-fg-base flex items-center gap-1 outline outline-1 outline-primary/30 rounded-lg p-1 px-2"
             href="/cart"
             data-testid="nav-cart-link"
-          ><ShoppingCart/> Cart
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1 py-0">{totalItems}</span></LocalizedClientLink>
+          >
+            <ShoppingCart /> Cart
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1 py-0">
+              {totalItems}
+            </span>
+          </LocalizedClientLink>
         </PopoverButton>
         <Transition
           show={cartDropdownOpen}
@@ -222,7 +227,8 @@ const CartDropdown = ({
                     const item = groupedItem.item
                     const quantityKg = groupedItem.totalQuantity / 10
                     const isUpdating = activeGroupKey === groupedItem.key
-                    const hasReducedPrice = groupedItem.total < groupedItem.originalTotal
+                    const hasReducedPrice =
+                      groupedItem.total < groupedItem.originalTotal
 
                     return (
                       <div
@@ -272,7 +278,8 @@ const CartDropdown = ({
                                         <span className="line-through text-ui-fg-muted">
                                           {convertToLocale({
                                             amount: groupedItem.originalTotal,
-                                            currency_code: cartState.currency_code,
+                                            currency_code:
+                                              cartState.currency_code,
                                           })}
                                         </span>
                                       </p>
@@ -291,7 +298,9 @@ const CartDropdown = ({
                           <div className="mt-2 flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => decrementBy100g(groupedItem, groupedItem.key)}
+                              onClick={() =>
+                                decrementBy100g(groupedItem, groupedItem.key)
+                              }
                               disabled={isUpdating}
                               className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
                             >
@@ -299,7 +308,9 @@ const CartDropdown = ({
                             </button>
                             <button
                               type="button"
-                              onClick={() => incrementBy100g(item, groupedItem.key)}
+                              onClick={() =>
+                                incrementBy100g(item, groupedItem.key)
+                              }
                               disabled={isUpdating}
                               className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
                             >

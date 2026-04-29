@@ -40,7 +40,6 @@ export default function MemberAchieved() {
   return (
     <section className="py-12 sm:py-16">
       <div className="content-container flex flex-col items-center gap-10">
-
         {/* HEADER */}
         <div className="flex flex-col items-center text-center gap-4 max-w-xl">
           <span className="px-4 py-1 rounded-full bg-[rgb(var(--primary)/0.1)] text-[rgb(var(--primary))] text-sm font-medium">
@@ -52,7 +51,8 @@ export default function MemberAchieved() {
           </h2>
 
           <p className="text-sm sm:text-base md:text-lg text-gray-500">
-            Thousands of people transformed their health with Elvar's goal-based nutrition bundles.
+            Thousands of people transformed their health with Elvar's goal-based
+            nutrition bundles.
           </p>
         </div>
 
@@ -65,7 +65,9 @@ export default function MemberAchieved() {
             >
               <span
                 className={`text-xl sm:text-2xl font-bold ${
-                  stat.highlight ? "text-[rgb(var(--secondary))]" : "text-[rgb(var(--primary))]"
+                  stat.highlight
+                    ? "text-[rgb(var(--secondary))]"
+                    : "text-[rgb(var(--primary))]"
                 }`}
               >
                 {stat.value}
@@ -98,7 +100,6 @@ export default function MemberAchieved() {
 
               {/* USER */}
               <div className="flex flex-col gap-4 mt-6">
-
                 <div className="flex items-center gap-3 border-t pt-4">
                   <Image
                     src={item.image}
@@ -109,9 +110,7 @@ export default function MemberAchieved() {
                   />
 
                   <div className="flex flex-col">
-                    <span className="font-semibold text-sm">
-                      {item.name}
-                    </span>
+                    <span className="font-semibold text-sm">{item.name}</span>
 
                     <span
                       className={`text-xs px-2 py-1 rounded-full w-fit ${item.tagColor}`}
@@ -125,12 +124,10 @@ export default function MemberAchieved() {
                 <div className="bg-[rgb(var(--primary)/0.1)] text-[rgb(var(--primary))] text-xs sm:text-sm px-4 py-2 rounded-full text-center">
                   ✔ {item.result}
                 </div>
-
               </div>
             </div>
           ))}
         </div>
-
       </div>
     </section>
   )

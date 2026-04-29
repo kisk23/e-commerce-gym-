@@ -1,5 +1,7 @@
 "use client"
-{/* component made for active navigation links */}
+{
+  /* component made for active navigation links */
+}
 
 import { useParams, usePathname } from "next/navigation"
 import Link from "next/link"
@@ -16,14 +18,15 @@ export default function NavLinks() {
   const pathname = usePathname()
 
   const isActive = (href: string) => {
-  const localizedHref = `/${countryCode}${href}`
+    const localizedHref = `/${countryCode}${href}`
 
-  if (href === "/") return pathname === `/${countryCode}` || pathname === `/${countryCode}/`
+    if (href === "/")
+      return pathname === `/${countryCode}` || pathname === `/${countryCode}/`
 
-  if (href === "/bundles") return pathname === localizedHref
+    if (href === "/bundles") return pathname === localizedHref
 
-  return pathname.startsWith(localizedHref)
-}
+    return pathname.startsWith(localizedHref)
+  }
 
   return (
     <ul className="flex items-center gap-x-5 h-full text-lg">

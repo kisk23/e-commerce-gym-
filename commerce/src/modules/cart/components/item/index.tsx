@@ -138,8 +138,9 @@ const Item = ({
     1,
     Math.round(
       Math.min(
-        ...bundleLineEntries.map(({ lineItem, stepUnits }) =>
-          Math.max(1, Number(lineItem.quantity || 0)) / Math.max(1, stepUnits)
+        ...bundleLineEntries.map(
+          ({ lineItem, stepUnits }) =>
+            Math.max(1, Number(lineItem.quantity || 0)) / Math.max(1, stepUnits)
         )
       )
     )

@@ -27,7 +27,6 @@ export default function WhyComponent() {
   return (
     <section className="py-10 sm:py-12 mb-9">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-10">
-
         {/* HEADER */}
         <div className="text-center max-w-md flex flex-col gap-2">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-black">
@@ -41,7 +40,6 @@ export default function WhyComponent() {
 
         {/* FEATURES */}
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-6">
-
           {items.map((item, i) => (
             <div
               key={i}
@@ -71,7 +69,6 @@ export default function WhyComponent() {
               </p>
             </div>
           ))}
-
         </div>
       </div>
     </section>

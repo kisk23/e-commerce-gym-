@@ -40,7 +40,10 @@ const Summary = ({ cart }: SummaryProps) => {
     <div className="rounded-[20px] border border-[#E6E6E6] bg-white shadow-[0px_2px_5px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-5">
       <div className="flex flex-col gap-6">
         <div className="pb-6 border-b border-[#E6E6E6]">
-          <Heading level="h2" className="text-[28px] leading-7 font-semibold text-[#0A0A0A] mb-6">
+          <Heading
+            level="h2"
+            className="text-[28px] leading-7 font-semibold text-[#0A0A0A] mb-6"
+          >
             Order Summary
           </Heading>
           <div className="flex flex-col gap-3">
@@ -51,7 +54,10 @@ const Summary = ({ cart }: SummaryProps) => {
                 data-testid="cart-subtotal"
                 data-value={subtotal}
               >
-                {convertToLocale({ amount: subtotal, currency_code: currencyCode })}
+                {convertToLocale({
+                  amount: subtotal,
+                  currency_code: currencyCode,
+                })}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -61,7 +67,10 @@ const Summary = ({ cart }: SummaryProps) => {
                 data-testid="cart-shipping"
                 data-value={delivery}
               >
-                {convertToLocale({ amount: delivery, currency_code: currencyCode })}
+                {convertToLocale({
+                  amount: delivery,
+                  currency_code: currencyCode,
+                })}
               </span>
             </div>
           </div>
@@ -69,7 +78,9 @@ const Summary = ({ cart }: SummaryProps) => {
 
         <div className="flex flex-col gap-8">
           <div className="flex items-center justify-between">
-            <span className="text-[18px] leading-7 font-semibold text-[#0A0A0A]">Total</span>
+            <span className="text-[18px] leading-7 font-semibold text-[#0A0A0A]">
+              Total
+            </span>
             <span
               className="text-[32px] leading-8 font-semibold text-[rgb(var(--primary))]"
               data-testid="cart-total"

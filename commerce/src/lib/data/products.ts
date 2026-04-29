@@ -113,7 +113,7 @@ export const listProductsWithSort = async ({
   })
 
   const sortedProducts = sortProducts(products, sortBy)
-  console.log( sortedProducts)
+  console.log(sortedProducts)
 
   const pageParam = (page - 1) * limit
 

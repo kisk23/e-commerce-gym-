@@ -23,16 +23,16 @@ function validateCheckoutForm(): string[] {
   const get = (id: string) =>
     ((document.getElementById(id) as HTMLInputElement)?.value ?? "").trim()
 
-  const fullName   = get("full_name")
-  const email      = get("email")
-  const phone      = get("phone")
-  const address    = get("address_1")
-  const city       = get("city")
+  const fullName = get("full_name")
+  const email = get("email")
+  const phone = get("phone")
+  const address = get("address_1")
+  const city = get("city")
   const postalCode = get("postal_code")
   const cardNumber = get("card_number")
   const cardHolder = get("card_holder")
-  const expiry     = get("expiry")
-  const cvv        = get("cvv")
+  const expiry = get("expiry")
+  const cvv = get("cvv")
 
   if (!fullName) errors.push("Full name is required.")
   if (!email) errors.push("Email is required.")
@@ -123,13 +123,16 @@ const StripePaymentButton = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const stripe   = useStripe()
+  const stripe = useStripe()
   const elements = useElements()
 
   const handlePayment = () => {
     runWithValidation(async () => {
       setSubmitting(true)
-      if (!stripe || !elements || !cart) { setSubmitting(false); return }
+      if (!stripe || !elements || !cart) {
+        setSubmitting(false)
+        return
+      }
 
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
@@ -141,12 +144,12 @@ const StripePaymentButton = ({
                 " " +
                 (cart.billing_address?.last_name || ""),
               address: {
-                city:        cart.billing_address?.city        ?? undefined,
-                country:     cart.billing_address?.country_code ?? undefined,
-                line1:       cart.billing_address?.address_1   ?? undefined,
-                line2:       cart.billing_address?.address_2   ?? undefined,
+                city: cart.billing_address?.city ?? undefined,
+                country: cart.billing_address?.country_code ?? undefined,
+                line1: cart.billing_address?.address_1 ?? undefined,
+                line2: cart.billing_address?.address_2 ?? undefined,
                 postal_code: cart.billing_address?.postal_code ?? undefined,
-                state:       cart.billing_address?.province    ?? undefined,
+                state: cart.billing_address?.province ?? undefined,
               },
               email: cart.email ?? undefined,
               phone: cart.billing_address?.phone ?? undefined,

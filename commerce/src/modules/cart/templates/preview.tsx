@@ -22,7 +22,6 @@ const ItemsPreviewTemplate = ({ cart }: ItemsTemplateProps) => {
           hasOverflow,
       })}
     >
-      
       <Table>
         <Table.Body data-testid="items-table">
           {items

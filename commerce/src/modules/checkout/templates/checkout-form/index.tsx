@@ -21,10 +21,10 @@ export default async function CheckoutForm({
   if (!shippingMethods || !paymentMethods) return null
 
   return (
-          <div className="flex flex-col gap-5 w-full items-center justify-center mb-5">
-            <PersonalInformation cart={cart} customer={customer} />
-            <DeliveryAddress cart={cart} />
-            <PaymentMethod />
-          </div>
+    <div className="flex flex-col gap-5 w-full items-center justify-center mb-5">
+      <PersonalInformation cart={cart} customer={customer} />
+      <DeliveryAddress cart={cart} />
+      <PaymentMethod />
+    </div>
   )
 }

@@ -52,7 +52,8 @@ const parseStoredBundleItems = (value: string): BundleSelectionItem[] => {
     .map((entry) => {
       const product = isRecord(entry.product) ? entry.product : null
       const productId = typeof product?.id === "string" ? product.id : ""
-      const variantId = typeof entry.variantId === "string" ? entry.variantId : ""
+      const variantId =
+        typeof entry.variantId === "string" ? entry.variantId : ""
       const key =
         typeof entry.key === "string" && entry.key
           ? entry.key

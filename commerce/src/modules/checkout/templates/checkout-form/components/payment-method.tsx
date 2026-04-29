@@ -15,16 +15,8 @@ const PaymentMethod = () => {
           placeholder="John Doe"
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field
-            label="Expiry Date"
-            id="expiry"
-            placeholder="MM/YY"
-          />
-          <Field
-            label="CVV"
-            id="cvv"
-            placeholder="•••"
-          />
+          <Field label="Expiry Date" id="expiry" placeholder="MM/YY" />
+          <Field label="CVV" id="cvv" placeholder="•••" />
         </div>
       </div>
     </SectionCard>

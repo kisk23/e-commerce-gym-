@@ -14,7 +14,6 @@ type ProductMetadata = {
 
 export default function ProductPreview({
   product,
-
 }: {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
@@ -25,16 +24,12 @@ export default function ProductPreview({
 
   const calories = metadata?.nutrition_per_100g?.calories
 
-const categoryName = product.categories?.[0]?.name ?? null
+  const categoryName = product.categories?.[0]?.name ?? null
 
   return (
-    <LocalizedClientLink
-      href={`/products/${product.handle}`}
-      className="group"
-    >
+    <LocalizedClientLink href={`/products/${product.handle}`} className="group">
       {/* CARD */}
       <div className="w-full max-w-[302px] rounded-[26px] border border-gray-200 overflow-hidden bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-
         {/* IMAGE */}
         <div className="relative w-full h-[302px] bg-beige/20">
           {product.thumbnail && (
@@ -54,7 +49,6 @@ const categoryName = product.categories?.[0]?.name ?? null
 
         {/* CONTENT */}
         <div className="flex flex-col gap-2 px-6 py-5">
-
           {/* TITLE + DESCRIPTION */}
           <div className="flex flex-col gap-1">
             <h3 className="text-lg sm:text-xl font-semibold text-black">
@@ -69,12 +63,9 @@ const categoryName = product.categories?.[0]?.name ?? null
 
           {/* INFO ROW */}
           <div className="flex justify-between items-end">
-
             {/* LEFT */}
             <div className="flex flex-col">
-              <span className="text-primary/60 text-sm">
-                Per 100g
-              </span>
+              <span className="text-primary/60 text-sm">Per 100g</span>
               <span className="text-base font-semibold text-primary">
                 {calories} kcal
               </span>
@@ -82,15 +73,12 @@ const categoryName = product.categories?.[0]?.name ?? null
 
             {/* RIGHT */}
             <div className="flex flex-col items-end">
-              <span className="text-primary/60 text-sm">
-                Price
-              </span>
+              <span className="text-primary/60 text-sm">Price</span>
 
               <span className="text-base font-semibold text-black">
                 {cheapestPrice?.calculated_price ?? "$0.00"}
               </span>
             </div>
-
           </div>
         </div>
       </div>

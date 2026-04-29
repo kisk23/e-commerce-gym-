@@ -1,11 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { Field, LocationIcon, SectionCard } from "./checkout-ui"
 
-const DeliveryAddress = ({
-  cart,
-}: {
-  cart: HttpTypes.StoreCart | null
-}) => {
+const DeliveryAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   const addr = cart?.shipping_address
   const streetParts = [addr?.address_1, addr?.address_2].filter(Boolean)
 

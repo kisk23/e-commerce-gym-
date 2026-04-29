@@ -40,7 +40,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                   data-testid="nav-menu-button"
                   className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base"
                 >
-                  <BarsThree/>
+                  <BarsThree />
                 </Popover.Button>
               </div>
 
@@ -88,19 +88,18 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         )
                       })}
                       <li>
-
-                      <LocalizedClientLink
-                        href="/cart"
-                        className="text-xl leading-10 hover:text-ui-fg-disabled"
-                        onClick={close}
-                        data-testid="cart-link"
+                        <LocalizedClientLink
+                          href="/cart"
+                          className="text-xl leading-10 hover:text-ui-fg-disabled"
+                          onClick={close}
+                          data-testid="cart-link"
                         >
                           <div className="outline outline-1 outline-primary/50 w-fit flex items-center gap-2 rounded-rounded px-2">
                             <ShoppingCart />
                             Cart
                           </div>
-                      </LocalizedClientLink>
-                        </li>
+                        </LocalizedClientLink>
+                      </li>
                     </ul>
                     {/*Country and Language Selection 
                     note: change hidden to flex when you want it to show*/}

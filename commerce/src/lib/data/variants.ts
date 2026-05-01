@@ -10,7 +10,9 @@ export const retrieveVariant = async (
 ): Promise<HttpTypes.StoreProductVariant | null> => {
   const authHeaders = await getAuthHeaders()
 
-  if (!authHeaders) return null
+  if (!authHeaders) {
+    return null
+  }
 
   const headers = {
     ...authHeaders,

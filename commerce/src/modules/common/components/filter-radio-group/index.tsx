@@ -8,7 +8,7 @@ type FilterRadioGroupProps = {
     label: string
   }[]
   value: any
-  handleChange: (...args: any[]) => void
+  handleChange: (_value: string) => void
   "data-testid"?: string
 }
 
@@ -22,7 +22,7 @@ const FilterRadioGroup = ({
   return (
     <div className="flex gap-x-3 flex-col gap-y-3">
       <Text className="txt-compact-small-plus text-ui-fg-muted">{title}</Text>
-      <RadioGroup data-testid={dataTestId} onValueChange={handleChange}>
+      <RadioGroup data-testid={dataTestId} onValueChange={(value: string) => handleChange(value)}>
         {items?.map((i) => (
           <div
             key={i.value}

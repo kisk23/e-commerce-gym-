@@ -20,10 +20,13 @@ export default function NavLinks() {
   const isActive = (href: string) => {
     const localizedHref = `/${countryCode}${href}`
 
-    if (href === "/")
+    if (href === "/") {
       return pathname === `/${countryCode}` || pathname === `/${countryCode}/`
+    }
 
-    if (href === "/bundles") return pathname === localizedHref
+    if (href === "/bundles") {
+      return pathname === localizedHref
+    }
 
     return pathname.startsWith(localizedHref)
   }

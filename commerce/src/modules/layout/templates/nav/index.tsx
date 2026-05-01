@@ -8,7 +8,6 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import Image from "next/image"
-import { ShoppingCart } from "@medusajs/icons"
 import NavLinks from "@modules/layout/components/nav-links"
 
 export default async function Nav() {

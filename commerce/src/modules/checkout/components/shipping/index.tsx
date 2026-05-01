@@ -54,7 +54,9 @@ const Shipping: React.FC<ShippingProps> = ({
   // LOAD CALCULATED PRICES
   // -----------------------------
   useEffect(() => {
-    if (!shippingMethods?.length) return
+    if (!shippingMethods?.length) {
+      return
+    }
 
     setIsLoadingPrices(true)
 

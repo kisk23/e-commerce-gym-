@@ -34,23 +34,44 @@ function validateCheckoutForm(): string[] {
   const expiry = get("expiry")
   const cvv = get("cvv")
 
-  if (!fullName) errors.push("Full name is required.")
-  if (!email) errors.push("Email is required.")
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+  if (!fullName) {
+    errors.push("Full name is required.")
+  }
+  if (!email) {
+    errors.push("Email is required.")
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     errors.push("Please enter a valid email address.")
-  if (!phone) errors.push("Phone number is required.")
-  if (!address) errors.push("Street address is required.")
-  if (!city) errors.push("City is required.")
-  if (!postalCode) errors.push("ZIP code is required.")
-  if (!cardNumber) errors.push("Card number is required.")
-  else if (!/^\d{13,19}$/.test(cardNumber.replace(/\s/g, "")))
+  }
+  if (!phone) {
+    errors.push("Phone number is required.")
+  }
+  if (!address) {
+    errors.push("Street address is required.")
+  }
+  if (!city) {
+    errors.push("City is required.")
+  }
+  if (!postalCode) {
+    errors.push("ZIP code is required.")
+  }
+  if (!cardNumber) {
+    errors.push("Card number is required.")
+  } else if (!/^\d{13,19}$/.test(cardNumber.replace(/\s/g, ""))) {
     errors.push("Please enter a valid 13–19 digit card number.")
-  if (!cardHolder) errors.push("Cardholder name is required.")
-  if (!expiry) errors.push("Expiry date is required.")
-  else if (!/^\d{2}\/\d{2}$/.test(expiry))
+  }
+  if (!cardHolder) {
+    errors.push("Cardholder name is required.")
+  }
+  if (!expiry) {
+    errors.push("Expiry date is required.")
+  } else if (!/^\d{2}\/\d{2}$/.test(expiry)) {
     errors.push("Expiry must be in MM/YY format.")
-  if (!cvv) errors.push("CVV is required.")
-  else if (!/^\d{3,4}$/.test(cvv)) errors.push("CVV must be 3 or 4 digits.")
+  }
+  if (!cvv) {
+    errors.push("CVV is required.")
+  } else if (!/^\d{3,4}$/.test(cvv)) {
+    errors.push("CVV must be 3 or 4 digits.")
+  }
 
   return errors
 }
@@ -119,7 +140,7 @@ const StripePaymentButton = ({
 }: {
   cart: HttpTypes.StoreCart
   "data-testid"?: string
-  runWithValidation: (next: () => void) => void
+  runWithValidation: (_next: () => void) => void
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -210,7 +231,7 @@ const ManualTestPaymentButton = ({
   runWithValidation,
 }: {
   "data-testid"?: string
-  runWithValidation: (next: () => void) => void
+  runWithValidation: (_next: () => void) => void
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -249,7 +270,7 @@ const DefaultPaymentButton = ({
   runWithValidation,
 }: {
   "data-testid"?: string
-  runWithValidation: (next: () => void) => void
+  runWithValidation: (_next: () => void) => void
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)

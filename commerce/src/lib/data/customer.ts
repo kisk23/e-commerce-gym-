@@ -7,7 +7,7 @@ import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 import {
   getAuthHeaders,
-  getCacheOptions,
+
   getCacheTag,
   getCartId,
   removeAuthToken,
@@ -19,7 +19,9 @@ export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
     const authHeaders = await getAuthHeaders()
 
-    if (!authHeaders) return null
+    if (!authHeaders) {
+      return null
+    }
 
     const headers = {
       ...authHeaders,
@@ -187,7 +189,7 @@ export const addCustomerAddress = async (
 
   return sdk.store.customer
     .createAddress(address, {}, headers)
-    .then(async ({ customer }) => {
+    .then(async ({  }) => {
       const customerCacheTag = await getCacheTag("customers")
       revalidateTag(customerCacheTag)
       return { success: true, error: null }

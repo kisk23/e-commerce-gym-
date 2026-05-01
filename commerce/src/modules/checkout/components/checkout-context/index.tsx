@@ -4,13 +4,13 @@ import React, { createContext, useContext, useState } from "react"
 
 type CheckoutContextType = {
   errors: string[]
-  setErrors: (e: string[]) => void
+  setErrors: (_e: string[]) => void
   clearErrors: () => void
 }
 
 const CheckoutContext = createContext<CheckoutContextType>({
   errors: [],
-  setErrors: () => {},
+  setErrors: (_errors: string[]) => {},
   clearErrors: () => {},
 })
 

@@ -101,8 +101,8 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         </LocalizedClientLink>
                       </li>
                     </ul>
-                    {/*Country and Language Selection 
-                    note: change hidden to flex when you want it to show*/}
+                    {/* Country and Language Selection
+                    note: change hidden to flex when you want it to show */}
                     <div className="hidden flex-col gap-y-6">
                       {!!locales?.length && (
                         <div

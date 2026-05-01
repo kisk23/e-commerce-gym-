@@ -6,7 +6,7 @@ import Input from "@modules/common/components/input"
 import { useActionState } from "react"
 
 type Props = {
-  setCurrentView: (view: LOGIN_VIEW) => void
+  setCurrentView: (_view: LOGIN_VIEW) => void
   redirectTo?: string
 }
 

@@ -32,7 +32,7 @@ export default function MemberAchieved() {
       tag: "Eat Healthy",
       tagColor: "bg-green-50 text-green-600",
       image: "/images/user1.png",
-      text: `"I used to skip meals and eat junk. Elvar's balanced bundles made healthy eating so simple and delicious. My energy levels are through the roof!"`,
+      text: `"I used to skip meals and eat junk. Elvar&apos;s balanced bundles made healthy eating so simple and delicious. My energy levels are through the roof!"`,
       result: "Sustained healthy eating for 3 months",
     },
   ]
@@ -51,7 +51,7 @@ export default function MemberAchieved() {
           </h2>
 
           <p className="text-sm sm:text-base md:text-lg text-gray-500">
-            Thousands of people transformed their health with Elvar's goal-based
+            Thousands of people transformed their health with Elvar&apos;s goal-based
             nutrition bundles.
           </p>
         </div>

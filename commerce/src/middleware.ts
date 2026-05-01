@@ -108,9 +108,9 @@ export async function middleware(request: NextRequest) {
 
   let response = NextResponse.redirect(redirectUrl, 307)
 
-  let cacheIdCookie = request.cookies.get("_medusa_cache_id")
+  const cacheIdCookie = request.cookies.get("_medusa_cache_id")
 
-  let cacheId = cacheIdCookie?.value || crypto.randomUUID()
+  const cacheId = cacheIdCookie?.value || crypto.randomUUID()
 
   const regionMap = await getRegionMap(cacheId)
 

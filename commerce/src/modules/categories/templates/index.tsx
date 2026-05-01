@@ -23,7 +23,9 @@ export default function CategoryTemplate({
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
-  if (!category || !countryCode) notFound()
+  if (!category || !countryCode) {
+    notFound()
+  }
 
   const parents = [] as HttpTypes.StoreProductCategory[]
 

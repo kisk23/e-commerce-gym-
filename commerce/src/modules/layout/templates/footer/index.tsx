@@ -1,8 +1,6 @@
-import { Facebook } from "@medusajs/icons"
 import { Text } from "@medusajs/ui"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import MedusaCTA from "@modules/layout/components/medusa-cta"
 import Image from "next/image"
 
 export default async function Footer() {

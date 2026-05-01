@@ -13,12 +13,16 @@ export default async function CheckoutForm({
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
 }) {
-  if (!cart) return null
+  if (!cart) {
+    return null
+  }
 
   const shippingMethods = await listCartShippingMethods(cart.id)
   const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? "")
 
-  if (!shippingMethods || !paymentMethods) return null
+  if (!shippingMethods || !paymentMethods) {
+    return null
+  }
 
   return (
     <div className="flex flex-col gap-5 w-full items-center justify-center mb-5">

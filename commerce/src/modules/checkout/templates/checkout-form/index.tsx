@@ -1,10 +1,10 @@
 import { listCartShippingMethods } from "@lib/data/fulfillment"
 import { listCartPaymentMethods } from "@lib/data/payment"
 import { HttpTypes } from "@medusajs/types"
-import DeliveryAddress from "./components/delivery-address"
-// import OrderSummary from "./components/order-summary"
-import PaymentMethod from "./components/payment-method"
-import PersonalInformation from "./components/personal-information"
+import Addresses from "@modules/checkout/components/addresses"
+import Payment from "@modules/checkout/components/payment"
+import Review from "@modules/checkout/components/review"
+import Shipping from "@modules/checkout/components/shipping"
 
 export default async function CheckoutForm({
   cart,
@@ -25,10 +25,14 @@ export default async function CheckoutForm({
   }
 
   return (
-    <div className="flex flex-col gap-5 w-full items-center justify-center mb-5">
-      <PersonalInformation cart={cart} customer={customer} />
-      <DeliveryAddress cart={cart} />
-      <PaymentMethod />
+    <div className="w-full grid grid-cols-1 gap-y-8">
+      <Addresses cart={cart} customer={customer} />
+
+      <Shipping cart={cart} availableShippingMethods={shippingMethods} />
+
+      <Payment cart={cart} availablePaymentMethods={paymentMethods} />
+
+      <Review cart={cart} />
     </div>
   )
 }

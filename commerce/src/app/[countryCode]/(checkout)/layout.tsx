@@ -2,6 +2,8 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import ChevronDown from "@modules/common/icons/chevron-down"
 import Image from "next/image"
 
+import { CheckoutHeader } from "@/modules/checkout/components/checkout-header"
+
 export default function CheckoutLayout({
   children,
 }: {
@@ -16,10 +18,13 @@ export default function CheckoutLayout({
             className="text-small-semi text-ui-fg-base flex items-center gap-x-2 uppercase flex-1 basis-0"
             data-testid="back-to-cart-link"
           >
+            
             <ChevronDown className="rotate-90" size={16} />
+            
             <span className="mt-px hidden small:block txt-compact-plus text-ui-fg-subtle hover:text-ui-fg-base ">
               Back to shopping cart
             </span>
+            
             <span className="mt-px block small:hidden txt-compact-plus text-ui-fg-subtle hover:text-ui-fg-base">
               Back
             </span>
@@ -36,6 +41,7 @@ export default function CheckoutLayout({
         </nav>
       </div>
       <div className="relative" data-testid="checkout-container">
+        <CheckoutHeader />
         {children}
       </div>
     </div>

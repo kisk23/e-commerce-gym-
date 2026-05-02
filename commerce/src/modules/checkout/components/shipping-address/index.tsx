@@ -164,7 +164,9 @@ const ShippingAddress = ({
           required
           data-testid="shipping-city-input"
         />
+
         <CountrySelect
+          className="w-full truncate "
           name="shipping_address.country_code"
           autoComplete="country"
           region={cart?.region}
@@ -173,6 +175,7 @@ const ShippingAddress = ({
           required
           data-testid="shipping-country-select"
         />
+
         <Input
           label="State / Province"
           name="shipping_address.province"

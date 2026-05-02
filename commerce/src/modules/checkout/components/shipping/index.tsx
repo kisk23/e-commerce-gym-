@@ -41,18 +41,11 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const isOpen = searchParams.get("step") === "delivery"
 
-  /**
-   * ✅ Only STANDARD + MONTHLY
-   * Uses the option name since metadata isn't available on this type.
-   */
   const shippingMethods = availableShippingMethods?.filter((sm) => {
     const nameType = sm.name?.toLowerCase() || ""
     return ["standard", "monthly"].some((t) => nameType.includes(t))
   })
 
-  // -----------------------------
-  // LOAD CALCULATED PRICES
-  // -----------------------------
   useEffect(() => {
     if (!shippingMethods?.length) {
       return
@@ -114,21 +107,27 @@ const Shipping: React.FC<ShippingProps> = ({
   }, [isOpen])
 
   return (
-    <div className="bg-white">
-      <div className="flex flex-row items-center justify-between mb-6">
+    <div className="bg-white border border-[#E6E6E6] rounded-2xl p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
         <Heading
           level="h2"
           className={clx(
-            "flex flex-row text-3xl-regular gap-x-2 items-baseline",
+            "flex items-center gap-3 text-[20px] font-semibold text-[#0A0A0A]",
             {
-              "opacity-50 pointer-events-none select-none":
+              "opacity-50 pointer-events-none":
                 !isOpen && cart.shipping_methods?.length === 0,
             }
           )}
         >
-          Delivery
+          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FAF5EF]">
+            <CheckCircleSolid className="text-[#CD995F]" />
+          </span>
+
+          Delivery Method
+
           {!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
-            <CheckCircleSolid />
+            <CheckCircleSolid className="ml-2 text-green-600" />
           )}
         </Heading>
 
@@ -136,100 +135,100 @@ const Shipping: React.FC<ShippingProps> = ({
           cart?.shipping_address &&
           cart?.billing_address &&
           cart?.email && (
-            <Text>
-              <button
-                onClick={handleEdit}
-                className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
-              >
-                Edit
-              </button>
-            </Text>
+            <button
+              onClick={handleEdit}
+              className="text-sm font-medium text-[#CD995F] hover:underline"
+            >
+              Edit
+            </button>
           )}
       </div>
 
       {isOpen ? (
-        <>
-          <div className="grid">
-            <div className="flex flex-col">
-              <span className="font-medium txt-medium text-ui-fg-base">
-                Shipping method
-              </span>
-              <span className="mb-4 text-ui-fg-muted txt-medium">
-                How would you like your order delivered
-              </span>
-            </div>
-
-            <RadioGroup
-              value={shippingMethodId}
-              onChange={(v) => v && handleSetShippingMethod(v)}
-            >
-              {shippingMethods?.map((option) => {
-                const isDisabled =
-                  option.price_type === "calculated" &&
-                  !isLoadingPrices &&
-                  typeof calculatedPricesMap[option.id] !== "number"
-
-                return (
-                  <Radio
-                    key={option.id}
-                    value={option.id}
-                    disabled={isDisabled}
-                    className={clx(
-                      "flex items-center justify-between text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
-                      {
-                        "border-ui-border-interactive":
-                          option.id === shippingMethodId,
-                        "cursor-not-allowed opacity-50": isDisabled,
-                      }
-                    )}
-                  >
-                    <div className="flex items-center gap-x-4">
-                      <MedusaRadio checked={option.id === shippingMethodId} />
-                      <span className="text-base-regular">{option.name}</span>
-                    </div>
-
-                    <span className="justify-self-end text-ui-fg-base">
-                      {option.price_type === "flat" ? (
-                        convertToLocale({
-                          amount: option.amount!,
-                          currency_code: cart.currency_code,
-                        })
-                      ) : calculatedPricesMap[option.id] ? (
-                        convertToLocale({
-                          amount: calculatedPricesMap[option.id],
-                          currency_code: cart.currency_code,
-                        })
-                      ) : isLoadingPrices ? (
-                        <Loader />
-                      ) : (
-                        "-"
-                      )}
-                    </span>
-                  </Radio>
-                )
-              })}
-            </RadioGroup>
-
-            <ErrorMessage error={error} />
-
-            <Button
-              size="large"
-              onClick={handleSubmit}
-              isLoading={isLoading}
-              disabled={!shippingMethodId}
-            >
-              Continue to payment
-            </Button>
+        <div className="space-y-8">
+          {/* Title */}
+          <div className="flex flex-col">
+            <span className="text-[14px] font-medium text-[#0A0A0A]">
+              Shipping method
+            </span>
+            <span className="text-[14px] text-[#717182]">
+              How would you like your order delivered
+            </span>
           </div>
-        </>
+
+          {/* Options */}
+          <RadioGroup
+            value={shippingMethodId}
+            onChange={(v) => v && handleSetShippingMethod(v)}
+          >
+            {shippingMethods?.map((option) => {
+              const isDisabled =
+                option.price_type === "calculated" &&
+                !isLoadingPrices &&
+                typeof calculatedPricesMap[option.id] !== "number"
+
+              return (
+                <Radio
+                  key={option.id}
+                  value={option.id}
+                  disabled={isDisabled}
+                  className={clx(
+                    "flex items-center justify-between px-4 py-3 border rounded-lg cursor-pointer mb-2 bg-white",
+                    {
+                      "border-[#CD995F]": option.id === shippingMethodId,
+                      "opacity-50 cursor-not-allowed": isDisabled,
+                    }
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <MedusaRadio checked={option.id === shippingMethodId} />
+                    <span className="text-[14px] text-[#0A0A0A]">
+                      {option.name}
+                    </span>
+                  </div>
+
+                  <span className="text-[14px] text-[#0A0A0A]">
+                    {option.price_type === "flat" ? (
+                      convertToLocale({
+                        amount: option.amount!,
+                        currency_code: cart.currency_code,
+                      })
+                    ) : calculatedPricesMap[option.id] ? (
+                      convertToLocale({
+                        amount: calculatedPricesMap[option.id],
+                        currency_code: cart.currency_code,
+                      })
+                    ) : isLoadingPrices ? (
+                      <Loader />
+                    ) : (
+                      "-"
+                    )}
+                  </span>
+                </Radio>
+              )
+            })}
+          </RadioGroup>
+
+          <ErrorMessage error={error} />
+
+          <Button
+            size="large"
+            onClick={handleSubmit}
+            isLoading={isLoading}
+            disabled={!shippingMethodId}
+            className="w-full h-11 rounded-md bg-[rgb(var(--primary))] text-white text-sm font-medium hover:opacity-90"
+          >
+            Continue to payment
+          </Button>
+        </div>
       ) : (
-        <div className="text-small-regular">
+        <div className="text-[14px] text-[#717182]">
           {cart.shipping_methods?.length ? (
-            <div className="flex flex-col w-1/3">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
+            <div className="flex flex-col">
+              <Text className="font-medium text-[#0A0A0A] mb-1">
                 Method
               </Text>
-              <Text className="txt-medium text-ui-fg-subtle">
+              <Text>
                 {cart.shipping_methods.at(-1)!.name}{" "}
                 {convertToLocale({
                   amount: cart.shipping_methods.at(-1)!.amount!,

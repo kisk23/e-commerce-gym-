@@ -4,11 +4,9 @@ import type { IOrderModuleService } from "@medusajs/types"
 import { SUBSCRIPTION_MODULE } from "../../../../../modules/subscription"
 import SubscriptionModuleService from "../../../../../modules/subscription/service"
 import {
-  computeSubscriptionWindow,
   decorateRemainingTime,
   toStringValue,
 } from "../../../../subscriptions/utils"
-import { addMonths } from "../../../../../modules/subscription/utils/date"
 
 type SubscribeBody = {
   plan_id?: string
@@ -107,6 +105,16 @@ export async function POST(
     throw new MedusaError(MedusaError.Types.UNAUTHORIZED, "Customer must be authenticated")
   }
 
+  const allowDirectActivation =
+    process.env.SUBSCRIPTIONS_ALLOW_DIRECT_ACTIVATION === "true"
+
+  if (!allowDirectActivation) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Direct subscription activation is disabled. Complete checkout to activate your plan."
+    )
+  }
+
   const requirePaidOrder = process.env.SUBSCRIPTIONS_REQUIRE_PAID_ORDER === "true"
   const canSubscribe = requirePaidOrder
     ? await hasEligiblePaidOrder(orderService, customerId)
@@ -138,48 +146,20 @@ export async function POST(
     )
   }
 
-  const nowIso = new Date().toISOString()
-  const active = await subscriptionService.getActiveSubscriptionForCustomer(customerId, nowIso)
-  const durationMonths = Number(plan.duration_months || 0)
-  const discountPercentage = Number(plan.discount_percentage || 0)
-
-  if (active) {
-    const updated = await subscriptionService.updateCustomerSubscriptions({
-      id: active.id,
-      plan_id: plan.id,
-      plan_title: plan.title,
-      duration_months: Number(active.duration_months || 0) + durationMonths,
-      discount_percentage: discountPercentage,
-      ends_at: addMonths(active.ends_at || nowIso, durationMonths),
-      status: "active",
-      cancelled_at: null,
-    })
-
-    const decorated = decorateRemainingTime(updated, nowIso)
-
-    res.status(200).json({
-      subscription: decorated,
-      action: "extended",
-    })
-    return
-  }
-
-  const { starts_at, ends_at } = computeSubscriptionWindow(nowIso, durationMonths)
-  const created = await subscriptionService.createCustomerSubscriptions({
-    customer_id: customerId,
-    plan_id: plan.id,
-    plan_title: plan.title,
-    duration_months: durationMonths,
-    discount_percentage: discountPercentage,
-    starts_at,
-    ends_at,
-    status: "active",
+  const result = await subscriptionService.activatePlanForCustomer({
+    customerId,
+    plan: {
+      id: plan.id,
+      title: plan.title,
+      duration_months: Number(plan.duration_months || 0),
+      discount_percentage: Number(plan.discount_percentage || 0),
+    },
   })
-
-  const decorated = decorateRemainingTime(created, nowIso)
+  const nowIso = new Date().toISOString()
+  const decorated = decorateRemainingTime(result.subscription, nowIso)
 
   res.status(200).json({
     subscription: decorated,
-    action: "created",
+    action: result.action,
   })
 }

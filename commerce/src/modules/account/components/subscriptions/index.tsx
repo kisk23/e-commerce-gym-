@@ -7,6 +7,7 @@ import {
 } from "@lib/types/subscription"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { Button } from "@medusajs/ui"
+import { useParams } from "next/navigation"
 import { useMemo, useState } from "react"
 
 type SubscriptionsProps = {
@@ -34,12 +35,17 @@ const Subscriptions = ({
   activeSubscription,
   isAuthenticated = true,
 }: SubscriptionsProps) => {
+  const params = useParams<{ countryCode?: string | string[] }>()
+  const countryCode =
+    typeof params.countryCode === "string" ? params.countryCode : "us"
+
   const [isSubmittingPlanId, setIsSubmittingPlanId] = useState<string | null>(
     null
   )
   const [message, setMessage] = useState<string | null>(null)
-  const [currentActive, setCurrentActive] =
-    useState<StoreCustomerSubscription | null>(activeSubscription)
+  const [currentActive] = useState<StoreCustomerSubscription | null>(
+    activeSubscription
+  )
 
   const remainingText = useMemo(() => {
     if (!currentActive || currentActive.status !== "active") {
@@ -61,13 +67,8 @@ const Subscriptions = ({
     setMessage(null)
 
     try {
-      const result = await subscribeToPlan(plan.id)
-      setCurrentActive(result.subscription)
-      setMessage(
-        result.action === "extended"
-          ? `Subscription extended with ${plan.title}.`
-          : `Subscribed to ${plan.title}.`
-      )
+      setMessage("Redirecting to checkout...")
+      await subscribeToPlan(plan.id, countryCode)
     } catch (error) {
       setMessage(
         error instanceof Error

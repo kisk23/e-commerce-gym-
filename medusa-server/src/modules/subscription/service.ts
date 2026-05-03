@@ -1,7 +1,7 @@
 import { MedusaService } from "@medusajs/framework/utils"
 import { SubscriptionPlan } from "./models/subscription-plan"
 import { CustomerSubscription } from "./models/customer-subscription"
-import { isPast, toValidDate } from "./utils/date"
+import { addMonths, isPast, toValidDate } from "./utils/date"
 
 const DEFAULT_PLANS = [
   {
@@ -116,6 +116,59 @@ class SubscriptionModuleService extends MedusaService({
     }
 
     return active
+  }
+
+  async activatePlanForCustomer({
+    customerId,
+    plan,
+    nowIso = new Date().toISOString(),
+  }: {
+    customerId: string
+    plan: {
+      id: string
+      title: string
+      duration_months: number
+      discount_percentage: number
+    }
+    nowIso?: string
+  }) {
+    const active = await this.getActiveSubscriptionForCustomer(customerId, nowIso)
+    const durationMonths = Number(plan.duration_months || 0)
+    const discountPercentage = Number(plan.discount_percentage || 0)
+
+    if (active) {
+      const updated = await this.updateCustomerSubscriptions({
+        id: active.id,
+        plan_id: plan.id,
+        plan_title: plan.title,
+        duration_months: Number(active.duration_months || 0) + durationMonths,
+        discount_percentage: discountPercentage,
+        ends_at: addMonths(active.ends_at || nowIso, durationMonths),
+        status: "active",
+        cancelled_at: null,
+      })
+
+      return {
+        subscription: updated,
+        action: "extended" as const,
+      }
+    }
+
+    const created = await this.createCustomerSubscriptions({
+      customer_id: customerId,
+      plan_id: plan.id,
+      plan_title: plan.title,
+      duration_months: durationMonths,
+      discount_percentage: discountPercentage,
+      starts_at: nowIso,
+      ends_at: addMonths(nowIso, durationMonths),
+      status: "active",
+    })
+
+    return {
+      subscription: created,
+      action: "created" as const,
+    }
   }
 }
 

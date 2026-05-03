@@ -19,6 +19,12 @@ export default async function Checkout() {
     return notFound()
   }
 
+  const cartWithMetadata = await retrieveCart(cart.id, "id,metadata")
+  const normalizedCart = {
+    ...cart,
+    metadata: cartWithMetadata?.metadata ?? cart.metadata,
+  }
+
   const customer = await retrieveCustomer()
 
   // FORCE LOGIN
@@ -27,10 +33,10 @@ export default async function Checkout() {
   }
 
   return (
-    <PaymentWrapper cart={cart}>
+    <PaymentWrapper cart={normalizedCart}>
       <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">
-        <CheckoutForm cart={cart} customer={customer} />
-        <CheckoutSummary cart={cart} />
+        <CheckoutForm cart={normalizedCart} customer={customer} />
+        <CheckoutSummary cart={normalizedCart} />
       </div>
     </PaymentWrapper>
   )

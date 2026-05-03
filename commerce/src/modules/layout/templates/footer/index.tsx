@@ -56,7 +56,7 @@ export default async function Footer() {
                 <li>
                   <LocalizedClientLink
                     className="hover:text-white cursor-pointer"
-                    href={`/subscription`}
+                    href={`/subscriptions`}
                     data-testid="category-link"
                   >
                     Subscription

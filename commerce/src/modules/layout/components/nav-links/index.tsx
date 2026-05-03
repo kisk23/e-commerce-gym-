@@ -10,7 +10,7 @@ const navItems = [
   { label: "Home", href: "/" },
   { label: "Bundles", href: "/bundles" },
   { label: "Build Bundle", href: "/bundles/create" },
-  { label: "Subscription", href: "/subscription" },
+  { label: "Subscription", href: "/subscriptions" },
 ]
 
 export default function NavLinks() {

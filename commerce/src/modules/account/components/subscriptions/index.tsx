@@ -5,12 +5,14 @@ import {
   StoreCustomerSubscription,
   StoreSubscriptionPlan,
 } from "@lib/types/subscription"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { Button } from "@medusajs/ui"
 import { useMemo, useState } from "react"
 
 type SubscriptionsProps = {
   plans: StoreSubscriptionPlan[]
   activeSubscription: StoreCustomerSubscription | null
+  isAuthenticated?: boolean
 }
 
 const formatDate = (value?: string | null) => {
@@ -27,7 +29,11 @@ const formatDate = (value?: string | null) => {
   return date.toDateString()
 }
 
-const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
+const Subscriptions = ({
+  plans,
+  activeSubscription,
+  isAuthenticated = true,
+}: SubscriptionsProps) => {
   const [isSubmittingPlanId, setIsSubmittingPlanId] = useState<string | null>(
     null
   )
@@ -46,6 +52,11 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
   }, [currentActive])
 
   const onSubscribe = async (plan: StoreSubscriptionPlan) => {
+    if (!isAuthenticated) {
+      setMessage("Please sign in to subscribe to a plan.")
+      return
+    }
+
     setIsSubmittingPlanId(plan.id)
     setMessage(null)
 
@@ -72,6 +83,20 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
     <section className="rounded-lg border border-ui-border-base p-4 flex flex-col gap-3">
       <h2 className="text-large-semi">Prepaid Subscriptions</h2>
 
+      {!isAuthenticated ? (
+        <div className="rounded-md border border-ui-border-base p-3 bg-ui-bg-subtle">
+          <p className="text-small-regular text-ui-fg-subtle">
+            Sign in to subscribe and manage your active plan.
+          </p>
+          <LocalizedClientLink
+            href="/account?redirect=/subscriptions"
+            className="text-small-semi mt-2 inline-flex"
+          >
+            Sign in
+          </LocalizedClientLink>
+        </div>
+      ) : null}
+
       {currentActive ? (
         <div className="rounded-md border border-ui-border-base p-3 bg-ui-bg-subtle">
           <p className="text-base-regular">
@@ -90,6 +115,10 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
           No active subscription. Choose a plan below.
         </p>
       )}
+
+      {!plans.length ? (
+        <p className="text-ui-fg-subtle">No subscription plans available.</p>
+      ) : null}
 
       <div className="grid grid-cols-1 small:grid-cols-2 gap-3">
         {plans.map((plan) => (
@@ -110,10 +139,14 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
             <Button
               variant="secondary"
               isLoading={isSubmittingPlanId === plan.id}
-              disabled={isSubmittingPlanId !== null}
+              disabled={isSubmittingPlanId !== null || !isAuthenticated}
               onClick={() => onSubscribe(plan)}
             >
-              {isSubmittingPlanId === plan.id ? "Processing..." : "Subscribe"}
+              {!isAuthenticated
+                ? "Sign in to subscribe"
+                : isSubmittingPlanId === plan.id
+                ? "Processing..."
+                : "Subscribe"}
             </Button>
           </article>
         ))}

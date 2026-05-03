@@ -1,5 +1,6 @@
 import type { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { MedusaError } from "@medusajs/framework/utils"
+import { MedusaError, Modules } from "@medusajs/framework/utils"
+import type { IOrderModuleService } from "@medusajs/types"
 import { SUBSCRIPTION_MODULE } from "../../../../../modules/subscription"
 import SubscriptionModuleService from "../../../../../modules/subscription/service"
 import {
@@ -11,6 +12,55 @@ import { addMonths } from "../../../../../modules/subscription/utils/date"
 
 type SubscribeBody = {
   plan_id?: string
+}
+
+const toAmount = (value: unknown): number => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  if (value && typeof value === "object") {
+    const withValue = value as { value?: unknown; raw?: unknown }
+    return toAmount(withValue.value ?? withValue.raw)
+  }
+
+  return 0
+}
+
+const hasEligiblePaidOrder = async (
+  orderService: IOrderModuleService,
+  customerId: string
+) => {
+  const orders = await orderService.listOrders(
+    { customer_id: customerId },
+    {
+      take: 50,
+      relations: ["transactions"],
+      order: { created_at: "DESC" },
+    }
+  )
+
+  return orders.some((order) => {
+    if (order.status !== "completed") {
+      return false
+    }
+
+    const hasCapturedTransaction = (order.transactions || []).some((transaction) => {
+      return (
+        toAmount(transaction.amount) > 0 &&
+        ["capture", "payment", "authorize"].includes(
+          String(transaction.reference || "").toLowerCase()
+        )
+      )
+    })
+
+    return hasCapturedTransaction
+  })
 }
 
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
@@ -50,10 +100,23 @@ export async function POST(
   res: MedusaResponse
 ) {
   const subscriptionService: SubscriptionModuleService = req.scope.resolve(SUBSCRIPTION_MODULE)
+  const orderService: IOrderModuleService = req.scope.resolve(Modules.ORDER)
   const customerId = req.auth_context?.actor_id
 
   if (!customerId) {
     throw new MedusaError(MedusaError.Types.UNAUTHORIZED, "Customer must be authenticated")
+  }
+
+  const requirePaidOrder = process.env.SUBSCRIPTIONS_REQUIRE_PAID_ORDER === "true"
+  const canSubscribe = requirePaidOrder
+    ? await hasEligiblePaidOrder(orderService, customerId)
+    : true
+
+  if (!canSubscribe) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "You need at least one paid completed order before subscribing."
+    )
   }
 
   const payload = req.body || {}
@@ -120,4 +183,3 @@ export async function POST(
     action: "created",
   })
 }
-

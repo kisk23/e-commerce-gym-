@@ -12,13 +12,13 @@ import {
 export const listSubscriptionPlans = async (): Promise<
   StoreSubscriptionPlan[]
 > => {
-  return sdk.client
+  return await sdk.client
     .fetch<{ plans: StoreSubscriptionPlan[] }>("/store/subscriptions/plans", {
       method: "GET",
       cache: "no-store",
     })
     .then((response) => response.plans || [])
-    .catch(() => [])
+    .catch((err) => medusaError(err))
 }
 
 export const listMySubscriptions = async (): Promise<{
@@ -29,7 +29,7 @@ export const listMySubscriptions = async (): Promise<{
     ...(await getAuthHeaders()),
   }
 
-  return sdk.client
+  return await sdk.client
     .fetch<{
       subscriptions: StoreCustomerSubscription[]
       active_subscription: StoreCustomerSubscription | null
@@ -42,10 +42,7 @@ export const listMySubscriptions = async (): Promise<{
       subscriptions: response.subscriptions || [],
       active_subscription: response.active_subscription || null,
     }))
-    .catch(() => ({
-      subscriptions: [],
-      active_subscription: null,
-    }))
+    .catch((err) => medusaError(err))
 }
 
 export const subscribeToPlan = async (planId: string) => {

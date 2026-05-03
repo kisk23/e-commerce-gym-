@@ -53,11 +53,9 @@ class SubscriptionModuleService extends MedusaService({
       return existingPlans
     }
 
-    await Promise.all(
-      missingPlans.map((plan) => {
-        return this.createSubscriptionPlans(plan)
-      })
-    )
+    for (const plan of missingPlans) {
+      await this.createSubscriptionPlans(plan)
+    }
 
     return this.listSubscriptionPlans({})
   }

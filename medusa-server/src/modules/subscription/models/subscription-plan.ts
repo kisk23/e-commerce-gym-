@@ -5,6 +5,7 @@ export const SubscriptionPlan = model.define("subscription_plan", {
   id: model.id().primaryKey(),
   title: model.text(),
   description: model.text().nullable(),
+  price_amount: model.number().default(0),
   duration_months: model.number(),
   discount_percentage: model.number(),
   rank: model.number().default(0),
@@ -13,4 +14,3 @@ export const SubscriptionPlan = model.define("subscription_plan", {
     mappedBy: "plan",
   }),
 })
-

@@ -84,6 +84,7 @@ export const subscribeToPlan = async (planId: string, countryCode: string) => {
       ...currentMetadata,
       subscription_intent_plan_id: selectedPlan.id,
       subscription_intent_plan_title: selectedPlan.title,
+      subscription_intent_price_amount: selectedPlan.price_amount,
       subscription_intent_duration_months: selectedPlan.duration_months,
       subscription_intent_discount_percentage: selectedPlan.discount_percentage,
       subscription_intent_selected_at: nowIso,

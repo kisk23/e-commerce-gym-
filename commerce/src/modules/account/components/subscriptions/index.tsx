@@ -137,6 +137,9 @@ const Subscriptions = ({
               {plan.duration_months} month(s) - {plan.discount_percentage}%
               discount
             </p>
+            <p className="text-small-regular text-ui-fg-subtle">
+              Price amount: {Number(plan.price_amount || 0)}
+            </p>
             <Button
               variant="secondary"
               isLoading={isSubmittingPlanId === plan.id}

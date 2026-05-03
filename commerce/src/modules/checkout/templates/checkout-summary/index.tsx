@@ -7,6 +7,7 @@ import { useCheckout } from "@modules/checkout/components/checkout-context"
 
 const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
   const { errors } = useCheckout()
+  const cartMetadata = (cart.metadata || {}) as Record<string, unknown>
 
   const subtotal = convertToLocale({
     amount: cart.subtotal ?? 0,
@@ -22,6 +23,29 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
     amount: cart.total ?? 0,
     currency_code: cart.currency_code,
   })
+
+  const subscriptionPlanTitle =
+    typeof cartMetadata.subscription_intent_plan_title === "string"
+      ? cartMetadata.subscription_intent_plan_title
+      : null
+  const subscriptionPlanId =
+    typeof cartMetadata.subscription_intent_plan_id === "string"
+      ? cartMetadata.subscription_intent_plan_id
+      : null
+  const subscriptionDuration =
+    typeof cartMetadata.subscription_intent_duration_months === "number"
+      ? cartMetadata.subscription_intent_duration_months
+      : Number(cartMetadata.subscription_intent_duration_months || 0)
+  const subscriptionDiscount =
+    typeof cartMetadata.subscription_intent_discount_percentage === "number"
+      ? cartMetadata.subscription_intent_discount_percentage
+      : Number(cartMetadata.subscription_intent_discount_percentage || 0)
+  const subscriptionPriceAmount =
+    typeof cartMetadata.subscription_intent_price_amount === "number"
+      ? cartMetadata.subscription_intent_price_amount
+      : Number(cartMetadata.subscription_intent_price_amount || 0)
+
+  const hasSubscriptionIntent = Boolean(subscriptionPlanTitle || subscriptionPlanId)
 
   return (
     <div className="rounded-2xl border w-full lg:max-w-fit max-w-[700px] p-6 shadow-sm sticky top-6">
@@ -67,6 +91,27 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
           <span className="text-xl">{grandTotal}</span>
         </div>
       </div>
+
+      {hasSubscriptionIntent && (
+        <div className="mb-6 rounded-xl border border-[#f0ede4] bg-[#faf9f6] p-4 space-y-1.5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#6e6a57]">
+            Selected Subscription Plan
+          </p>
+          <p className="text-sm font-medium">
+            {subscriptionPlanTitle || subscriptionPlanId}
+          </p>
+          <p className="text-xs text-gray-500">
+            {Math.max(0, subscriptionDuration)} month(s) •{" "}
+            {Math.max(0, subscriptionDiscount)}% discount
+          </p>
+          <p className="text-xs text-gray-500">
+            Price amount: {Math.max(0, subscriptionPriceAmount)}
+          </p>
+          <p className="text-xs text-gray-500">
+            This plan will be activated after successful checkout.
+          </p>
+        </div>
+      )}
 
       {/* Validation errors */}
       {errors.length > 0 && (

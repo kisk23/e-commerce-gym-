@@ -7,6 +7,7 @@ const DEFAULT_PLANS = [
   {
     title: "3 Months Prepaid",
     description: "Prepaid subscription for 3 months.",
+    price_amount: 0,
     duration_months: 3,
     discount_percentage: 5,
     rank: 1,
@@ -15,6 +16,7 @@ const DEFAULT_PLANS = [
   {
     title: "6 Months Prepaid",
     description: "Prepaid subscription for 6 months.",
+    price_amount: 0,
     duration_months: 6,
     discount_percentage: 10,
     rank: 2,
@@ -23,6 +25,7 @@ const DEFAULT_PLANS = [
   {
     title: "9 Months Prepaid",
     description: "Prepaid subscription for 9 months.",
+    price_amount: 0,
     duration_months: 9,
     discount_percentage: 15,
     rank: 3,
@@ -31,6 +34,7 @@ const DEFAULT_PLANS = [
   {
     title: "1 Year Prepaid",
     description: "Prepaid subscription for 12 months.",
+    price_amount: 0,
     duration_months: 12,
     discount_percentage: 20,
     rank: 4,

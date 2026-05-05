@@ -138,6 +138,7 @@ const StripePaymentButton = ({
         size="large"
         isLoading={submitting}
         data-testid={dataTestId}
+        className="bg-primary hover:bg-primary/90 text-white"
       >
         Place order
       </Button>

@@ -36,6 +36,7 @@ export default async function CustomBundlePage(props: {
         })
         .catch(() => ({ products: [] }))
     : { products: [] }
+    
 
   const hasCalculatedAmount = (variant: {
     calculated_price?: { calculated_amount?: number | string | null } | null

@@ -17,6 +17,8 @@ export default async function Nav() {
     listLocales(),
     getLocale(),
   ])
+  
+  
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 group">

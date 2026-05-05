@@ -26,6 +26,7 @@ export default function BundleView({ bundle, onAddToCart, isAdding = false }: Pr
 
   const discountPct = bundle.discount_percentage || 0
   const originalPrice = Number(bundle.total_price || 0)
+  
 
   const discountedPrice =
     discountPct > 0
@@ -38,6 +39,18 @@ export default function BundleView({ bundle, onAddToCart, isAdding = false }: Pr
     }
     onAddToCart()
   }
+
+  const getCurrencySymbol = (currencyCode: string, locale = "en") => {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currencyCode.toUpperCase(),
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+    .format(0)
+    .replace(/\d/g, "")
+    .trim()
+}
 
   return (
     <div className="w-full max-w-[400px] rounded-[26px] overflow-hidden bg-white border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
@@ -123,11 +136,11 @@ export default function BundleView({ bundle, onAddToCart, isAdding = false }: Pr
           <div className="flex flex-col">
             {discountPct > 0 && (
               <span className="text-sm text-gray-400 line-through">
-                ${originalPrice.toFixed(2)}
+                {originalPrice.toFixed(2)}{getCurrencySymbol(bundle.currency_code??"USD")}
               </span>
             )}
-            <span className="text-2xl font-semibold text-primary leading-none">
-              ${discountedPrice.toFixed(2)}
+            <span className="text-lg font-semibold text-primary leading-none">
+              {discountedPrice.toFixed(2)}{getCurrencySymbol(bundle.currency_code??"USD")}
             </span>
           </div>
 

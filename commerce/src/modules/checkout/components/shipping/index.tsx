@@ -42,14 +42,10 @@ const Shipping: React.FC<ShippingProps> = ({
   const isOpen = searchParams.get("step") === "delivery"
 
   /**
-   * ✅ Only STANDARD + MONTHLY
+   * ✅ 
    * Uses the option name since metadata isn't available on this type.
    */
-  const shippingMethods = availableShippingMethods?.filter((sm) => {
-    const nameType = sm.name?.toLowerCase() || ""
-    return ["standard", "monthly"].some((t) => nameType.includes(t))
-  })
-
+  const shippingMethods = availableShippingMethods
   // -----------------------------
   // LOAD CALCULATED PRICES
   // -----------------------------
@@ -126,7 +122,7 @@ const Shipping: React.FC<ShippingProps> = ({
         >
           Delivery
           {!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
-            <CheckCircleSolid />
+            <CheckCircleSolid className="text-green-800"/>
           )}
         </Heading>
 
@@ -215,6 +211,7 @@ const Shipping: React.FC<ShippingProps> = ({
               onClick={handleSubmit}
               isLoading={isLoading}
               disabled={!shippingMethodId}
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               Continue to payment
             </Button>

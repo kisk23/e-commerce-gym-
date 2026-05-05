@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
 
-import { retrieveCart } from "@lib/data/cart"
+import { getOrSetCart, retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
@@ -12,8 +12,13 @@ export const metadata: Metadata = {
   title: "Checkout",
 }
 
-export default async function Checkout() {
-  const cart = await retrieveCart()
+export default async function Checkout({
+  params,
+}: {
+  params: { countryCode: string }
+}) {
+  const countryCode = params?.countryCode || "us"
+  const cart = (await retrieveCart()) || (await getOrSetCart(countryCode))
 
   if (!cart) {
     return notFound()
@@ -29,7 +34,7 @@ export default async function Checkout() {
 
   // FORCE LOGIN
   if (!customer) {
-    redirect("/account?redirect=/checkout")
+    redirect(`/${countryCode}/account?redirect=/${countryCode}/checkout`)
   }
 
   return (

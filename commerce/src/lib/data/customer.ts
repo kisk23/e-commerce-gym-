@@ -14,6 +14,7 @@ import {
   removeCartId,
   setAuthToken,
 } from "./cookies"
+import { syncSubscriptionDiscount } from "./cart"
 
 export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
@@ -156,6 +157,7 @@ export async function transferCart() {
   const headers = await getAuthHeaders()
 
   await sdk.store.cart.transferCart(cartId, {}, headers)
+  await syncSubscriptionDiscount(cartId)
 
   const cartCacheTag = await getCacheTag("carts")
   revalidateTag(cartCacheTag)

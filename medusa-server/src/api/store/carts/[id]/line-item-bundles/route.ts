@@ -4,9 +4,10 @@ import { ContainerRegistrationKeys, MedusaError, Modules } from "@medusajs/frame
 import { ICartModuleService } from "@medusajs/types"
 import { randomUUID } from "node:crypto"
 import { BUNDLE_MODULE } from "../../../../../modules/bundle"
-import { roundValue, getVariantPriceMap, normalizeCurrencyCode, pickVariantPrice } from "../../../../../modules/bundle/utils/pricing"
+import { roundValue, getVariantPriceMap } from "../../../../../modules/bundle/utils/pricing"
 import { SUBSCRIPTION_MODULE } from "../../../../../modules/subscription"
 import SubscriptionModuleService from "../../../../../modules/subscription/service"
+import { applySubscriptionDiscountToCart } from "../../../../../modules/subscription/utils/cart-discount"
 
 type AddBundleToCartBody = {
   bundle_id?: string
@@ -66,22 +67,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
     const cartSnapshot = await cartModuleService.retrieveCart(cartId)
     const cartCurrency = cartSnapshot?.currency_code || "aed"
-    const activeSubscription =
-      cartSnapshot?.customer_id
-        ? await subscriptionModuleService.getActiveSubscriptionForCustomer(cartSnapshot.customer_id)
-        : null
-    const subscriptionDiscountPercentage = Math.max(
-      0,
-      Math.round(Number(activeSubscription?.discount_percentage || 0))
-    )
-    const subscriptionMetadata = activeSubscription
-      ? {
-          subscription_id: activeSubscription.id,
-          subscription_plan_title: activeSubscription.plan_title,
-          subscription_discount_percentage: subscriptionDiscountPercentage,
-          subscription_ends_at: activeSubscription.ends_at,
-        }
-      : {}
 
     if (bundleId) {
       const bundle = await bundleModuleService.retrieveBundle(bundleId, {
@@ -130,7 +115,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_item_units: item.quantity,
             bundle_item_weight: item.weight,
             bundle_price_per_100g: pricePer100g,
-            ...subscriptionMetadata,
             ...(typeof weightValue === "number" ? { weight_g: weightValue } : {}),
           },
         }
@@ -152,7 +136,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_operation_id: operationId,
             bundle_type: "custom",
             bundle_item_units: Math.max(1, Math.round(Number(item.quantity) || 1)),
-            ...subscriptionMetadata,
           },
         }))
 
@@ -165,10 +148,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
       bundleTitle = title
       discountPercentage = 0
-    }
-
-    if (subscriptionDiscountPercentage > 0) {
-      discountPercentage = Math.min(99, discountPercentage + subscriptionDiscountPercentage)
     }
 
     await workflowEngine.run(addToCartWorkflowId, {
@@ -220,6 +199,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       }
     }
 
+    const syncResult = await applySubscriptionDiscountToCart({
+      cartId,
+      customerId: cartSnapshot?.customer_id || undefined,
+      cartModuleService,
+      subscriptionService: subscriptionModuleService,
+    })
+
     const updatedCart = await cartModuleService.retrieveCart(cartId, {
       relations: ["items", "items.adjustments"],
     })
@@ -237,12 +223,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         title: bundleTitle,
         discount_percentage: discountPercentage,
       },
-      subscription: activeSubscription
+      subscription: syncResult.activeSubscription
         ? {
-            id: activeSubscription.id,
-            plan_title: activeSubscription.plan_title,
-            discount_percentage: subscriptionDiscountPercentage,
-            ends_at: activeSubscription.ends_at,
+            id: syncResult.activeSubscription.id,
+            plan_title: syncResult.activeSubscription.plan_title,
+            discount_percentage: syncResult.discountPercentage,
+            ends_at: syncResult.activeSubscription.ends_at,
           }
         : null,
     })

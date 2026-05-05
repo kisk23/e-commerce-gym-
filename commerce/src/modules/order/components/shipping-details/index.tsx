@@ -9,6 +9,11 @@ type ShippingDetailsProps = {
 }
 
 const ShippingDetails = ({ order }: ShippingDetailsProps) => {
+  const firstShippingMethod =
+    ((order as any)?.shipping_methods?.[0] as
+      | { name?: string; total?: number }
+      | undefined) || order.shipping_methods?.[0]
+
   return (
     <div>
       <Heading level="h2" className="flex flex-row text-3xl-regular my-6">
@@ -56,9 +61,9 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
         >
           <Text className="txt-medium-plus text-ui-fg-base mb-1">Method</Text>
           <Text className="txt-medium text-ui-fg-subtle">
-            {(order as any).shipping_methods[0]?.name} (
+            {firstShippingMethod?.name || "Shipping"} (
             {convertToLocale({
-              amount: order.shipping_methods?.[0].total ?? 0,
+              amount: firstShippingMethod?.total ?? 0,
               currency_code: order.currency_code,
             })}
             )

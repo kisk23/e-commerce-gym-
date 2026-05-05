@@ -26,6 +26,27 @@ const Summary = ({ cart }: SummaryProps) => {
   const subtotal = Number(cart.item_subtotal ?? cart.subtotal ?? 0)
   const delivery = Number(cart.shipping_subtotal ?? 0)
   const total = Number(cart.total ?? 0)
+  const subscriptionAdjustments = (cart.items || []).flatMap((item) =>
+    ((item as any).adjustments || []).filter((adjustment: any) => {
+      return (
+        adjustment?.code === "SUBSCRIPTION_PLAN_DISCOUNT" ||
+        adjustment?.provider_id === "subscription"
+      )
+    })
+  )
+  const subscriptionDiscountAmount = subscriptionAdjustments.reduce(
+    (sum, adjustment: any) => sum + Number(adjustment?.amount || 0),
+    0
+  )
+  const subscriptionDiscountDescription =
+    typeof subscriptionAdjustments[0]?.description === "string"
+      ? subscriptionAdjustments[0].description
+      : ""
+  const subscriptionDiscountPercentageMatch =
+    subscriptionDiscountDescription.match(/\((\d+)%\)/)
+  const subscriptionDiscountPercentage = subscriptionDiscountPercentageMatch
+    ? Number(subscriptionDiscountPercentageMatch[1])
+    : null
   const freeDeliveryTarget = 1000
   const remainingForFreeDelivery = Math.max(0, freeDeliveryTarget - subtotal)
   const freeDeliveryMessage =
@@ -73,6 +94,27 @@ const Summary = ({ cart }: SummaryProps) => {
                 })}
               </span>
             </div>
+            {subscriptionDiscountAmount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm leading-5 text-[#717182]">
+                  Subscription discount
+                  {subscriptionDiscountPercentage !== null
+                    ? ` (${subscriptionDiscountPercentage}%)`
+                    : ""}
+                </span>
+                <span
+                  className="text-sm leading-5 font-medium text-[rgb(var(--primary))]"
+                  data-testid="cart-subscription-discount"
+                  data-value={subscriptionDiscountAmount}
+                >
+                  -{" "}
+                  {convertToLocale({
+                    amount: subscriptionDiscountAmount,
+                    currency_code: currencyCode,
+                  })}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

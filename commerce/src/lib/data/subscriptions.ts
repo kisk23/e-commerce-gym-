@@ -4,7 +4,7 @@ import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { revalidateTag } from "next/cache"
 import { getAuthHeaders, getCacheTag } from "./cookies"
-import { getOrSetCart, retrieveCart, updateCart } from "./cart"
+import { getOrSetCart, syncSubscriptionDiscount } from "./cart"
 import { redirect } from "next/navigation"
 import {
   StoreCustomerSubscription,
@@ -75,28 +75,22 @@ export const subscribeToPlan = async (planId: string, countryCode: string) => {
     throw new Error("Could not initialize cart for subscription checkout.")
   }
 
-  const cartSnapshot = await retrieveCart(cart.id, "id,metadata")
-  const currentMetadata = (cartSnapshot?.metadata || {}) as Record<string, unknown>
-  const nowIso = new Date().toISOString()
+  await sdk.client
+    .fetch(`/store/carts/${cart.id}/subscription-plan`, {
+      method: "POST",
+      headers: authHeaders,
+      body: {
+        plan_id: selectedPlan.id,
+      },
+      cache: "no-store",
+    })
+    .catch((err) => medusaError(err))
 
-  await updateCart({
-    metadata: {
-      ...currentMetadata,
-      subscription_intent_plan_id: selectedPlan.id,
-      subscription_intent_plan_title: selectedPlan.title,
-      subscription_intent_price_amount: selectedPlan.price_amount,
-      subscription_intent_duration_months: selectedPlan.duration_months,
-      subscription_intent_discount_percentage: selectedPlan.discount_percentage,
-      subscription_intent_selected_at: nowIso,
-      subscription_activation_status: "pending_checkout",
-      subscription_activation_processed_at: null,
-      subscription_activation_action: null,
-    },
-  })
+  await syncSubscriptionDiscount(cart.id)
 
   const customerTag = await getCacheTag("customers")
   revalidateTag(customerTag)
 
   const checkoutCountryCode = countryCode.toLowerCase()
-  redirect(`/${checkoutCountryCode}/checkout?step=payment`)
+  redirect(`/${checkoutCountryCode}/subscription-checkout?step=payment`)
 }

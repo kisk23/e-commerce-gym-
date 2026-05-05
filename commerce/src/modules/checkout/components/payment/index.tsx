@@ -115,8 +115,8 @@ const Payment = ({
             }
           )}
         >
-          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5EBDF]">
-            <CreditCard className="text-[#213C02]" />
+          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#E9ECE6]">
+            <CreditCard className="text-primary" />
           </span>
 
           Payment Method
@@ -129,7 +129,7 @@ const Payment = ({
         {!isOpen && paymentReady && (
           <button
             onClick={handleEdit}
-            className="text-sm font-medium text-[#213C02] hover:underline"
+            className="text-sm font-medium text-[#4b6af1] hover:underline"
             data-testid="edit-payment-button"
           >
             Edit
@@ -183,7 +183,7 @@ const Payment = ({
 
         <Button
           size="large"
-          className="mt-6 w-full h-11 rounded-md bg-[rgb(var(--primary))] text-white text-sm font-medium hover:opacity-90"
+          className="mt-6 w-full h-11 rounded-md bg-[rgb(var(--primary))] text-white text-sm font-medium hover:bg-primary/80"
           onClick={handleSubmit}
           isLoading={isLoading}
           disabled={

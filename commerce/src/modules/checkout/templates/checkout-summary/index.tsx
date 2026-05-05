@@ -48,7 +48,7 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
   const hasSubscriptionIntent = Boolean(subscriptionPlanTitle || subscriptionPlanId)
 
   return (
-    <div className="rounded-2xl border w-full lg:max-w-fit max-w-[700px] p-6 shadow-sm sticky top-6">
+    <div className="rounded-2xl border w-full lg:max-w-fit max-w-[700px] p-6 shadow-sm mx-auto sticky top-6">
       <h2 className="text-base font-semibold mb-5 tracking-tight">
         Order Summary
       </h2>
@@ -135,7 +135,7 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
       )}
 
       {/* CTA — always active */}
-      <PaymentButton cart={cart} data-testid="submit-order-button" />
+      {/* <PaymentButton cart={cart} data-testid="submit-order-button" /> */}
 
       <p className="text-center text-xs text-gray-500 mt-3 flex items-center justify-center gap-1.5">
         Your payment information is secure and encrypted

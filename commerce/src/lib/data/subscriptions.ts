@@ -4,7 +4,7 @@ import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { revalidateTag } from "next/cache"
 import { getAuthHeaders, getCacheTag } from "./cookies"
-import { getOrSetCart, syncSubscriptionDiscount } from "./cart"
+import { getOrSetCart, syncSubscriptionDiscount, clearCart } from "./cart"
 import { redirect } from "next/navigation"
 import {
   StoreCustomerSubscription,
@@ -74,6 +74,9 @@ export const subscribeToPlan = async (planId: string, countryCode: string) => {
   if (!cart?.id) {
     throw new Error("Could not initialize cart for subscription checkout.")
   }
+
+  // Clear any existing items from the cart before adding subscription plan
+  await clearCart(cart.id)
 
   await sdk.client
     .fetch(`/store/carts/${cart.id}/subscription-plan`, {

@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation"
 
 import { getOrSetCart, retrieveCartWithCache } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
+import { getAuthHeaders } from "@lib/data/cookies"
+import { sdk } from "@lib/config"
 
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
@@ -36,6 +38,28 @@ export default async function SubscriptionCheckout({
 
   if (!hasSubscriptionPlan) {
     redirect(`/${countryCode}/checkout?step=payment`)
+  }
+
+  // Remove any non-subscription items from the cart for safety
+  if (cart.items && cart.items.length > 0) {
+    const nonSubscriptionItems = (cart.items || []).filter((item) => {
+      const metadata = (item.metadata || {}) as Record<string, unknown>
+      const rawFlag = metadata.subscription_plan_purchase
+      return !(rawFlag === true || rawFlag === "true" || rawFlag === 1 || rawFlag === "1")
+    })
+
+    if (nonSubscriptionItems.length > 0) {
+      try {
+        const authHeaders = await getAuthHeaders()
+        for (const item of nonSubscriptionItems) {
+          if (item.id) {
+            await sdk.store.cart.deleteLineItem(cart.id, item.id, {}, authHeaders).catch(() => null)
+          }
+        }
+      } catch {
+        // Continue if removal fails
+      }
+    }
   }
 
   const cartWithMetadata = await retrieveCartWithCache(

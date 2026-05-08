@@ -240,6 +240,39 @@ export async function deleteLineItem(lineId: string) {
     .catch(medusaError)
 }
 
+export async function clearCart(cartId?: string) {
+  const id = cartId || (await getCartId())
+
+  if (!id) {
+    throw new Error("Missing cart ID when clearing cart")
+  }
+
+  const cart = await retrieveCart(id)
+
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  // Delete all line items from the cart
+  for (const item of cart.items) {
+    if (item.id) {
+      await sdk.store.cart
+        .deleteLineItem(id, item.id, {}, headers)
+        .catch(() => null) // Continue even if one fails
+    }
+  }
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+
+  const fulfillmentCacheTag = await getCacheTag("fulfillment")
+  revalidateTag(fulfillmentCacheTag)
+}
+
 export async function setShippingMethod({
   cartId,
   shippingMethodId,

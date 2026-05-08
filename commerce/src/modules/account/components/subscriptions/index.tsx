@@ -1,10 +1,15 @@
 "use client"
 
 import { subscribeToPlan } from "@lib/data/subscriptions"
+import { clearCartLineItems } from "@lib/data/cart"
 import {
   StoreCustomerSubscription,
   StoreSubscriptionPlan,
 } from "@lib/types/subscription"
+import {
+  isSubscriptionPlanPurchaseItem,
+  saveCartSnapshot,
+} from "@lib/cart-snapshot"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { Button } from "@medusajs/ui"
 import { useParams } from "next/navigation"
@@ -14,6 +19,11 @@ type SubscriptionsProps = {
   plans: StoreSubscriptionPlan[]
   activeSubscription: StoreCustomerSubscription | null
   isAuthenticated?: boolean
+  cartItems?: Array<{
+    variant_id?: string | null
+    quantity?: number | null
+    metadata?: Record<string, unknown> | null
+  }>
 }
 
 const formatDate = (value?: string | null) => {
@@ -34,6 +44,7 @@ const Subscriptions = ({
   plans,
   activeSubscription,
   isAuthenticated = true,
+  cartItems = [],
 }: SubscriptionsProps) => {
   const params = useParams<{ countryCode?: string | string[] }>()
   const countryCode =
@@ -67,6 +78,20 @@ const Subscriptions = ({
     setMessage(null)
 
     try {
+      const snapshotItems = (cartItems || [])
+        .filter((i) => !!i?.variant_id && !isSubscriptionPlanPurchaseItem(i))
+        .map((i) => ({
+          variantId: String(i.variant_id),
+          quantity: Math.max(1, Math.floor(Number(i.quantity || 1))),
+          metadata:
+            i.metadata && Object.keys(i.metadata).length ? i.metadata : undefined,
+        }))
+
+      saveCartSnapshot(snapshotItems)
+
+      // Ensure the cart is empty before inserting the subscription plan purchase.
+      await clearCartLineItems()
+
       setMessage("Redirecting to checkout...")
       await subscribeToPlan(plan.id, countryCode)
     } catch (error) {

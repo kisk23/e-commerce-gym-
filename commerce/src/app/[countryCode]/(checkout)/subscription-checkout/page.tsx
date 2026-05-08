@@ -31,7 +31,9 @@ export default async function SubscriptionCheckout({
   const hasSubscriptionPlan = (cart.items || []).some((item) => {
     const metadata = (item.metadata || {}) as Record<string, unknown>
     const rawFlag = metadata.subscription_plan_purchase
-    return rawFlag === true || rawFlag === "true" || rawFlag === 1 || rawFlag === "1"
+    return (
+      rawFlag === true || rawFlag === "true" || rawFlag === 1 || rawFlag === "1"
+    )
   })
 
   if (!hasSubscriptionPlan) {
@@ -59,7 +61,11 @@ export default async function SubscriptionCheckout({
   return (
     <PaymentWrapper cart={normalizedCart}>
       <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-20 gap-y-12 py-12">
-        <CheckoutForm cart={normalizedCart} customer={customer} mode="subscription" />
+        <CheckoutForm
+          cart={normalizedCart}
+          customer={customer}
+          mode="subscription"
+        />
         <CheckoutSummary cart={normalizedCart} />
       </div>
     </PaymentWrapper>

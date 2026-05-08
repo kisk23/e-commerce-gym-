@@ -29,6 +29,8 @@ const SUBSCRIPTION_METADATA_KEYS = {
   status: "subscription_activation_status",
   processedAt: "subscription_activation_processed_at",
   action: "subscription_activation_action",
+  effectiveDiscount: "subscription_effective_discount_percentage",
+  pricingSegments: "subscription_pricing_segments",
 }
 
 const CUSTOMER_PENDING_METADATA_KEYS = {
@@ -120,6 +122,7 @@ export default async function activateSubscriptionOnOrder({
       title: plan.title,
       duration_months: Number(plan.duration_months || 0),
       discount_percentage: Number(plan.discount_percentage || 0),
+      price_amount: Number(plan.price_amount || 0),
     },
   })
 
@@ -130,6 +133,11 @@ export default async function activateSubscriptionOnOrder({
       [SUBSCRIPTION_METADATA_KEYS.status]: "applied",
       [SUBSCRIPTION_METADATA_KEYS.processedAt]: new Date().toISOString(),
       [SUBSCRIPTION_METADATA_KEYS.action]: result.action,
+      [SUBSCRIPTION_METADATA_KEYS.effectiveDiscount]: Number(
+        result.subscription?.discount_percentage || 0
+      ),
+      [SUBSCRIPTION_METADATA_KEYS.pricingSegments]:
+        result.subscription?.pricing_segments || "[]",
     },
   })
 

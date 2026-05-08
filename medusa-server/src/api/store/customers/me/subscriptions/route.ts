@@ -153,6 +153,7 @@ export async function POST(
       title: plan.title,
       duration_months: Number(plan.duration_months || 0),
       discount_percentage: Number(plan.discount_percentage || 0),
+      price_amount: Number(plan.price_amount || 0),
     },
   })
   const nowIso = new Date().toISOString()

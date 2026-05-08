@@ -3,6 +3,7 @@ import SubscriptionModuleService from "../service"
 
 export const SUBSCRIPTION_DISCOUNT_CODE = "SUBSCRIPTION_PLAN_DISCOUNT"
 export const SUBSCRIPTION_DISCOUNT_PROVIDER = "subscription"
+const MAX_DISCOUNT_BPS = 9_999
 
 const toAmount = (value: unknown): number => {
   if (typeof value === "number") {
@@ -49,10 +50,12 @@ export const applySubscriptionDiscountToCart = async ({
     ? await subscriptionService.getActiveSubscriptionForCustomer(resolvedCustomerId)
     : null
 
-  const discountPercentage = Math.max(
-    0,
-    Math.min(99, Math.round(Number(activeSubscription?.discount_percentage || 0)))
-  )
+  const rawDiscountPercentage = Number(activeSubscription?.discount_percentage || 0)
+  const normalizedDiscountPercentage = Number.isFinite(rawDiscountPercentage)
+    ? Math.max(0, Math.min(99.99, rawDiscountPercentage))
+    : 0
+  const discountBps = Math.max(0, Math.min(MAX_DISCOUNT_BPS, Math.round(normalizedDiscountPercentage * 100)))
+  const discountPercentage = discountBps / 100
 
   const items = cart.items || []
   const existingSubscriptionAdjustments = items.flatMap((item) =>
@@ -96,7 +99,8 @@ export const applySubscriptionDiscountToCart = async ({
     .filter((item) => item.total > 0)
 
   const baseTotal = eligibleItems.reduce((total, item) => total + item.total, 0)
-  const discountValue = Math.round((baseTotal * discountPercentage) / 100)
+  const discountValue = Math.round((baseTotal * discountBps) / 10_000)
+  const discountLabel = `${discountPercentage.toFixed(2).replace(/\.?0+$/, "")}%`
 
   if (baseTotal <= 0 || discountValue <= 0) {
     return {
@@ -121,7 +125,7 @@ export const applySubscriptionDiscountToCart = async ({
         code: SUBSCRIPTION_DISCOUNT_CODE,
         provider_id: SUBSCRIPTION_DISCOUNT_PROVIDER,
         amount: Math.max(0, appliedDiscount),
-        description: `Subscription discount (${discountPercentage}%)`,
+        description: `Subscription discount (${discountLabel})`,
       }
     })
     .filter((adjustment) => adjustment.amount > 0)

@@ -21,6 +21,7 @@ type Subscriber = {
   discount_percentage: number
   starts_at: string
   ends_at: string
+  pricing_segments?: string | null
   remaining_days: number
   remaining_hours: number
   customer: {
@@ -66,6 +67,16 @@ const formatDate = (value?: string | null) => {
   return date.toLocaleDateString()
 }
 
+const formatPercentage = (value?: number | null) => {
+  const parsed = Number(value)
+
+  if (!Number.isFinite(parsed)) {
+    return "-"
+  }
+
+  return `${parsed.toFixed(2).replace(/\.?0+$/, "")}%`
+}
+
 const formatRemaining = (subscription: Subscriber) => {
   if (subscription.status !== "active") {
     return subscription.status
@@ -76,6 +87,38 @@ const formatRemaining = (subscription: Subscriber) => {
   }
 
   return `${subscription.remaining_days}d ${subscription.remaining_hours}h`
+}
+
+const formatPricingTimeline = (subscription: Subscriber) => {
+  const raw = subscription.pricing_segments
+
+  if (!raw || typeof raw !== "string") {
+    return "-"
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as
+      | {
+          discount_percentage?: number
+          starts_at?: string
+          ends_at?: string
+        }[]
+      | null
+
+    if (!Array.isArray(parsed) || !parsed.length) {
+      return "-"
+    }
+
+    return parsed
+      .map((segment) => {
+        const discount = formatPercentage(segment.discount_percentage ?? 0)
+        const endsAt = formatDate(segment.ends_at)
+        return `${discount} to ${endsAt}`
+      })
+      .join(" | ")
+  } catch {
+    return "-"
+  }
 }
 
 const SubscriptionsPage = () => {
@@ -377,10 +420,11 @@ const SubscriptionsPage = () => {
                 <tr className="text-left border-b border-ui-border-base">
                   <th className="py-2 pr-3">Customer</th>
                   <th className="py-2 pr-3">Plan</th>
-                  <th className="py-2 pr-3">Discount</th>
+                  <th className="py-2 pr-3">Effective Discount</th>
                   <th className="py-2 pr-3">Status</th>
                   <th className="py-2 pr-3">Remaining</th>
                   <th className="py-2 pr-3">Ends at</th>
+                  <th className="py-2 pr-3">Pricing Timeline</th>
                 </tr>
               </thead>
               <tbody>
@@ -397,10 +441,11 @@ const SubscriptionsPage = () => {
                       </div>
                     </td>
                     <td className="py-2 pr-3">{subscriber.plan_title}</td>
-                    <td className="py-2 pr-3">{subscriber.discount_percentage}%</td>
+                    <td className="py-2 pr-3">{formatPercentage(subscriber.discount_percentage)}</td>
                     <td className="py-2 pr-3">{subscriber.status}</td>
                     <td className="py-2 pr-3">{formatRemaining(subscriber)}</td>
                     <td className="py-2 pr-3">{formatDate(subscriber.ends_at)}</td>
+                    <td className="py-2 pr-3">{formatPricingTimeline(subscriber)}</td>
                   </tr>
                 ))}
               </tbody>

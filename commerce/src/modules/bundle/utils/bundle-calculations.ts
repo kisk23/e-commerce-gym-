@@ -147,19 +147,21 @@ export const calculateBundleTotals = (
 }
 
 export const calculateBundleOriginalPrice = (bundle: StoreBundle) => {
-  if (
-    typeof bundle.total_price !== "number" ||
-    bundle.discount_percentage === 0
-  ) {
-    return bundle.total_price || 0
-  }
+  return bundle.total_price || 0
+}
 
-  const discountMultiplier = 1 - bundle.discount_percentage / 100
-  return bundle.total_price / discountMultiplier
+export const calculateBundleDiscountedPrice = (bundle: StoreBundle) => {
+  const originalPrice = calculateBundleOriginalPrice(bundle)
+  const discountPercentage = Math.max(
+    0,
+    Math.min(100, toNumber(bundle.discount_percentage))
+  )
+
+  return Math.round(originalPrice * (1 - discountPercentage / 100))
 }
 
 export const calculateBundleSavings = (bundle: StoreBundle) => {
   const originalPrice = calculateBundleOriginalPrice(bundle)
-  const discountedPrice = bundle.total_price || 0
+  const discountedPrice = calculateBundleDiscountedPrice(bundle)
   return originalPrice - discountedPrice
 }

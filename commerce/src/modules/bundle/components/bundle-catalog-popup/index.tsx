@@ -7,6 +7,7 @@ import { useState } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { convertToLocale } from "@lib/util/money"
 import {
+  calculateBundleDiscountedPrice,
   calculateBundleOriginalPrice,
   calculateBundleSavings,
 } from "@modules/bundle/utils/bundle-calculations"
@@ -72,6 +73,7 @@ const BundleCatalog = ({
       <div className="grid grid-cols-1 medium:grid-cols-2 large:grid-cols-3 gap-6">
         {bundles.map((bundle) => {
           const originalPrice = calculateBundleOriginalPrice(bundle)
+          const discountedPrice = calculateBundleDiscountedPrice(bundle)
           const savings = calculateBundleSavings(bundle)
           const hasDiscount = bundle.discount_percentage > 0
 
@@ -132,7 +134,7 @@ const BundleCatalog = ({
                           </span>
                           <span className="text-2xl font-bold text-green-700">
                             {convertToLocale({
-                              amount: bundle.total_price,
+                              amount: discountedPrice,
                               currency_code:
                                 bundle.currency_code || currencyCode || "aed",
                             })}
@@ -158,7 +160,7 @@ const BundleCatalog = ({
                         </span>
                         <span className="text-2xl font-bold text-ui-fg-base">
                           {convertToLocale({
-                            amount: bundle.total_price,
+                            amount: discountedPrice,
                             currency_code:
                               bundle.currency_code || currencyCode || "aed",
                           })}

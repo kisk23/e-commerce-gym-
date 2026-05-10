@@ -22,6 +22,14 @@ import { getLocale } from "@lib/data/locale-actions"
  * @returns The cart object if found, or null if not found.
  */
 export async function retrieveCart(cartId?: string, fields?: string) {
+  return retrieveCartWithCache(cartId, fields, "force-cache")
+}
+
+export async function retrieveCartWithCache(
+  cartId?: string,
+  fields?: string,
+  cacheMode: RequestCache = "force-cache"
+) {
   const id = cartId || (await getCartId())
   fields ??=
     "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name"
@@ -34,9 +42,12 @@ export async function retrieveCart(cartId?: string, fields?: string) {
     ...(await getAuthHeaders()),
   }
 
-  const next = {
-    ...(await getCacheOptions("carts")),
-  }
+  const next =
+    cacheMode === "force-cache"
+      ? {
+          ...(await getCacheOptions("carts")),
+        }
+      : {}
 
   return await sdk.client
     .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
@@ -46,7 +57,7 @@ export async function retrieveCart(cartId?: string, fields?: string) {
       },
       headers,
       next,
-      cache: "force-cache",
+      cache: cacheMode,
     })
     .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
     .catch(() => null)
@@ -86,6 +97,10 @@ export async function getOrSetCart(countryCode: string) {
     revalidateTag(cartCacheTag)
   }
 
+  if (cart?.id) {
+    await syncSubscriptionDiscount(cart.id)
+  }
+
   return cart
 }
 
@@ -103,6 +118,8 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
   return sdk.store.cart
     .update(cartId, data, {}, headers)
     .then(async ({ cart }: { cart: HttpTypes.StoreCart }) => {
+      await syncSubscriptionDiscount(cart.id)
+
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
 
@@ -148,6 +165,8 @@ export async function addToCart({
   await sdk.store.cart
     .createLineItem(cart.id, lineItem, {}, headers)
     .then(async () => {
+      await syncSubscriptionDiscount(cart.id)
+
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
 
@@ -155,6 +174,40 @@ export async function addToCart({
       revalidateTag(fulfillmentCacheTag)
     })
     .catch(medusaError)
+}
+
+export async function clearCartLineItems() {
+  const cartId = await getCartId()
+
+  if (!cartId) {
+    return
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  const cart = await retrieveCartWithCache(cartId, "id,*items", "no-store")
+
+  const items = cart?.items || []
+
+  for (const item of items as any[]) {
+    if (!item?.id) {
+      continue
+    }
+
+    await sdk.store.cart
+      .deleteLineItem(cartId, String(item.id), {}, headers)
+      .catch(medusaError)
+  }
+
+  await syncSubscriptionDiscount(cartId)
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+
+  const fulfillmentCacheTag = await getCacheTag("fulfillment")
+  revalidateTag(fulfillmentCacheTag)
 }
 
 export async function updateLineItem({
@@ -181,6 +234,8 @@ export async function updateLineItem({
   await sdk.store.cart
     .updateLineItem(cartId, lineId, { quantity }, {}, headers)
     .then(async () => {
+      await syncSubscriptionDiscount(cartId)
+
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
 
@@ -208,6 +263,8 @@ export async function deleteLineItem(lineId: string) {
   await sdk.store.cart
     .deleteLineItem(cartId, lineId, {}, headers)
     .then(async () => {
+      await syncSubscriptionDiscount(cartId)
+
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
 
@@ -215,6 +272,39 @@ export async function deleteLineItem(lineId: string) {
       revalidateTag(fulfillmentCacheTag)
     })
     .catch(medusaError)
+}
+
+export async function clearCart(cartId?: string) {
+  const id = cartId || (await getCartId())
+
+  if (!id) {
+    throw new Error("Missing cart ID when clearing cart")
+  }
+
+  const cart = await retrieveCart(id)
+
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  // Delete all line items from the cart
+  for (const item of cart.items) {
+    if (item.id) {
+      await sdk.store.cart
+        .deleteLineItem(id, item.id, {}, headers)
+        .catch(() => null) // Continue even if one fails
+    }
+  }
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+
+  const fulfillmentCacheTag = await getCacheTag("fulfillment")
+  revalidateTag(fulfillmentCacheTag)
 }
 
 export async function setShippingMethod({
@@ -231,8 +321,13 @@ export async function setShippingMethod({
   return sdk.store.cart
     .addShippingMethod(cartId, { option_id: shippingMethodId }, {}, headers)
     .then(async () => {
+      await syncSubscriptionDiscount(cartId)
+
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
+
+      const fulfillmentCacheTag = await getCacheTag("fulfillment")
+      revalidateTag(fulfillmentCacheTag)
     })
     .catch(medusaError)
 }
@@ -269,6 +364,8 @@ export async function applyPromotions(codes: string[]) {
   return sdk.store.cart
     .update(cartId, { promo_codes: codes }, {}, headers)
     .then(async () => {
+      await syncSubscriptionDiscount(cartId)
+
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
 
@@ -276,6 +373,35 @@ export async function applyPromotions(codes: string[]) {
       revalidateTag(fulfillmentCacheTag)
     })
     .catch(medusaError)
+}
+
+export async function syncSubscriptionDiscount(cartId?: string) {
+  const id = cartId || (await getCartId())
+
+  if (!id) {
+    return null
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  if (!("authorization" in headers)) {
+    return null
+  }
+
+  return sdk.client
+    .fetch(`/store/carts/${id}/subscription-discount`, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    })
+    .then(async (response) => {
+      const cartCacheTag = await getCacheTag("carts")
+      revalidateTag(cartCacheTag)
+      return response
+    })
+    .catch(() => null)
 }
 
 // export async function applyGiftCard(code: string) {

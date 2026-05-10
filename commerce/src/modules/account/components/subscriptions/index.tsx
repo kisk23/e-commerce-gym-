@@ -1,16 +1,29 @@
 "use client"
 
 import { subscribeToPlan } from "@lib/data/subscriptions"
+import { clearCartLineItems } from "@lib/data/cart"
 import {
   StoreCustomerSubscription,
   StoreSubscriptionPlan,
 } from "@lib/types/subscription"
+import {
+  isSubscriptionPlanPurchaseItem,
+  saveCartSnapshot,
+} from "@lib/cart-snapshot"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { Button } from "@medusajs/ui"
+import { useParams } from "next/navigation"
 import { useMemo, useState } from "react"
 
 type SubscriptionsProps = {
   plans: StoreSubscriptionPlan[]
   activeSubscription: StoreCustomerSubscription | null
+  isAuthenticated?: boolean
+  cartItems?: Array<{
+    variant_id?: string | null
+    quantity?: number | null
+    metadata?: Record<string, unknown> | null
+  }>
 }
 
 const formatDate = (value?: string | null) => {
@@ -27,13 +40,23 @@ const formatDate = (value?: string | null) => {
   return date.toDateString()
 }
 
-const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
+const Subscriptions = ({
+  plans,
+  activeSubscription,
+  isAuthenticated = true,
+  cartItems = [],
+}: SubscriptionsProps) => {
+  const params = useParams<{ countryCode?: string | string[] }>()
+  const countryCode =
+    typeof params.countryCode === "string" ? params.countryCode : "us"
+
   const [isSubmittingPlanId, setIsSubmittingPlanId] = useState<string | null>(
     null
   )
   const [message, setMessage] = useState<string | null>(null)
-  const [currentActive, setCurrentActive] =
-    useState<StoreCustomerSubscription | null>(activeSubscription)
+  const [currentActive] = useState<StoreCustomerSubscription | null>(
+    activeSubscription
+  )
 
   const remainingText = useMemo(() => {
     if (!currentActive || currentActive.status !== "active") {
@@ -46,17 +69,31 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
   }, [currentActive])
 
   const onSubscribe = async (plan: StoreSubscriptionPlan) => {
+    if (!isAuthenticated) {
+      setMessage("Please sign in to subscribe to a plan.")
+      return
+    }
+
     setIsSubmittingPlanId(plan.id)
     setMessage(null)
 
     try {
-      const result = await subscribeToPlan(plan.id)
-      setCurrentActive(result.subscription)
-      setMessage(
-        result.action === "extended"
-          ? `Subscription extended with ${plan.title}.`
-          : `Subscribed to ${plan.title}.`
-      )
+      const snapshotItems = (cartItems || [])
+        .filter((i) => !!i?.variant_id && !isSubscriptionPlanPurchaseItem(i))
+        .map((i) => ({
+          variantId: String(i.variant_id),
+          quantity: Math.max(1, Math.floor(Number(i.quantity || 1))),
+          metadata:
+            i.metadata && Object.keys(i.metadata).length ? i.metadata : undefined,
+        }))
+
+      saveCartSnapshot(snapshotItems)
+
+      // Ensure the cart is empty before inserting the subscription plan purchase.
+      await clearCartLineItems()
+
+      setMessage("Redirecting to checkout...")
+      await subscribeToPlan(plan.id, countryCode)
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -71,6 +108,20 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
   return (
     <section className="rounded-lg border border-ui-border-base p-4 flex flex-col gap-3">
       <h2 className="text-large-semi">Prepaid Subscriptions</h2>
+
+      {!isAuthenticated ? (
+        <div className="rounded-md border border-ui-border-base p-3 bg-ui-bg-subtle">
+          <p className="text-small-regular text-ui-fg-subtle">
+            Sign in to subscribe and manage your active plan.
+          </p>
+          <LocalizedClientLink
+            href="/account?redirect=/subscriptions"
+            className="text-small-semi mt-2 inline-flex"
+          >
+            Sign in
+          </LocalizedClientLink>
+        </div>
+      ) : null}
 
       {currentActive ? (
         <div className="rounded-md border border-ui-border-base p-3 bg-ui-bg-subtle">
@@ -91,6 +142,10 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
         </p>
       )}
 
+      {!plans.length ? (
+        <p className="text-ui-fg-subtle">No subscription plans available.</p>
+      ) : null}
+
       <div className="grid grid-cols-1 small:grid-cols-2 gap-3">
         {plans.map((plan) => (
           <article
@@ -107,13 +162,20 @@ const Subscriptions = ({ plans, activeSubscription }: SubscriptionsProps) => {
               {plan.duration_months} month(s) - {plan.discount_percentage}%
               discount
             </p>
+            <p className="text-small-regular text-ui-fg-subtle">
+              Price amount: {Number(plan.price_amount || 0)}
+            </p>
             <Button
               variant="secondary"
               isLoading={isSubmittingPlanId === plan.id}
-              disabled={isSubmittingPlanId !== null}
+              disabled={isSubmittingPlanId !== null || !isAuthenticated}
               onClick={() => onSubscribe(plan)}
             >
-              {isSubmittingPlanId === plan.id ? "Processing..." : "Subscribe"}
+              {!isAuthenticated
+                ? "Sign in to subscribe"
+                : isSubmittingPlanId === plan.id
+                ? "Processing..."
+                : "Subscribe"}
             </Button>
           </article>
         ))}

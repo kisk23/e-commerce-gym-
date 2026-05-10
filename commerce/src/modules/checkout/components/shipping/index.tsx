@@ -4,7 +4,7 @@ import { Radio, RadioGroup } from "@headlessui/react"
 import { setShippingMethod } from "@lib/data/cart"
 import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
 import { convertToLocale } from "@lib/util/money"
-import { CheckCircleSolid, Loader } from "@medusajs/icons"
+import { CheckCircleSolid, Loader, TruckFast } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Button, clx, Heading, Text } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -41,10 +41,7 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const isOpen = searchParams.get("step") === "delivery"
 
-  const shippingMethods = availableShippingMethods?.filter((sm) => {
-    const nameType = sm.name?.toLowerCase() || ""
-    return ["standard", "monthly"].some((t) => nameType.includes(t))
-  })
+  const shippingMethods = availableShippingMethods
 
   useEffect(() => {
     if (!shippingMethods?.length) {
@@ -120,8 +117,8 @@ const Shipping: React.FC<ShippingProps> = ({
             }
           )}
         >
-          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FAF5EF]">
-            <CheckCircleSolid className="text-[#CD995F]" />
+          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#E9ECE6]">
+            <TruckFast className="text-primary" />
           </span>
 
           Delivery Method
@@ -137,7 +134,7 @@ const Shipping: React.FC<ShippingProps> = ({
           cart?.email && (
             <button
               onClick={handleEdit}
-              className="text-sm font-medium text-[#CD995F] hover:underline"
+              className="text-sm font-medium text-[#4b6af1] hover:underline"
             >
               Edit
             </button>
@@ -216,7 +213,7 @@ const Shipping: React.FC<ShippingProps> = ({
             onClick={handleSubmit}
             isLoading={isLoading}
             disabled={!shippingMethodId}
-            className="w-full h-11 rounded-md bg-[rgb(var(--primary))] text-white text-sm font-medium hover:opacity-90"
+            className="w-full h-11 rounded-md bg-[rgb(var(--primary))] text-white text-sm font-medium hover:bg-primary/80"
           >
             Continue to payment
           </Button>

@@ -14,5 +14,13 @@ export default defineMiddlewares({
       matcher: /^\/store\/customers\/me\/subscriptions(?:\/.*)?$/,
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
+    {
+      matcher: /^\/store\/carts\/[^/]+\/subscription-plan(?:\/.*)?$/,
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: /^\/store\/carts\/[^/]+\/subscription-discount(?:\/.*)?$/,
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
   ],
 })

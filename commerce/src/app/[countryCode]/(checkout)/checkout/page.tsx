@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
 
-import { retrieveCart } from "@lib/data/cart"
+import { getOrSetCart, retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
@@ -12,25 +12,36 @@ export const metadata: Metadata = {
   title: "Checkout",
 }
 
-export default async function Checkout() {
-  const cart = await retrieveCart()
+export default async function Checkout({
+  params,
+}: {
+  params: { countryCode: string }
+}) {
+  const countryCode = params?.countryCode || "us"
+  const cart = (await retrieveCart()) || (await getOrSetCart(countryCode))
 
   if (!cart) {
     return notFound()
+  }
+
+  const cartWithMetadata = await retrieveCart(cart.id, "id,metadata")
+  const normalizedCart = {
+    ...cart,
+    metadata: cartWithMetadata?.metadata ?? cart.metadata,
   }
 
   const customer = await retrieveCustomer()
 
   // FORCE LOGIN
   if (!customer) {
-    redirect("/account?redirect=/checkout")
+    redirect(`/${countryCode}/account?redirect=/${countryCode}/checkout`)
   }
 
   return (
-    <PaymentWrapper cart={cart}>
-      <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">
-        <CheckoutForm cart={cart} customer={customer} />
-        <CheckoutSummary cart={cart} />
+    <PaymentWrapper cart={normalizedCart}>
+      <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-20 gap-y-12 py-12">
+        <CheckoutForm cart={normalizedCart} customer={customer} />
+        <CheckoutSummary cart={normalizedCart} />
       </div>
     </PaymentWrapper>
   )

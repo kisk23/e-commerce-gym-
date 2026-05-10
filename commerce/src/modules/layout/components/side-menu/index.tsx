@@ -15,7 +15,7 @@ const SideMenuItems = {
   Home: "/",
   Bundles: "/bundles",
   "Build Bundle": "/bundles/custom",
-  Subscription: "/subscription",
+  Subscription: "/subscriptions",
   Account: "/account",
 }
 

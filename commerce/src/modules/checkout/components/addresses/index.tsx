@@ -2,7 +2,7 @@
 
 import { setAddresses } from "@lib/data/cart"
 import compareAddresses from "@lib/util/compare-addresses"
-import { CheckCircleSolid } from "@medusajs/icons"
+import { CheckCircleSolid, User } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text, useToggleState } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
@@ -48,7 +48,7 @@ const Addresses = ({
           className="flex items-center gap-3 text-[20px] font-semibold text-[#0A0A0A]"
         >
           <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#E9ECE6]">
-            <CheckCircleSolid className="text-[#213C02]" />
+            <User className="text-green-800" />
           </span>
 
           Personal Information
@@ -93,7 +93,7 @@ const Addresses = ({
             )}
 
             <SubmitButton
-              className="mt-4 w-full h-11 rounded-md bg-[rgb(var(--primary))] text-white text-sm font-medium hover:opacity-90"
+              className="mt-4 w-full h-11 rounded-md bg-[rgb(var(--primary))] text-white text-sm font-medium hover:bg-primary/80"
               data-testid="submit-address-button"
             >
               Continue to delivery

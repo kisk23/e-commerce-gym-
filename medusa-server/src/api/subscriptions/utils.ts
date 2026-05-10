@@ -40,6 +40,19 @@ export const validateDuration = (value: unknown) => {
   return duration
 }
 
+export const validatePriceAmount = (value: unknown) => {
+  const priceAmount = toInteger(value, NaN)
+
+  if (!Number.isFinite(priceAmount) || priceAmount < 0) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "price_amount must be a non-negative integer"
+    )
+  }
+
+  return priceAmount
+}
+
 export const computeSubscriptionWindow = (startAt: string | Date, durationMonths: number) => {
   const starts_at = toIsoString(startAt)
   const ends_at = addMonths(starts_at, durationMonths)
@@ -67,4 +80,3 @@ export const decorateRemainingTime = <
     is_active: (subscription.status || "").toLowerCase() === "active" && remaining.remaining_ms > 0,
   }
 }
-

@@ -5,6 +5,7 @@ type SubscriptionPlan = {
   id: string
   title: string
   description: string | null
+  price_amount: number
   duration_months: number
   discount_percentage: number
   rank: number
@@ -20,6 +21,7 @@ type Subscriber = {
   discount_percentage: number
   starts_at: string
   ends_at: string
+  pricing_segments?: string | null
   remaining_days: number
   remaining_hours: number
   customer: {
@@ -34,6 +36,7 @@ type PlanForm = {
   id: string | null
   title: string
   description: string
+  price_amount: number
   duration_months: number
   discount_percentage: number
   rank: number
@@ -44,6 +47,7 @@ const defaultForm: PlanForm = {
   id: null,
   title: "",
   description: "",
+  price_amount: 0,
   duration_months: 3,
   discount_percentage: 5,
   rank: 1,
@@ -63,6 +67,16 @@ const formatDate = (value?: string | null) => {
   return date.toLocaleDateString()
 }
 
+const formatPercentage = (value?: number | null) => {
+  const parsed = Number(value)
+
+  if (!Number.isFinite(parsed)) {
+    return "-"
+  }
+
+  return `${parsed.toFixed(2).replace(/\.?0+$/, "")}%`
+}
+
 const formatRemaining = (subscription: Subscriber) => {
   if (subscription.status !== "active") {
     return subscription.status
@@ -73,6 +87,38 @@ const formatRemaining = (subscription: Subscriber) => {
   }
 
   return `${subscription.remaining_days}d ${subscription.remaining_hours}h`
+}
+
+const formatPricingTimeline = (subscription: Subscriber) => {
+  const raw = subscription.pricing_segments
+
+  if (!raw || typeof raw !== "string") {
+    return "-"
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as
+      | {
+          discount_percentage?: number
+          starts_at?: string
+          ends_at?: string
+        }[]
+      | null
+
+    if (!Array.isArray(parsed) || !parsed.length) {
+      return "-"
+    }
+
+    return parsed
+      .map((segment) => {
+        const discount = formatPercentage(segment.discount_percentage ?? 0)
+        const endsAt = formatDate(segment.ends_at)
+        return `${discount} to ${endsAt}`
+      })
+      .join(" | ")
+  } catch {
+    return "-"
+  }
 }
 
 const SubscriptionsPage = () => {
@@ -133,6 +179,7 @@ const SubscriptionsPage = () => {
         body: JSON.stringify({
           title: form.title,
           description: form.description,
+          price_amount: form.price_amount,
           duration_months: form.duration_months,
           discount_percentage: form.discount_percentage,
           rank: form.rank,
@@ -161,6 +208,7 @@ const SubscriptionsPage = () => {
       id: plan.id,
       title: plan.title,
       description: plan.description || "",
+      price_amount: Number(plan.price_amount || 0),
       duration_months: Number(plan.duration_months || 0),
       discount_percentage: Number(plan.discount_percentage || 0),
       rank: Number(plan.rank || 0),
@@ -219,6 +267,21 @@ const SubscriptionsPage = () => {
               setForm((current) => ({ ...current, description: event.target.value }))
             }
           />
+          <label className="flex flex-col gap-1 text-xs text-ui-fg-subtle">
+            Price Amount
+            <input
+              type="number"
+              min={0}
+              value={form.price_amount}
+              className="rounded-md border border-ui-border-base px-3 py-2 text-sm text-ui-fg-base"
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  price_amount: Math.max(0, Math.round(Number(event.target.value) || 0)),
+                }))
+              }
+            />
+          </label>
           <label className="flex flex-col gap-1 text-xs text-ui-fg-subtle">
             Duration (months)
             <input
@@ -313,6 +376,9 @@ const SubscriptionsPage = () => {
                 <div>
                   <h3 className="font-medium">{plan.title}</h3>
                   <p className="text-ui-fg-subtle text-sm">
+                    Price amount: {Number(plan.price_amount || 0)}
+                  </p>
+                  <p className="text-ui-fg-subtle text-sm">
                     {plan.duration_months} month(s) - {plan.discount_percentage}% discount
                   </p>
                   <p className="text-ui-fg-subtle text-sm">
@@ -354,10 +420,11 @@ const SubscriptionsPage = () => {
                 <tr className="text-left border-b border-ui-border-base">
                   <th className="py-2 pr-3">Customer</th>
                   <th className="py-2 pr-3">Plan</th>
-                  <th className="py-2 pr-3">Discount</th>
+                  <th className="py-2 pr-3">Effective Discount</th>
                   <th className="py-2 pr-3">Status</th>
                   <th className="py-2 pr-3">Remaining</th>
                   <th className="py-2 pr-3">Ends at</th>
+                  <th className="py-2 pr-3">Pricing Timeline</th>
                 </tr>
               </thead>
               <tbody>
@@ -374,10 +441,11 @@ const SubscriptionsPage = () => {
                       </div>
                     </td>
                     <td className="py-2 pr-3">{subscriber.plan_title}</td>
-                    <td className="py-2 pr-3">{subscriber.discount_percentage}%</td>
+                    <td className="py-2 pr-3">{formatPercentage(subscriber.discount_percentage)}</td>
                     <td className="py-2 pr-3">{subscriber.status}</td>
                     <td className="py-2 pr-3">{formatRemaining(subscriber)}</td>
                     <td className="py-2 pr-3">{formatDate(subscriber.ends_at)}</td>
+                    <td className="py-2 pr-3">{formatPricingTimeline(subscriber)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -396,4 +464,3 @@ export const config = defineRouteConfig({
 })
 
 export default SubscriptionsPage
-

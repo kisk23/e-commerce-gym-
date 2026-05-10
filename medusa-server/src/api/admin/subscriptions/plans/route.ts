@@ -7,11 +7,13 @@ import {
   toStringValue,
   validateDiscount,
   validateDuration,
+  validatePriceAmount,
 } from "../../../subscriptions/utils"
 
 type CreateSubscriptionPlanBody = {
   title?: string
   description?: string | null
+  price_amount?: number
   duration_months?: number
   discount_percentage?: number
   rank?: number
@@ -50,6 +52,7 @@ export async function POST(
 
   const durationMonths = validateDuration(payload.duration_months)
   const discountPercentage = validateDiscount(payload.discount_percentage)
+  const priceAmount = validatePriceAmount(payload.price_amount ?? 0)
   const description = toStringValue(payload.description, "")
   const rank = toInteger(payload.rank, durationMonths)
   const isActive = payload.is_active !== false
@@ -57,6 +60,7 @@ export async function POST(
   const plan = await subscriptionService.createSubscriptionPlans({
     title,
     description: description || null,
+    price_amount: priceAmount,
     duration_months: durationMonths,
     discount_percentage: discountPercentage,
     rank,
@@ -65,4 +69,3 @@ export async function POST(
 
   res.status(200).json({ plan })
 }
-

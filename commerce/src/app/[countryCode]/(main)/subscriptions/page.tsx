@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 
 import { retrieveCustomer } from "@lib/data/customer"
+import { retrieveCartWithCache } from "@lib/data/cart"
 import {
   listMySubscriptions,
   listSubscriptionPlans,
@@ -13,9 +14,10 @@ export const metadata: Metadata = {
 }
 
 export default async function SubscriptionsPage() {
-  const [plans, customer] = await Promise.all([
+  const [plans, customer, cart] = await Promise.all([
     listSubscriptionPlans(),
     retrieveCustomer(),
+    retrieveCartWithCache(undefined, "*items, *items.metadata", "no-store"),
   ])
 
   const mySubscriptions = customer
@@ -36,6 +38,7 @@ export default async function SubscriptionsPage() {
           plans={plans}
           activeSubscription={mySubscriptions.active_subscription}
           isAuthenticated={!!customer}
+          cartItems={cart?.items ?? []}
         />
       </div>
     </div>

@@ -3,6 +3,7 @@ import ChevronDown from "@modules/common/icons/chevron-down"
 import Image from "next/image"
 
 import { CheckoutHeader } from "@/modules/checkout/components/checkout-header"
+import SubscriptionExitRestorer from "@modules/checkout/components/subscription-exit-restorer"
 
 export default function CheckoutLayout({
   children,
@@ -11,6 +12,7 @@ export default function CheckoutLayout({
 }) {
   return (
     <div className="w-full bg-white relative small:min-h-screen">
+      <SubscriptionExitRestorer />
       <div className=" bg-white border-b ">
         <nav className="flex h-full p-2 items-center content-container justify-between">
           <LocalizedClientLink

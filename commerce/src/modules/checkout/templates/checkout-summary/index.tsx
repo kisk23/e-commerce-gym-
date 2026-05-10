@@ -24,9 +24,14 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
   const subscriptionPlanItem = (cart.items || []).find((item) => {
     const metadata = (item.metadata || {}) as Record<string, unknown>
     const rawFlag = metadata.subscription_plan_purchase
-    return rawFlag === true || rawFlag === "true" || rawFlag === 1 || rawFlag === "1"
+    return (
+      rawFlag === true || rawFlag === "true" || rawFlag === 1 || rawFlag === "1"
+    )
   })
-  const subscriptionMetadata = (subscriptionPlanItem?.metadata || {}) as Record<string, unknown>
+  const subscriptionMetadata = (subscriptionPlanItem?.metadata || {}) as Record<
+    string,
+    unknown
+  >
 
   const subscriptionAdjustments = (cart.items || []).flatMap((item) =>
     ((item as any).adjustments || []).filter((adjustment: any) => {
@@ -48,12 +53,16 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
       : ""
   const subscriptionDiscountPercentageMatch =
     subscriptionDiscountDescription.match(/\((\d+)%\)/)
-  const appliedSubscriptionDiscountPercentage = subscriptionDiscountPercentageMatch
-    ? toNumber(subscriptionDiscountPercentageMatch[1])
-    : 0
+  const appliedSubscriptionDiscountPercentage =
+    subscriptionDiscountPercentageMatch
+      ? toNumber(subscriptionDiscountPercentageMatch[1])
+      : 0
+
+  const hasSelectedDeliveryMethod = (cart.shipping_methods?.length ?? 0) > 0
 
   const subtotal = convertToLocale({
-    amount: cart.subtotal ?? 0,
+    // Items-only subtotal (excludes delivery/shipping).
+    amount: cart.item_subtotal ?? cart.subtotal ?? 0,
     currency_code: cart.currency_code,
   })
 
@@ -94,15 +103,22 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
       cartMetadata.subscription_checkout_plan_price_amount
   )
 
-  const hasSubscriptionIntent = Boolean(subscriptionPlanTitle || subscriptionPlanId)
+  const hasSubscriptionIntent = Boolean(
+    subscriptionPlanTitle || subscriptionPlanId
+  )
 
   return (
     <div className="rounded-2xl border w-full lg:max-w-fit max-w-[700px] p-6 shadow-sm mx-auto sticky top-6">
-      <h2 className="text-base font-semibold mb-5 tracking-tight">Order Summary</h2>
+      <h2 className="text-base font-semibold mb-5 tracking-tight">
+        Order Summary
+      </h2>
 
       <div className="space-y-2 mb-5 pb-5 border-b border-[#f0ede4]">
         {cart.items?.map((item) => (
-          <div key={item.id} className="flex justify-between items-center text-sm">
+          <div
+            key={item.id}
+            className="flex justify-between items-center text-sm"
+          >
             <span className="text-gray-500">
               {item.title} x {item.quantity}
             </span>
@@ -114,17 +130,15 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
             </span>
           </div>
         ))}
-        {!cart.items?.length && <p className="text-sm text-[#b0ad9e]">Your cart is empty.</p>}
+        {!cart.items?.length && (
+          <p className="text-sm text-[#b0ad9e]">Your cart is empty.</p>
+        )}
       </div>
 
       <div className="space-y-2.5 mb-6">
         <div className="flex justify-between text-sm ">
           <span className="text-gray-500 ">Subtotal</span>
           <span>{subtotal}</span>
-        </div>
-        <div className="flex justify-between text-sm ">
-          <span className="text-gray-500">Delivery</span>
-          <span>{deliveryTotal}</span>
         </div>
         {subscriptionDiscountAmount > 0 && (
           <div className="flex justify-between text-sm ">
@@ -143,6 +157,12 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
             </span>
           </div>
         )}
+        {hasSelectedDeliveryMethod ? (
+          <div className="flex justify-between text-sm ">
+            <span className="text-gray-500">Delivery</span>
+            <span>{deliveryTotal}</span>
+          </div>
+        ) : null}
         <div className="flex justify-between text-base font-bold pt-3 border-t border-[#f0ede4]">
           <span>Total</span>
           <span className="text-xl">{grandTotal}</span>
@@ -154,10 +174,12 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
           <p className="text-xs font-semibold uppercase tracking-wide text-[#6e6a57]">
             Selected Subscription Plan
           </p>
-          <p className="text-sm font-medium">{subscriptionPlanTitle || subscriptionPlanId}</p>
+          <p className="text-sm font-medium">
+            {subscriptionPlanTitle || subscriptionPlanId}
+          </p>
           <p className="text-xs text-gray-500">
-            {Math.max(0, subscriptionDuration)} month(s) - {Math.max(0, subscriptionDiscount)}%
-            discount
+            {Math.max(0, subscriptionDuration)} month(s) -{" "}
+            {Math.max(0, subscriptionDiscount)}% discount
           </p>
           {subscriptionDiscountAmount > 0 && (
             <p className="text-xs text-gray-500">
@@ -186,7 +208,10 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
             Please fix the following:
           </p>
           {errors.map((err, i) => (
-            <p key={i} className="text-xs text-red-500 flex items-start gap-1.5">
+            <p
+              key={i}
+              className="text-xs text-red-500 flex items-start gap-1.5"
+            >
               <span className="mt-px">-</span>
               {err}
             </p>

@@ -176,6 +176,40 @@ export async function addToCart({
     .catch(medusaError)
 }
 
+export async function clearCartLineItems() {
+  const cartId = await getCartId()
+
+  if (!cartId) {
+    return
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  const cart = await retrieveCartWithCache(cartId, "id,*items", "no-store")
+
+  const items = cart?.items || []
+
+  for (const item of items as any[]) {
+    if (!item?.id) {
+      continue
+    }
+
+    await sdk.store.cart
+      .deleteLineItem(cartId, String(item.id), {}, headers)
+      .catch(medusaError)
+  }
+
+  await syncSubscriptionDiscount(cartId)
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+
+  const fulfillmentCacheTag = await getCacheTag("fulfillment")
+  revalidateTag(fulfillmentCacheTag)
+}
+
 export async function updateLineItem({
   lineId,
   quantity,
@@ -287,8 +321,13 @@ export async function setShippingMethod({
   return sdk.store.cart
     .addShippingMethod(cartId, { option_id: shippingMethodId }, {}, headers)
     .then(async () => {
+      await syncSubscriptionDiscount(cartId)
+
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
+
+      const fulfillmentCacheTag = await getCacheTag("fulfillment")
+      revalidateTag(fulfillmentCacheTag)
     })
     .catch(medusaError)
 }

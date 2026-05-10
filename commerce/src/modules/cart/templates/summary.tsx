@@ -3,11 +3,13 @@ import { Button, Heading } from "@medusajs/ui"
 import { convertToLocale } from "@lib/util/money"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
+import { StoreCustomerSubscription } from "@lib/types/subscription"
 
 type SummaryProps = {
   cart: HttpTypes.StoreCart & {
     promotions: HttpTypes.StorePromotion[]
   }
+  activeSubscription?: StoreCustomerSubscription | null
 }
 
 function getCheckoutStep(cart: HttpTypes.StoreCart) {
@@ -20,12 +22,14 @@ function getCheckoutStep(cart: HttpTypes.StoreCart) {
   }
 }
 
-const Summary = ({ cart }: SummaryProps) => {
+const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
   const step = getCheckoutStep(cart)
   const currencyCode = cart.currency_code
-  const subtotal = Number(cart.item_subtotal ?? cart.subtotal ?? 0)
+  // Items-only subtotal (excludes delivery/shipping).
+  const subtotal = Number(cart.item_subtotal ?? 0)
   const delivery = Number(cart.shipping_subtotal ?? 0)
   const total = Number(cart.total ?? 0)
+  const hasSelectedDeliveryMethod = (cart.shipping_methods?.length ?? 0) > 0
   const subscriptionAdjustments = (cart.items || []).flatMap((item) =>
     ((item as any).adjustments || []).filter((adjustment: any) => {
       return (
@@ -81,19 +85,23 @@ const Summary = ({ cart }: SummaryProps) => {
                 })}
               </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm leading-5 text-[#717182]">Delivery</span>
-              <span
-                className="text-sm leading-5 font-medium text-[rgb(var(--primary))]"
-                data-testid="cart-shipping"
-                data-value={delivery}
-              >
-                {convertToLocale({
-                  amount: delivery,
-                  currency_code: currencyCode,
-                })}
-              </span>
-            </div>
+            {hasSelectedDeliveryMethod ? (
+              <div className="flex items-center justify-between">
+                <span className="text-sm leading-5 text-[#717182]">
+                  Delivery
+                </span>
+                <span
+                  className="text-sm leading-5 font-medium text-[rgb(var(--primary))]"
+                  data-testid="cart-shipping"
+                  data-value={delivery}
+                >
+                  {convertToLocale({
+                    amount: delivery,
+                    currency_code: currencyCode,
+                  })}
+                </span>
+              </div>
+            ) : null}
             {subscriptionDiscountAmount > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-sm leading-5 text-[#717182]">
@@ -144,22 +152,42 @@ const Summary = ({ cart }: SummaryProps) => {
       </div>
 
       <div className="flex flex-col gap-[18px]">
-        <div className="rounded-xl border border-[#F0E1CF] bg-[#F5EBDF] p-4 flex flex-col gap-6">
-          <p className="text-sm leading-5 text-center text-[#0A0A0A]">
-            Subscribe and save up to 12% on every order
-          </p>
-          <LocalizedClientLink href="/subscriptions">
-            <button
-              type="button"
-              className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white text-sm leading-5 font-medium text-[#0A0A0A]"
-            >
-              View Plans
-            </button>
-          </LocalizedClientLink>
-        </div>
-        <p className="text-xs leading-4 text-center text-[#717182]">
+        {activeSubscription ? (
+          <div className="rounded-xl border border-[#E6E6E6] bg-white p-4 flex flex-col gap-2">
+            <p className="text-sm leading-5 text-center text-[#0A0A0A] font-medium">
+              Your subscription
+            </p>
+            <p className="text-sm leading-5 text-center text-[#717182]">
+              {activeSubscription.plan_title} •{" "}
+              {activeSubscription.discount_percentage}% off
+            </p>
+            <LocalizedClientLink href="/subscriptions">
+              <button
+                type="button"
+                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white text-sm leading-5 font-medium text-[#0A0A0A]"
+              >
+                Manage subscription
+              </button>
+            </LocalizedClientLink>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-[#F0E1CF] bg-[#F5EBDF] p-4 flex flex-col gap-6">
+            <p className="text-sm leading-5 text-center text-[#0A0A0A]">
+              Subscribe and save up to 12% on every order
+            </p>
+            <LocalizedClientLink href="/subscriptions">
+              <button
+                type="button"
+                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white text-sm leading-5 font-medium text-[#0A0A0A]"
+              >
+                View Plans
+              </button>
+            </LocalizedClientLink>
+          </div>
+        )}
+        {/* <p className="text-xs leading-4 text-center text-[#717182]">
           {freeDeliveryMessage}
-        </p>
+        </p> */}
       </div>
     </div>
   )

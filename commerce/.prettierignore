@@ -1,0 +1,13 @@
+# dependencies
+node_modules
+.yarn
+
+# build output
+.next
+dist
+build
+coverage
+
+# generated artifacts
+*.tsbuildinfo
+yarn.lock

@@ -7,19 +7,22 @@ import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 import {
   getAuthHeaders,
-  getCacheOptions,
+
   getCacheTag,
   getCartId,
   removeAuthToken,
   removeCartId,
   setAuthToken,
 } from "./cookies"
+import { syncSubscriptionDiscount } from "./cart"
 
 export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
     const authHeaders = await getAuthHeaders()
 
-    if (!authHeaders) return null
+    if (!authHeaders) {
+      return null
+    }
 
     const headers = {
       ...authHeaders,
@@ -154,6 +157,7 @@ export async function transferCart() {
   const headers = await getAuthHeaders()
 
   await sdk.store.cart.transferCart(cartId, {}, headers)
+  await syncSubscriptionDiscount(cartId)
 
   const cartCacheTag = await getCacheTag("carts")
   revalidateTag(cartCacheTag)
@@ -187,7 +191,7 @@ export const addCustomerAddress = async (
 
   return sdk.store.customer
     .createAddress(address, {}, headers)
-    .then(async ({ customer }) => {
+    .then(async ({  }) => {
       const customerCacheTag = await getCacheTag("customers")
       revalidateTag(customerCacheTag)
       return { success: true, error: null }

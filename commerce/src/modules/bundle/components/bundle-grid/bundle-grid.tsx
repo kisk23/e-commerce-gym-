@@ -22,18 +22,22 @@ export default function BundleGrid({
     const types = new Set(
       bundles
         .map((b) => b.bundle_type)
-        .filter((type): type is string => typeof type === "string" && type.trim().length > 0)
+        .filter(
+          (type): type is string =>
+            typeof type === "string" && type.trim().length > 0
+        )
     )
     return ["All Bundles", ...Array.from(types)]
   }, [bundles])
 
-  const filteredBundles = activeFilter === "All Bundles"
-    ? bundles
-    : bundles.filter(b => {
-        // the bundle_type might be formatted differently or lowercase in the DB
-        // so we do a case-insensitive comparison
-        return b.bundle_type?.toLowerCase() === activeFilter.toLowerCase()
-      })
+  const filteredBundles =
+    activeFilter === "All Bundles"
+      ? bundles
+      : bundles.filter((b) => {
+          // the bundle_type might be formatted differently or lowercase in the DB
+          // so we do a case-insensitive comparison
+          return b.bundle_type?.toLowerCase() === activeFilter.toLowerCase()
+        })
 
   const addBundleItemsToCart = async (bundle: StoreBundle) => {
     if (!bundle.items?.length) {
@@ -65,6 +69,10 @@ export default function BundleGrid({
             ),
             bundle_operation_id: operationId,
             bundle_type: "admin",
+            bundle_item_units: Math.max(
+              1,
+              Math.round(Number(item.quantity) || 1)
+            ),
             ...(typeof item.weight === "number" && item.weight > 0
               ? { bundle_item_weight: item.weight, weight_g: item.weight }
               : {}),
@@ -110,7 +118,8 @@ export default function BundleGrid({
 
       {/* showing products count */}
       <div className="text-lg text-gray-500 my-6">
-        Showing {filteredBundles.length > 0 ? 1 : 0} - {filteredBundles.length} of {bundles.length} bundles
+        Showing {filteredBundles.length > 0 ? 1 : 0} - {filteredBundles.length}{" "}
+        of {bundles.length} bundles
       </div>
 
       {/* products grid */}
@@ -144,4 +153,3 @@ export default function BundleGrid({
     </>
   )
 }
-

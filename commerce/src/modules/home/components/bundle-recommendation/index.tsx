@@ -85,7 +85,9 @@ const BundleRecommender = ({
   }
 
   const getRecommendedBundles = () => {
-    if (!selectedGoal) return []
+    if (!selectedGoal) {
+      return []
+    }
 
     // Filter bundles by goal
     const matchingBundles = bundles.filter(
@@ -108,9 +110,9 @@ const BundleRecommender = ({
       <section className="content-container py-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h1 className="text-3xl-semi mb-3">What's Your Fitness Goal?</h1>
+            <h1 className="text-3xl-semi mb-3">What&apos;s Your Fitness Goal?</h1>
             <p className="text-ui-fg-subtle text-lg">
-              Tell us what you're working towards, and we'll recommend the
+              Tell us what you&apos;re working towards, and we&apos;ll recommend the
               perfect bundles for you.
             </p>
           </div>
@@ -156,7 +158,7 @@ const BundleRecommender = ({
 
           <div className="mt-8 text-center">
             <p className="text-sm text-ui-fg-muted">
-              Not sure? Choose "General Health" to see all available bundles.
+              Not sure? Choose &quot;General Health&quot; to see all available bundles.
             </p>
           </div>
         </div>
@@ -397,7 +399,7 @@ const BundleRecommender = ({
                   {/* Bundle Items */}
                   <div className="p-4 border-b border-ui-border-base flex-1">
                     <h4 className="text-sm font-semibold text-ui-fg-base mb-2">
-                      What's Included ({bundle.items.length})
+                      What&apos;s Included ({bundle.items.length})
                     </h4>
                     <ul className="space-y-1">
                       {bundle.items.map((item) => (

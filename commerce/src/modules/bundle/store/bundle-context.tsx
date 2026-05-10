@@ -1,7 +1,7 @@
 "use client"
 
 import { HttpTypes } from "@medusajs/types"
-import { createContext, useContext, useMemo, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { BundleSelectionItem } from "../utils/bundle-calculations"
 
 type AddBundleItemInput = {
@@ -24,6 +24,8 @@ const toBundleItemKey = (productId: string, variantId: string) =>
   `${productId}:${variantId}`
 const WEIGHT_STEP_G = 100
 const MIN_ITEM_WEIGHT_G = 1000
+const BUNDLE_STORAGE_KEY = "custom_bundle_items_v1"
+
 const toSafeWeight = (value: number) => {
   const parsed = Number(value)
 
@@ -35,8 +37,74 @@ const toSafeWeight = (value: number) => {
   return Math.max(MIN_ITEM_WEIGHT_G, roundedToStep)
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === "object"
+
+const parseStoredBundleItems = (value: string): BundleSelectionItem[] => {
+  const parsed = JSON.parse(value)
+
+  if (!Array.isArray(parsed)) {
+    return []
+  }
+
+  return parsed
+    .filter((entry): entry is Record<string, unknown> => isRecord(entry))
+    .map((entry) => {
+      const product = isRecord(entry.product) ? entry.product : null
+      const productId = typeof product?.id === "string" ? product.id : ""
+      const variantId =
+        typeof entry.variantId === "string" ? entry.variantId : ""
+      const key =
+        typeof entry.key === "string" && entry.key
+          ? entry.key
+          : toBundleItemKey(productId, variantId)
+      const quantity = toSafeWeight(Number(entry.quantity))
+
+      if (!product || !productId || !variantId || !key) {
+        return null
+      }
+
+      return {
+        key,
+        product: product as HttpTypes.StoreProduct,
+        variantId,
+        quantity,
+      }
+    })
+    .filter((entry): entry is BundleSelectionItem => !!entry)
+}
+
 export const BundleProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<BundleSelectionItem[]>([])
+  const [hasHydrated, setHasHydrated] = useState(false)
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(BUNDLE_STORAGE_KEY)
+
+      if (stored) {
+        const parsedItems = parseStoredBundleItems(stored)
+        setItems(parsedItems)
+      }
+    } catch (error) {
+      console.error("[bundle-context] Failed to restore bundle items", error)
+      window.localStorage.removeItem(BUNDLE_STORAGE_KEY)
+    } finally {
+      setHasHydrated(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hasHydrated) {
+      return
+    }
+
+    try {
+      window.localStorage.setItem(BUNDLE_STORAGE_KEY, JSON.stringify(items))
+    } catch (error) {
+      console.error("[bundle-context] Failed to persist bundle items", error)
+    }
+  }, [items, hasHydrated])
 
   const addItem = ({ product, variantId, quantity }: AddBundleItemInput) => {
     if (!variantId) {

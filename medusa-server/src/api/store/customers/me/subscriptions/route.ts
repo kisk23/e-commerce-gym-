@@ -1,16 +1,64 @@
 import type { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { MedusaError } from "@medusajs/framework/utils"
+import { MedusaError, Modules } from "@medusajs/framework/utils"
+import type { IOrderModuleService } from "@medusajs/types"
 import { SUBSCRIPTION_MODULE } from "../../../../../modules/subscription"
 import SubscriptionModuleService from "../../../../../modules/subscription/service"
 import {
-  computeSubscriptionWindow,
   decorateRemainingTime,
   toStringValue,
 } from "../../../../subscriptions/utils"
-import { addMonths } from "../../../../../modules/subscription/utils/date"
 
 type SubscribeBody = {
   plan_id?: string
+}
+
+const toAmount = (value: unknown): number => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  if (value && typeof value === "object") {
+    const withValue = value as { value?: unknown; raw?: unknown }
+    return toAmount(withValue.value ?? withValue.raw)
+  }
+
+  return 0
+}
+
+const hasEligiblePaidOrder = async (
+  orderService: IOrderModuleService,
+  customerId: string
+) => {
+  const orders = await orderService.listOrders(
+    { customer_id: customerId },
+    {
+      take: 50,
+      relations: ["transactions"],
+      order: { created_at: "DESC" },
+    }
+  )
+
+  return orders.some((order) => {
+    if (order.status !== "completed") {
+      return false
+    }
+
+    const hasCapturedTransaction = (order.transactions || []).some((transaction) => {
+      return (
+        toAmount(transaction.amount) > 0 &&
+        ["capture", "payment", "authorize"].includes(
+          String(transaction.reference || "").toLowerCase()
+        )
+      )
+    })
+
+    return hasCapturedTransaction
+  })
 }
 
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
@@ -50,10 +98,33 @@ export async function POST(
   res: MedusaResponse
 ) {
   const subscriptionService: SubscriptionModuleService = req.scope.resolve(SUBSCRIPTION_MODULE)
+  const orderService: IOrderModuleService = req.scope.resolve(Modules.ORDER)
   const customerId = req.auth_context?.actor_id
 
   if (!customerId) {
     throw new MedusaError(MedusaError.Types.UNAUTHORIZED, "Customer must be authenticated")
+  }
+
+  const allowDirectActivation =
+    process.env.SUBSCRIPTIONS_ALLOW_DIRECT_ACTIVATION === "true"
+
+  if (!allowDirectActivation) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Direct subscription activation is disabled. Complete checkout to activate your plan."
+    )
+  }
+
+  const requirePaidOrder = process.env.SUBSCRIPTIONS_REQUIRE_PAID_ORDER === "true"
+  const canSubscribe = requirePaidOrder
+    ? await hasEligiblePaidOrder(orderService, customerId)
+    : true
+
+  if (!canSubscribe) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "You need at least one paid completed order before subscribing."
+    )
   }
 
   const payload = req.body || {}
@@ -75,49 +146,21 @@ export async function POST(
     )
   }
 
-  const nowIso = new Date().toISOString()
-  const active = await subscriptionService.getActiveSubscriptionForCustomer(customerId, nowIso)
-  const durationMonths = Number(plan.duration_months || 0)
-  const discountPercentage = Number(plan.discount_percentage || 0)
-
-  if (active) {
-    const updated = await subscriptionService.updateCustomerSubscriptions({
-      id: active.id,
-      plan_id: plan.id,
-      plan_title: plan.title,
-      duration_months: Number(active.duration_months || 0) + durationMonths,
-      discount_percentage: discountPercentage,
-      ends_at: addMonths(active.ends_at || nowIso, durationMonths),
-      status: "active",
-      cancelled_at: null,
-    })
-
-    const decorated = decorateRemainingTime(updated, nowIso)
-
-    res.status(200).json({
-      subscription: decorated,
-      action: "extended",
-    })
-    return
-  }
-
-  const { starts_at, ends_at } = computeSubscriptionWindow(nowIso, durationMonths)
-  const created = await subscriptionService.createCustomerSubscriptions({
-    customer_id: customerId,
-    plan_id: plan.id,
-    plan_title: plan.title,
-    duration_months: durationMonths,
-    discount_percentage: discountPercentage,
-    starts_at,
-    ends_at,
-    status: "active",
+  const result = await subscriptionService.activatePlanForCustomer({
+    customerId,
+    plan: {
+      id: plan.id,
+      title: plan.title,
+      duration_months: Number(plan.duration_months || 0),
+      discount_percentage: Number(plan.discount_percentage || 0),
+      price_amount: Number(plan.price_amount || 0),
+    },
   })
-
-  const decorated = decorateRemainingTime(created, nowIso)
+  const nowIso = new Date().toISOString()
+  const decorated = decorateRemainingTime(result.subscription, nowIso)
 
   res.status(200).json({
     subscription: decorated,
-    action: "created",
+    action: result.action,
   })
 }
-

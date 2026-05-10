@@ -5,10 +5,12 @@ import { useState } from "react"
 import Register from "@modules/account/components/register"
 import Login from "@modules/account/components/login"
 
-export enum LOGIN_VIEW {
-  SIGN_IN = "sign-in",
-  REGISTER = "register",
-}
+export const LOGIN_VIEW = {
+  SIGN_IN: "sign-in",
+  REGISTER: "register",
+} as const
+
+export type LOGIN_VIEW = typeof LOGIN_VIEW[keyof typeof LOGIN_VIEW]
 
 const LoginTemplate = ({ redirectTo }: { redirectTo?: string }) => {
   const [currentView, setCurrentView] = useState("sign-in")

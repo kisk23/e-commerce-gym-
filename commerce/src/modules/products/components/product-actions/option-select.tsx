@@ -5,7 +5,7 @@ import React from "react"
 type OptionSelectProps = {
   option: HttpTypes.StoreProductOption
   current: string | undefined
-  updateOption: (title: string, value: string) => void
+  updateOption: (_title: string, _value: string) => void
   title: string
   disabled: boolean
   "data-testid"?: string

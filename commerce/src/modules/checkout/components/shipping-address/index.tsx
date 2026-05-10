@@ -79,7 +79,7 @@ const ShippingAddress = ({
     if (cart && !cart.email && customer?.email) {
       setFormAddress(undefined, customer.email)
     }
-  }, [cart]) // Add cart as a dependency
+  }, [cart, customer?.email]) // Add cart and customer.email as dependencies
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -164,7 +164,9 @@ const ShippingAddress = ({
           required
           data-testid="shipping-city-input"
         />
+
         <CountrySelect
+          className="w-full truncate "
           name="shipping_address.country_code"
           autoComplete="country"
           region={cart?.region}
@@ -173,6 +175,7 @@ const ShippingAddress = ({
           required
           data-testid="shipping-country-select"
         />
+
         <Input
           label="State / Province"
           name="shipping_address.province"

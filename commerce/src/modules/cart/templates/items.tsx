@@ -9,42 +9,83 @@ type ItemsTemplateProps = {
   cart?: HttpTypes.StoreCart
 }
 
+type RenderEntry = {
+  key: string
+  item: HttpTypes.StoreCartLineItem
+  groupedItems?: HttpTypes.StoreCartLineItem[]
+}
+
 const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
   const items = cart?.items
+  const sortedItems = items
+    ? [...items].sort((a, b) => {
+        return (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
+      })
+    : []
+
+  const renderEntries: RenderEntry[] = sortedItems.length
+    ? (() => {
+        const bundleGroups = new Map<string, RenderEntry>()
+        const entries: RenderEntry[] = []
+
+        for (const item of sortedItems) {
+          const metadata = (item.metadata || {}) as Record<string, unknown>
+          const bundleTitle =
+            typeof metadata.bundle_title === "string"
+              ? metadata.bundle_title.trim()
+              : ""
+          const bundleType =
+            typeof metadata.bundle_type === "string"
+              ? metadata.bundle_type.trim()
+              : ""
+
+          if (!bundleTitle) {
+            entries.push({ key: item.id, item })
+            continue
+          }
+
+          const groupKey = `${
+            bundleType || "bundle"
+          }:${bundleTitle.toLowerCase()}`
+          const existing = bundleGroups.get(groupKey)
+
+          if (existing) {
+            existing.groupedItems = [...(existing.groupedItems || []), item]
+            continue
+          }
+
+          const created: RenderEntry = {
+            key: groupKey,
+            item,
+            groupedItems: [item],
+          }
+          bundleGroups.set(groupKey, created)
+          entries.push(created)
+        }
+
+        return entries
+      })()
+    : []
+
   return (
     <div>
       <div className="pb-3 flex items-center">
         <Heading className="text-[2rem] leading-[2.75rem]">Cart</Heading>
       </div>
       <Table>
-        <Table.Header className="border-t-0">
-          <Table.Row className="text-ui-fg-subtle txt-medium-plus">
-            <Table.HeaderCell className="!pl-0">Item</Table.HeaderCell>
-            <Table.HeaderCell></Table.HeaderCell>
-            <Table.HeaderCell>Quantity</Table.HeaderCell>
-            <Table.HeaderCell className="hidden small:table-cell">
-              Price
-            </Table.HeaderCell>
-            <Table.HeaderCell className="!pr-0 text-right">
-              Total
-            </Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
+        <Table.Header className="border-t-0"></Table.Header>
         <Table.Body>
           {items
-            ? items
-                .sort((a, b) => {
-                  return (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
-                })
-                .map((item) => {
-                  return (
-                    <Item
-                      key={item.id}
-                      item={item}
-                      currencyCode={cart?.currency_code}
-                    />
-                  )
-                })
+            ? renderEntries.map((entry) => {
+                return (
+                  <Item
+                    key={entry.key}
+                    item={entry.item}
+                    groupedItems={entry.groupedItems}
+                    currencyCode={cart?.currency_code}
+                  />
+                )
+              })
             : repeat(5).map((i) => {
                 return <SkeletonLineItem key={i} />
               })}

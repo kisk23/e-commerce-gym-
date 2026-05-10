@@ -4,11 +4,11 @@ import BundleGrid from "@/modules/bundle/components/bundle-grid/bundle-grid"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
 export default async function PaginatedProducts({
-  sortBy,
-  page,
-  collectionId,
-  categoryId,
-  productsIds,
+  sortBy: _sortBy,
+  page: _page,
+  collectionId: _collectionId,
+  categoryId: _categoryId,
+  productsIds: _productsIds,
   countryCode,
 }: {
   sortBy?: SortOptions
@@ -26,8 +26,5 @@ export default async function PaginatedProducts({
 
   // Fetch bundles instead of generic products
   const bundles = await listBundles()
-  return (
-    <BundleGrid bundles={bundles} countryCode={countryCode} />
-  )
+  return <BundleGrid bundles={bundles} countryCode={countryCode} />
 }
-

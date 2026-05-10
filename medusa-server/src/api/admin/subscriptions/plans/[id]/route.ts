@@ -7,11 +7,13 @@ import {
   toStringValue,
   validateDiscount,
   validateDuration,
+  validatePriceAmount,
 } from "../../../../subscriptions/utils"
 
 type UpdateSubscriptionPlanBody = {
   title?: string
   description?: string | null
+  price_amount?: number
   duration_months?: number
   discount_percentage?: number
   rank?: number
@@ -61,6 +63,10 @@ export async function PUT(
     payload.discount_percentage !== undefined
       ? validateDiscount(payload.discount_percentage)
       : Number(current.discount_percentage)
+  const nextPriceAmount =
+    payload.price_amount !== undefined
+      ? validatePriceAmount(payload.price_amount)
+      : Number(current.price_amount || 0)
   const nextDescription =
     payload.description !== undefined
       ? toStringValue(payload.description, "")
@@ -72,6 +78,7 @@ export async function PUT(
     id: req.params.id,
     title: nextTitle,
     description: nextDescription || null,
+    price_amount: nextPriceAmount,
     duration_months: nextDuration,
     discount_percentage: nextDiscount,
     rank: nextRank,
@@ -99,4 +106,3 @@ export async function DELETE(req: AuthenticatedMedusaRequest, res: MedusaRespons
 
   res.status(200).json({ plan })
 }
-

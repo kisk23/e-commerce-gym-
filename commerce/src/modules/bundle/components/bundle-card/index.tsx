@@ -41,11 +41,13 @@ export default function BundleCard({ product, onAdd }: Props) {
 
   const unitPrice = getUnitPriceForVariant(product, variantId)
   const currencyCode = getCurrencyCodeForVariant(product, variantId)
-  const { calories: totalCalories, price: totalPrice } = calculateProductTotals({
-    product,
-    quantity,
-    variantId,
-  })
+  const { calories: totalCalories, price: totalPrice } = calculateProductTotals(
+    {
+      product,
+      quantity,
+      variantId,
+    }
+  )
 
   const canAdd = !!variantId && quantity > 0
 
@@ -87,12 +89,9 @@ export default function BundleCard({ product, onAdd }: Props) {
           <div className="flex justify-between text-xs text-primary/70 mt-2">
             <span>
               {Math.round(nutritionPer100g.calories)} cal/100g
-              {" • "}
-              C {Math.round(nutritionPer100g.carbs)}g
-              {" • "}
-              F {Math.round(nutritionPer100g.fat)}g
-              {" • "}
-              P {Math.round(nutritionPer100g.protein)}g
+              {" • "}C {Math.round(nutritionPer100g.carbs)}g{" • "}F{" "}
+              {Math.round(nutritionPer100g.fat)}g{" • "}P{" "}
+              {Math.round(nutritionPer100g.protein)}g
             </span>
             <span className="font-medium text-black">
               {convertToLocale({
@@ -113,8 +112,10 @@ export default function BundleCard({ product, onAdd }: Props) {
           setQuantity(
             Math.max(
               MIN_ITEM_WEIGHT_G,
-              Math.round((Number(event.target.value) || MIN_ITEM_WEIGHT_G) / WEIGHT_STEP_G) *
-                WEIGHT_STEP_G
+              Math.round(
+                (Number(event.target.value) || MIN_ITEM_WEIGHT_G) /
+                  WEIGHT_STEP_G
+              ) * WEIGHT_STEP_G
             )
           )
         }

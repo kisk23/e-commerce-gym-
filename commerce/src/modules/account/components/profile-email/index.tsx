@@ -18,12 +18,8 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
   // TODO: It seems we don't support updating emails now?
   const updateCustomerEmail = (
     _currentState: Record<string, unknown>,
-    formData: FormData
+    _formData: FormData
   ) => {
-    const customer = {
-      email: formData.get("email") as string,
-    }
-
     try {
       // await updateCustomer(customer)
       return { success: true, error: null }

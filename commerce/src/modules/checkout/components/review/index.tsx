@@ -44,7 +44,7 @@ const Review = ({ cart }: { cart: any }) => {
               </Text>
             </div>
           </div>
-          <PaymentButton cart={cart} data-testid="submit-order-button" />
+          <PaymentButton cart={cart} data-testid="submit-order-button"  />
         </>
       )}
     </div>

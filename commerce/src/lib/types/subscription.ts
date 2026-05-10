@@ -2,6 +2,7 @@ export type StoreSubscriptionPlan = {
   id: string
   title: string
   description: string | null
+  price_amount: number
   duration_months: number
   discount_percentage: number
   rank: number

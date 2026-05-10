@@ -6,17 +6,15 @@ import {
   PopoverPanel,
   Transition,
 } from "@headlessui/react"
+import { deleteLineItem, updateLineItem } from "@lib/data/cart"
 import { convertToLocale } from "@lib/util/money"
-import { ShoppingCart } from "@medusajs/icons"
+import { ShoppingCart, Spinner, Trash } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
-import DeleteButton from "@modules/common/components/delete-button"
-import LineItemOptions from "@modules/common/components/line-item-options"
-import LineItemPrice from "@modules/common/components/line-item-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
-import { Fragment, useEffect, useRef, useState } from "react"
+import { Fragment, useEffect, useMemo, useRef, useState } from "react"
 
 const CartDropdown = ({
   cart: cartState,
@@ -27,14 +25,60 @@ const CartDropdown = ({
     undefined
   )
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
+  const [activeGroupKey, setActiveGroupKey] = useState<string | null>(null)
 
   const open = () => setCartDropdownOpen(true)
   const close = () => setCartDropdownOpen(false)
 
-  const totalItems =
-    cartState?.items?.reduce((acc, item) => {
-      return acc + item.quantity
-    }, 0) || 0
+  const groupedItems = useMemo(() => {
+    const items = [...(cartState?.items || [])].sort((a, b) =>
+      (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
+    )
+
+    const grouped = new Map<
+      string,
+      {
+        key: string
+        item: HttpTypes.StoreCartLineItem
+        lineItems: HttpTypes.StoreCartLineItem[]
+        itemIds: string[]
+        totalQuantity: number
+        total: number
+        originalTotal: number
+      }
+    >()
+
+    for (const item of items) {
+      const key =
+        item.product_id || item.product_handle || item.product_title || item.id
+      const total = Number(item.total ?? 0)
+      const originalTotal = Number(item.original_total ?? item.total ?? 0)
+      const current = grouped.get(key)
+
+      if (current) {
+        current.lineItems.push(item)
+        current.itemIds.push(item.id)
+        current.totalQuantity += Number(item.quantity || 0)
+        current.total += total
+        current.originalTotal += originalTotal
+        continue
+      }
+
+      grouped.set(key, {
+        key,
+        item,
+        lineItems: [item],
+        itemIds: [item.id],
+        totalQuantity: Number(item.quantity || 0),
+        total,
+        originalTotal,
+      })
+    }
+
+    return Array.from(grouped.values())
+  }, [cartState?.items])
+
+  const totalItems = groupedItems.length
 
   const subtotal = cartState?.subtotal ?? 0
   const itemRef = useRef<number>(totalItems || 0)
@@ -71,8 +115,73 @@ const CartDropdown = ({
     if (itemRef.current !== totalItems && !pathname.includes("/cart")) {
       timedOpen()
     }
+    itemRef.current = totalItems
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalItems, itemRef.current])
+  }, [totalItems, pathname])
+
+  const removeGroupedItems = async (itemIds: string[], groupKey: string) => {
+    setActiveGroupKey(groupKey)
+
+    try {
+      for (const id of itemIds) {
+        await deleteLineItem(id)
+      }
+    } finally {
+      setActiveGroupKey(null)
+    }
+  }
+
+  const incrementBy100g = async (
+    lineItem: HttpTypes.StoreCartLineItem,
+    groupKey: string
+  ) => {
+    setActiveGroupKey(groupKey)
+
+    try {
+      await updateLineItem({
+        lineId: lineItem.id,
+        quantity: Math.max(1, Number(lineItem.quantity || 0) + 1),
+      })
+    } finally {
+      setActiveGroupKey(null)
+    }
+  }
+
+  const decrementBy100g = async (
+    groupedItem: {
+      key: string
+      lineItems: HttpTypes.StoreCartLineItem[]
+      itemIds: string[]
+    },
+    groupKey: string
+  ) => {
+    setActiveGroupKey(groupKey)
+
+    try {
+      const targetLineItem =
+        groupedItem.lineItems.find(
+          (lineItem) => Number(lineItem.quantity || 0) > 1
+        ) || groupedItem.lineItems[0]
+
+      if (!targetLineItem) {
+        return
+      }
+
+      const currentQuantity = Math.max(1, Number(targetLineItem.quantity || 0))
+
+      if (currentQuantity <= 1) {
+        await deleteLineItem(targetLineItem.id)
+        return
+      }
+
+      await updateLineItem({
+        lineId: targetLineItem.id,
+        quantity: currentQuantity - 1,
+      })
+    } finally {
+      setActiveGroupKey(null)
+    }
+  }
 
   return (
     <div
@@ -80,14 +189,18 @@ const CartDropdown = ({
       onMouseEnter={openAndCancel}
       onMouseLeave={close}
     >
-      <Popover className="relative h-full">
+      <Popover className="relative h-full ">
         <PopoverButton className="h-full">
           <LocalizedClientLink
             className="relative hover:text-ui-fg-base flex items-center gap-1 outline outline-1 outline-primary/30 rounded-lg p-1 px-2"
             href="/cart"
             data-testid="nav-cart-link"
-          ><ShoppingCart/> Cart 
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1 py-0">{totalItems}</span></LocalizedClientLink>
+          >
+            <ShoppingCart /> Cart
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1 py-0">
+              {totalItems}
+            </span>
+          </LocalizedClientLink>
         </PopoverButton>
         <Transition
           show={cartDropdownOpen}
@@ -110,16 +223,17 @@ const CartDropdown = ({
             {cartState && cartState.items?.length ? (
               <>
                 <div className="overflow-y-scroll max-h-[402px] px-4 grid grid-cols-1 gap-y-8 no-scrollbar p-px">
-                  {cartState.items
-                    .sort((a, b) => {
-                      return (a.created_at ?? "") > (b.created_at ?? "")
-                        ? -1
-                        : 1
-                    })
-                    .map((item) => (
+                  {groupedItems.map((groupedItem) => {
+                    const item = groupedItem.item
+                    const quantityKg = groupedItem.totalQuantity / 10
+                    const isUpdating = activeGroupKey === groupedItem.key
+                    const hasReducedPrice =
+                      groupedItem.total < groupedItem.originalTotal
+
+                    return (
                       <div
                         className="grid grid-cols-[122px_1fr] gap-x-4"
-                        key={item.id}
+                        key={groupedItem.key}
                         data-testid="cart-item"
                       >
                         <LocalizedClientLink
@@ -144,37 +258,89 @@ const CartDropdown = ({
                                     {item.title}
                                   </LocalizedClientLink>
                                 </h3>
-                                <LineItemOptions
-                                  variant={item.variant}
-                                  data-testid="cart-item-variant"
-                                  data-value={item.variant}
-                                />
+
                                 <span
                                   data-testid="cart-item-quantity"
-                                  data-value={item.quantity}
+                                  data-value={groupedItem.totalQuantity}
                                 >
-                                  Quantity: {item.quantity}
+                                  Quantity:{" "}
+                                  {Number.isInteger(quantityKg)
+                                    ? quantityKg
+                                    : quantityKg.toFixed(1)}{" "}
+                                  kg
                                 </span>
                               </div>
                               <div className="flex justify-end">
-                                <LineItemPrice
-                                  item={item}
-                                  style="tight"
-                                  currencyCode={cartState.currency_code}
-                                />
+                                <div className="flex flex-col gap-x-2 text-ui-fg-subtle items-end">
+                                  <div className="text-left">
+                                    {hasReducedPrice ? (
+                                      <p>
+                                        <span className="line-through text-ui-fg-muted">
+                                          {convertToLocale({
+                                            amount: groupedItem.originalTotal,
+                                            currency_code:
+                                              cartState.currency_code,
+                                          })}
+                                        </span>
+                                      </p>
+                                    ) : null}
+                                    <span className="text-base-regular">
+                                      {convertToLocale({
+                                        amount: groupedItem.total,
+                                        currency_code: cartState.currency_code,
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
-                          <DeleteButton
-                            id={item.id}
+                          <div className="mt-2 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                decrementBy100g(groupedItem, groupedItem.key)
+                              }
+                              disabled={isUpdating}
+                              className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
+                            >
+                              -100g
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                incrementBy100g(item, groupedItem.key)
+                              }
+                              disabled={isUpdating}
+                              className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
+                            >
+                              +100g
+                            </button>
+                          </div>
+                          <button
+                            onClick={() =>
+                              removeGroupedItems(
+                                groupedItem.itemIds,
+                                groupedItem.key
+                              )
+                            }
+                            disabled={isUpdating}
                             className="mt-1"
                             data-testid="cart-item-remove-button"
                           >
-                            Remove
-                          </DeleteButton>
+                            <span className="flex gap-x-1 text-ui-fg-subtle hover:text-ui-fg-base cursor-pointer text-small-regular">
+                              {isUpdating ? (
+                                <Spinner className="animate-spin" />
+                              ) : (
+                                <Trash />
+                              )}
+                              <span>Remove</span>
+                            </span>
+                          </button>
                         </div>
                       </div>
-                    ))}
+                    )
+                  })}
                 </div>
                 <div className="p-4 flex flex-col gap-y-4 text-small-regular">
                   <div className="flex items-center justify-between">
@@ -195,7 +361,7 @@ const CartDropdown = ({
                   </div>
                   <LocalizedClientLink href="/cart" passHref>
                     <Button
-                      className="w-full"
+                      className="w-full bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary-light))] text-white"
                       size="large"
                       data-testid="go-to-cart-button"
                     >

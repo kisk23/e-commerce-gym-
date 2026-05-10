@@ -1,18 +1,22 @@
 import {
   AbstractNotificationProviderService,
-  MedusaError,
+  MedusaError
 } from "@medusajs/framework/utils"
 import type {
   Logger,
   ProviderSendNotificationDTO,
-  ProviderSendNotificationResultsDTO,
+  ProviderSendNotificationResultsDTO
 } from "@medusajs/framework/types"
 import { Resend, type CreateEmailOptions } from "resend"
 import type { ReactNode } from "react"
+import { OrderPlacedEmail } from "./templates/order-placed"
+import { NewOrderEmail } from "./templates/new-order"
+import { SubscriptionActivatedEmail } from "./templates/subscription-activated"
 
 type ResendOptions = {
   api_key: string
   from: string
+  reply_to?: string | string[]
   html_templates?: Record<string, { subject?: string; content: string }>
 }
 
@@ -22,12 +26,16 @@ type InjectedDependencies = {
 
 enum Templates {
   ORDER_PLACED = "order-placed",
+  NEW_ORDER = "new-order",
+  SUBSCRIPTION_ACTIVATED = "subscription-activated"
 }
 
 type TemplateContent = string | ((props: unknown) => ReactNode)
 
 const templates: Record<Templates, TemplateContent> = {
-  [Templates.ORDER_PLACED]: "<p>Thanks for your order.</p>",
+  [Templates.ORDER_PLACED]: OrderPlacedEmail,
+  [Templates.NEW_ORDER]: NewOrderEmail,
+  [Templates.SUBSCRIPTION_ACTIVATED]: SubscriptionActivatedEmail
 }
 
 class ResendNotificationProviderService extends AbstractNotificationProviderService {
@@ -80,7 +88,11 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
 
     switch (template) {
       case Templates.ORDER_PLACED:
-        return "Order Confirmation"
+        return "Your Elvar order is confirmed"
+      case Templates.NEW_ORDER:
+        return "New Elvar order received"
+      case Templates.SUBSCRIPTION_ACTIVATED:
+        return "Your Elvar subscription is active"
       default:
         return "New Email"
     }
@@ -104,6 +116,7 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       from: this.options.from,
       to: [notification.to],
       subject: this.getTemplateSubject(notification.template as Templates),
+      ...(this.options.reply_to ? { replyTo: this.options.reply_to } : {})
     }
 
     let emailOptions: CreateEmailOptions
@@ -111,12 +124,12 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     if (typeof template === "string") {
       emailOptions = {
         ...commonOptions,
-        html: template,
+        html: template
       }
     } else {
       emailOptions = {
         ...commonOptions,
-        react: template(notification.data),
+        react: template(notification.data)
       }
     }
 

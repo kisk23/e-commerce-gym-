@@ -188,6 +188,7 @@ export default async function activateSubscriptionOnOrder({
         discount_percentage: result.subscription.discount_percentage,
         starts_at: result.subscription.starts_at,
         ends_at: result.subscription.ends_at,
+        pricing_segments: result.subscription.pricing_segments,
         price_amount: Number(plan.price_amount || 0),
         currency_code: order.currency_code,
         items: toEmailItems(order.items)

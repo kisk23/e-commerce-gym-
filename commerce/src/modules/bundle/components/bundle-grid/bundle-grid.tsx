@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { StoreBundle } from "@lib/types/bundle"
 import BundleView from "@/modules/bundle/components/bundle-view"
 import { Funnel } from "@medusajs/icons"
-import { addToCart } from "@lib/data/cart"
+import { addBundleToCart } from "@lib/data/bundles"
 
 export default function BundleGrid({
   bundles,
@@ -48,38 +48,8 @@ export default function BundleGrid({
     setIsAddingId(bundle.id)
     setMessage(null)
 
-    const operationId = `bundle_${Date.now()}`
-
     try {
-      for (const item of bundle.items) {
-        if (!item.variant_id) {
-          continue
-        }
-
-        await addToCart({
-          variantId: item.variant_id,
-          quantity: Math.max(1, Math.round(Number(item.quantity) || 1)),
-          countryCode,
-          metadata: {
-            bundle_id: bundle.id,
-            bundle_title: bundle.title,
-            bundle_discount_percentage: Math.max(
-              0,
-              Math.round(Number(bundle.discount_percentage || 0))
-            ),
-            bundle_operation_id: operationId,
-            bundle_type: "admin",
-            bundle_item_units: Math.max(
-              1,
-              Math.round(Number(item.quantity) || 1)
-            ),
-            ...(typeof item.weight === "number" && item.weight > 0
-              ? { bundle_item_weight: item.weight, weight_g: item.weight }
-              : {}),
-          },
-        })
-      }
-
+      await addBundleToCart({ bundleId: bundle.id, countryCode })
       setMessage(`Added "${bundle.title}" to cart.`)
     } catch (error) {
       setMessage(

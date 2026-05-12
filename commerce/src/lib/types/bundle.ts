@@ -17,6 +17,7 @@ export type StoreBundle = {
   id: string
   title: string
   description: string | null
+  thumbnail?: string | null
   bundle_type?: string | null
   discount_percentage: number
   is_active: boolean

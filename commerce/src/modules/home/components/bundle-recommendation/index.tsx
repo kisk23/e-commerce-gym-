@@ -6,6 +6,7 @@ import { Button } from "@medusajs/ui"
 import { convertToLocale } from "@lib/util/money"
 import { addBundleToCart } from "@lib/data/bundles"
 import {
+  calculateBundleDiscountedPrice,
   calculateBundleOriginalPrice,
   calculateBundleSavings,
 } from "@modules/bundle/utils/bundle-calculations"
@@ -110,10 +111,12 @@ const BundleRecommender = ({
       <section className="content-container py-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h1 className="text-3xl-semi mb-3">What&apos;s Your Fitness Goal?</h1>
+            <h1 className="text-3xl-semi mb-3">
+              What&apos;s Your Fitness Goal?
+            </h1>
             <p className="text-ui-fg-subtle text-lg">
-              Tell us what you&apos;re working towards, and we&apos;ll recommend the
-              perfect bundles for you.
+              Tell us what you&apos;re working towards, and we&apos;ll recommend
+              the perfect bundles for you.
             </p>
           </div>
 
@@ -158,7 +161,8 @@ const BundleRecommender = ({
 
           <div className="mt-8 text-center">
             <p className="text-sm text-ui-fg-muted">
-              Not sure? Choose &quot;General Health&quot; to see all available bundles.
+              Not sure? Choose &quot;General Health&quot; to see all available
+              bundles.
             </p>
           </div>
         </div>
@@ -220,6 +224,7 @@ const BundleRecommender = ({
           <div className="grid grid-cols-1 medium:grid-cols-2 large:grid-cols-3 gap-6">
             {recommendedBundles.map((bundle) => {
               const originalPrice = calculateBundleOriginalPrice(bundle)
+              const discountedPrice = calculateBundleDiscountedPrice(bundle)
               const savings = calculateBundleSavings(bundle)
               const hasDiscount = bundle.discount_percentage > 0
 
@@ -294,7 +299,7 @@ const BundleRecommender = ({
                               </span>
                               <span className="text-2xl font-bold text-green-700">
                                 {convertToLocale({
-                                  amount: bundle.total_price,
+                                  amount: discountedPrice,
                                   currency_code:
                                     bundle.currency_code ||
                                     currencyCode ||
@@ -324,7 +329,7 @@ const BundleRecommender = ({
                             </span>
                             <span className="text-2xl font-bold text-ui-fg-base">
                               {convertToLocale({
-                                amount: bundle.total_price,
+                                amount: discountedPrice,
                                 currency_code:
                                   bundle.currency_code || currencyCode || "aed",
                               })}

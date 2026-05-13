@@ -3,13 +3,14 @@ import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import type {
   ICartModuleService,
   ICustomerModuleService,
-  IOrderModuleService,
+  INotificationModuleService,
+  IOrderModuleService
 } from "@medusajs/types"
 import { SUBSCRIPTION_MODULE } from "../modules/subscription"
 import SubscriptionModuleService from "../modules/subscription/service"
 import {
   applySubscriptionDiscountToCart,
-  isSubscriptionPlanLineItem,
+  isSubscriptionPlanLineItem
 } from "../modules/subscription/utils/cart-discount"
 
 type OrderPlacedData = {
@@ -30,15 +31,17 @@ const SUBSCRIPTION_METADATA_KEYS = {
   processedAt: "subscription_activation_processed_at",
   action: "subscription_activation_action",
   effectiveDiscount: "subscription_effective_discount_percentage",
-  pricingSegments: "subscription_pricing_segments",
+  pricingSegments: "subscription_pricing_segments"
 }
 
 const CUSTOMER_PENDING_METADATA_KEYS = {
   planId: "subscription_pending_plan_id",
   planTitle: "subscription_pending_plan_title",
   selectedAt: "subscription_pending_plan_selected_at",
-  cartId: "subscription_pending_cart_id",
+  cartId: "subscription_pending_cart_id"
 }
+
+const toEmailItems = (value: unknown) => (Array.isArray(value) ? value : [])
 
 const readSelectedPlanIdFromOrderItems = (items: unknown[]) => {
   for (const item of items) {
@@ -47,7 +50,10 @@ const readSelectedPlanIdFromOrderItems = (items: unknown[]) => {
     }
 
     const itemWithMetadata = item as { metadata?: Record<string, unknown> }
-    const metadata = (itemWithMetadata.metadata || {}) as Record<string, unknown>
+    const metadata = (itemWithMetadata.metadata || {}) as Record<
+      string,
+      unknown
+    >
 
     if (!isSubscriptionPlanLineItem(metadata)) {
       continue
@@ -65,7 +71,7 @@ const readSelectedPlanIdFromOrderItems = (items: unknown[]) => {
 
 export default async function activateSubscriptionOnOrder({
   event,
-  container,
+  container
 }: SubscriberArgs<OrderPlacedData>) {
   const orderId = event?.data?.id
 
@@ -74,13 +80,20 @@ export default async function activateSubscriptionOnOrder({
   }
 
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
-  const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
-  const customerModuleService: ICustomerModuleService = container.resolve(Modules.CUSTOMER)
+  const orderModuleService: IOrderModuleService = container.resolve(
+    Modules.ORDER
+  )
+  const customerModuleService: ICustomerModuleService = container.resolve(
+    Modules.CUSTOMER
+  )
   const cartModuleService: ICartModuleService = container.resolve(Modules.CART)
-  const subscriptionService: SubscriptionModuleService = container.resolve(SUBSCRIPTION_MODULE)
+  const notificationModuleService: INotificationModuleService =
+    container.resolve(Modules.NOTIFICATION)
+  const subscriptionService: SubscriptionModuleService =
+    container.resolve(SUBSCRIPTION_MODULE)
 
   const order = await orderModuleService.retrieveOrder(orderId, {
-    relations: ["transactions", "items"],
+    relations: ["transactions", "items"]
   })
 
   const customerId = order?.customer_id
@@ -102,11 +115,15 @@ export default async function activateSubscriptionOnOrder({
     return
   }
 
-  if (toStringValue(orderMetadata[SUBSCRIPTION_METADATA_KEYS.status]) === "applied") {
+  if (
+    toStringValue(orderMetadata[SUBSCRIPTION_METADATA_KEYS.status]) ===
+    "applied"
+  ) {
     return
   }
 
-  const plan = await subscriptionService.retrieveSubscriptionPlan(selectedPlanId)
+  const plan =
+    await subscriptionService.retrieveSubscriptionPlan(selectedPlanId)
 
   if (!plan?.is_active) {
     logger.warn(
@@ -122,8 +139,8 @@ export default async function activateSubscriptionOnOrder({
       title: plan.title,
       duration_months: Number(plan.duration_months || 0),
       discount_percentage: Number(plan.discount_percentage || 0),
-      price_amount: Number(plan.price_amount || 0),
-    },
+      price_amount: Number(plan.price_amount || 0)
+    }
   })
 
   await orderModuleService.updateOrders(orderId, {
@@ -137,8 +154,8 @@ export default async function activateSubscriptionOnOrder({
         result.subscription?.discount_percentage || 0
       ),
       [SUBSCRIPTION_METADATA_KEYS.pricingSegments]:
-        result.subscription?.pricing_segments || "[]",
-    },
+        result.subscription?.pricing_segments || "[]"
+    }
   })
 
   await customerModuleService.updateCustomers(customerId, {
@@ -147,14 +164,46 @@ export default async function activateSubscriptionOnOrder({
       [CUSTOMER_PENDING_METADATA_KEYS.planId]: null,
       [CUSTOMER_PENDING_METADATA_KEYS.planTitle]: null,
       [CUSTOMER_PENDING_METADATA_KEYS.selectedAt]: null,
-      [CUSTOMER_PENDING_METADATA_KEYS.cartId]: null,
-    },
+      [CUSTOMER_PENDING_METADATA_KEYS.cartId]: null
+    }
   })
+
+  const forcedRecipient = process.env.ORDER_EMAIL_TEST_RECIPIENT?.trim()
+  const recipient = forcedRecipient || order.email
+
+  if (recipient && result.subscription) {
+    await notificationModuleService.createNotifications({
+      to: recipient,
+      channel: "email",
+      template: "subscription-activated",
+      data: {
+        email: recipient,
+        original_email: order.email,
+        order_id: order.id,
+        display_id: order.display_id,
+        action: result.action,
+        subscription_id: result.subscription.id,
+        plan_title: result.subscription.plan_title,
+        duration_months: result.subscription.duration_months,
+        discount_percentage: result.subscription.discount_percentage,
+        starts_at: result.subscription.starts_at,
+        ends_at: result.subscription.ends_at,
+        pricing_segments: result.subscription.pricing_segments,
+        price_amount: Number(plan.price_amount || 0),
+        currency_code: order.currency_code,
+        items: toEmailItems(order.items)
+      },
+      trigger_type: "subscription.activated",
+      resource_id: result.subscription.id,
+      resource_type: "customer_subscription",
+      receiver_id: customerId
+    })
+  }
 
   // Ensure the newly activated plan discount is reflected on all open carts
   // for this customer without waiting for the next cart mutation.
   const customerCarts = await cartModuleService.listCarts({
-    customer_id: customerId,
+    customer_id: customerId
   })
 
   const openCartIds = customerCarts
@@ -167,7 +216,7 @@ export default async function activateSubscriptionOnOrder({
         cartId,
         customerId,
         cartModuleService,
-        subscriptionService,
+        subscriptionService
       }).catch((error) => {
         logger.warn(
           `[subscriptions] Could not sync subscription discount for cart ${cartId}: ${
@@ -180,5 +229,5 @@ export default async function activateSubscriptionOnOrder({
 }
 
 export const config: SubscriberConfig = {
-  event: "order.placed",
+  event: "order.placed"
 }

@@ -66,7 +66,11 @@ export default function BundleView({
   }
 
   return (
-    <div className="w-full max-w-[400px] rounded-[26px] overflow-hidden bg-white border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
+    <div
+      className="w-full max-w-[400px] rounded-[26px] overflow-hidden bg-white border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
+      data-testid="bundle-view"
+      data-bundle-id={bundle.id}
+    >
       {/* IMAGE */}
       <div className="relative w-full h-[300px] bg-[#c8d8b0]">
         <Image
@@ -177,6 +181,7 @@ export default function BundleView({
               onClick={handleAdd}
               disabled={isAdding}
               className="flex items-center gap-1.5 text-sm border-2 border-black font-semibold text-white rounded-md px-4 py-2 transition-colors hover:opacity-90 bg-primary"
+              data-testid="add-bundle-to-cart"
             >
               <ShoppingCart />
               {isAdding ? "Adding..." : "Add"}

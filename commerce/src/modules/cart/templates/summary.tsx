@@ -28,6 +28,7 @@ const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
   // Items-only subtotal (excludes delivery/shipping).
   const subtotal = Number(cart.item_subtotal ?? 0)
   const delivery = Number(cart.shipping_subtotal ?? 0)
+  const discount = Number((cart as any).discount_subtotal ?? 0)
   const total = Number(cart.total ?? 0)
   const hasSelectedDeliveryMethod = (cart.shipping_methods?.length ?? 0) > 0
   // Subscription discount is only shown for authenticated customers with an active subscription.
@@ -107,7 +108,25 @@ const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
                 </span>
               </div>
             ) : null}
-            {subscriptionDiscountAmount > 0 && (
+            {discount > 0 ? (
+              <div className="flex items-center justify-between">
+                <span className="text-sm leading-5 text-[#717182]">
+                  Discount
+                </span>
+                <span
+                  className="text-sm leading-5 font-medium text-[rgb(var(--primary))]"
+                  data-testid="cart-discount"
+                  data-value={discount}
+                >
+                  -{" "}
+                  {convertToLocale({
+                    amount: discount,
+                    currency_code: currencyCode,
+                  })}
+                </span>
+              </div>
+            ) : null}
+            {discount <= 0 && subscriptionDiscountAmount > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-sm leading-5 text-[#717182]">
                   Subscription discount

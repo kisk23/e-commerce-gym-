@@ -13,6 +13,9 @@
     "start": "next start -p 8000",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
     "analyze": "ANALYZE=true next build",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\""
   },
@@ -39,6 +42,7 @@
     "@babel/core": "^7.17.5",
     "@medusajs/types": "latest",
     "@medusajs/ui-preset": "latest",
+    "@playwright/test": "^1.60.0",
     "@types/lodash": "^4.14.195",
     "@types/node": "17.0.21",
     "@types/pg": "^8.11.0",

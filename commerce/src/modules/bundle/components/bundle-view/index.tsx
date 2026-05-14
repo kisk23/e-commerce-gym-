@@ -3,6 +3,11 @@
 import Image from "next/image"
 import { Fire, ShoppingBag, ShoppingCart } from "@medusajs/icons"
 import { StoreBundle } from "@lib/types/bundle"
+import { convertToLocale } from "@lib/util/money"
+import {
+  calculateBundleDiscountedPrice,
+  calculateBundleOriginalPrice,
+} from "@modules/bundle/utils/bundle-calculations"
 
 type Props = {
   bundle: StoreBundle
@@ -29,11 +34,9 @@ export default function BundleView({
   const includes = bundle.items?.map((i) => i.product_title) || []
 
   const discountPct = bundle.discount_percentage || 0
-  const originalPrice = Number(bundle.total_price || 0)
-  
-
-  const discountedPrice =
-    discountPct > 0 ? originalPrice * (1 - discountPct / 100) : originalPrice
+  const originalPrice = calculateBundleOriginalPrice(bundle)
+  const discountedPrice = calculateBundleDiscountedPrice(bundle)
+  const currencyCode = bundle.currency_code || "aed"
 
   const handleAdd = () => {
     if (!onAddToCart) {
@@ -134,11 +137,17 @@ export default function BundleView({
           <div className="flex flex-col">
             {discountPct > 0 && (
               <span className="text-sm text-gray-400 line-through">
-                {originalPrice.toFixed(2)}{getCurrencySymbol(bundle.currency_code??"USD")}
+                {convertToLocale({
+                  amount: originalPrice,
+                  currency_code: currencyCode,
+                })}
               </span>
             )}
-            <span className="text-lg font-semibold text-primary leading-none">
-              {discountedPrice.toFixed(2)}{getCurrencySymbol(bundle.currency_code??"USD")}
+            <span className="text-2xl font-semibold text-primary leading-none">
+              {convertToLocale({
+                amount: discountedPrice,
+                currency_code: currencyCode,
+              })}
             </span>
           </div>
 

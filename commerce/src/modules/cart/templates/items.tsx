@@ -38,15 +38,19 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
             typeof metadata.bundle_type === "string"
               ? metadata.bundle_type.trim()
               : ""
+          const bundleOperationId =
+            typeof metadata.bundle_operation_id === "string"
+              ? metadata.bundle_operation_id.trim()
+              : ""
 
           if (!bundleTitle) {
             entries.push({ key: item.id, item })
             continue
           }
 
-          const groupKey = `${
-            bundleType || "bundle"
-          }:${bundleTitle.toLowerCase()}`
+          const groupKey = bundleOperationId
+            ? `bundle-operation:${bundleOperationId}`
+            : `${bundleType || "bundle"}:${bundleTitle.toLowerCase()}`
           const existing = bundleGroups.get(groupKey)
 
           if (existing) {

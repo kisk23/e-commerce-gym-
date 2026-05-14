@@ -18,6 +18,8 @@ type AddBundleToCartBody = {
   }[]
 }
 
+const WEIGHT_STEP_G = 100
+
 const toAmount = (value: unknown): number => {
   if (typeof value === "number") {
     return value
@@ -96,13 +98,17 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
       itemsToAdd = bundle.items.map((item) => {
         const pricePer100g = priceMap.get(item.variant_id) ?? 0
-        const unitPrice =
-          item.weight > 0 ? roundValue((pricePer100g * item.weight) / 100) : undefined
-        const weightValue = item.weight > 0 ? item.weight : undefined
+        const bundleItemCount = Math.max(1, Math.round(Number(item.quantity) || 1))
+        const itemWeight = Math.max(0, Number(item.weight) || 0)
+        const itemWeightUnits =
+          itemWeight > 0 ? Math.max(1, Math.round(itemWeight / WEIGHT_STEP_G)) : 1
+        const lineQuantity = Math.max(1, itemWeightUnits * bundleItemCount)
+        const selectedWeightG = lineQuantity * WEIGHT_STEP_G
+        const unitPrice = pricePer100g > 0 ? roundValue(pricePer100g) : undefined
 
         return {
           variant_id: item.variant_id,
-          quantity: item.quantity,
+          quantity: lineQuantity,
           ...(typeof unitPrice === "number" && unitPrice > 0
             ? { unit_price: unitPrice }
             : {}),
@@ -112,10 +118,14 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_discount_percentage: bundle.discount_percentage,
             bundle_operation_id: operationId,
             bundle_type: "admin",
-            bundle_item_units: item.quantity,
-            bundle_item_weight: item.weight,
+            bundle_item_units: lineQuantity,
+            bundle_item_count: bundleItemCount,
+            bundle_item_weight: itemWeight,
+            bundle_item_weight_g: itemWeight,
             bundle_price_per_100g: pricePer100g,
-            ...(typeof weightValue === "number" ? { weight_g: weightValue } : {}),
+            weight_g: WEIGHT_STEP_G,
+            selected_weight_g: selectedWeightG,
+            selected_weight_unit_g: WEIGHT_STEP_G,
           },
         }
       })

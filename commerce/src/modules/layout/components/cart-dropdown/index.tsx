@@ -16,6 +16,93 @@ import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useMemo, useRef, useState } from "react"
 
+type GroupedCartItem = {
+  key: string
+  item: HttpTypes.StoreCartLineItem
+  lineItems: HttpTypes.StoreCartLineItem[]
+  itemIds: string[]
+  totalQuantity: number
+  total: number
+  originalTotal: number
+  isBundle: boolean
+  isCustomBundle: boolean
+}
+
+const toNumber = (value: unknown, fallback = 0) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const getLineMetadata = (item: HttpTypes.StoreCartLineItem) =>
+  (item.metadata || {}) as Record<string, unknown>
+
+const getBundleId = (item: HttpTypes.StoreCartLineItem) => {
+  const metadata = getLineMetadata(item)
+  return typeof metadata.bundle_id === "string" ? metadata.bundle_id : ""
+}
+
+const isCustomBundleLine = (item: HttpTypes.StoreCartLineItem) => {
+  const metadata = getLineMetadata(item)
+  const bundleId = getBundleId(item)
+  return metadata.bundle_type === "custom" || bundleId.startsWith("custom_")
+}
+
+const getBundleStepUnits = (item: HttpTypes.StoreCartLineItem) => {
+  const metadata = getLineMetadata(item)
+  const metadataStep = toNumber(metadata.bundle_item_units)
+
+  if (metadataStep > 0) {
+    return Math.max(1, Math.round(metadataStep))
+  }
+
+  return 1
+}
+
+const getBundleTitle = (item: HttpTypes.StoreCartLineItem) => {
+  const metadata = getLineMetadata(item)
+
+  if (
+    typeof metadata.bundle_title === "string" &&
+    metadata.bundle_title.trim()
+  ) {
+    return metadata.bundle_title.trim()
+  }
+
+  return isCustomBundleLine(item) ? "Custom Bundle" : "Recommended Bundle"
+}
+
+const getLineWeightG = (item: HttpTypes.StoreCartLineItem) => {
+  const metadata = getLineMetadata(item)
+  const selectedWeight = toNumber(metadata.selected_weight_g)
+
+  if (selectedWeight > 0) {
+    return selectedWeight
+  }
+
+  const itemWeight = toNumber(
+    metadata.bundle_item_weight_g ?? metadata.bundle_item_weight
+  )
+  const itemCount = Math.max(
+    1,
+    Math.round(toNumber(metadata.bundle_item_count, 1))
+  )
+
+  if (itemWeight > 0) {
+    return itemWeight * itemCount
+  }
+
+  return Math.max(0, Number(item.quantity || 0)) * 100
+}
+
+const formatWeight = (weightG: number) => {
+  if (weightG >= 1000) {
+    const value = weightG / 1000
+    return `${Number.isInteger(value) ? value : value.toFixed(1)} kg`
+  }
+
+  return `${Math.round(weightG)}g`
+}
+
 const CartDropdown = ({
   cart: cartState,
 }: {
@@ -35,22 +122,25 @@ const CartDropdown = ({
       (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
     )
 
-    const grouped = new Map<
-      string,
-      {
-        key: string
-        item: HttpTypes.StoreCartLineItem
-        lineItems: HttpTypes.StoreCartLineItem[]
-        itemIds: string[]
-        totalQuantity: number
-        total: number
-        originalTotal: number
-      }
-    >()
+    const grouped = new Map<string, GroupedCartItem>()
 
     for (const item of items) {
-      const key =
-        item.product_id || item.product_handle || item.product_title || item.id
+      const metadata = getLineMetadata(item)
+      const bundleId = getBundleId(item)
+      const operationId =
+        typeof metadata.bundle_operation_id === "string"
+          ? metadata.bundle_operation_id
+          : ""
+      const isBundle = !!bundleId
+      const isCustomBundle = isBundle && isCustomBundleLine(item)
+      const key = operationId
+        ? `bundle-operation:${operationId}`
+        : bundleId
+        ? `bundle:${bundleId}:${item.product_id || item.variant_id || item.id}`
+        : item.product_id ||
+          item.product_handle ||
+          item.product_title ||
+          item.id
       const total = Number(item.total ?? 0)
       const originalTotal = Number(item.original_total ?? item.total ?? 0)
       const current = grouped.get(key)
@@ -61,6 +151,8 @@ const CartDropdown = ({
         current.totalQuantity += Number(item.quantity || 0)
         current.total += total
         current.originalTotal += originalTotal
+        current.isBundle = current.isBundle || isBundle
+        current.isCustomBundle = current.isCustomBundle || isCustomBundle
         continue
       }
 
@@ -72,6 +164,8 @@ const CartDropdown = ({
         totalQuantity: Number(item.quantity || 0),
         total,
         originalTotal,
+        isBundle,
+        isCustomBundle,
       })
     }
 
@@ -131,31 +225,29 @@ const CartDropdown = ({
     }
   }
 
-  const incrementBy100g = async (
-    lineItem: HttpTypes.StoreCartLineItem,
-    groupKey: string
-  ) => {
-    setActiveGroupKey(groupKey)
+  const incrementBy100g = async (groupedItem: GroupedCartItem) => {
+    if (groupedItem.isBundle) {
+      return
+    }
+
+    setActiveGroupKey(groupedItem.key)
 
     try {
       await updateLineItem({
-        lineId: lineItem.id,
-        quantity: Math.max(1, Number(lineItem.quantity || 0) + 1),
+        lineId: groupedItem.item.id,
+        quantity: Math.max(1, Number(groupedItem.item.quantity || 0) + 1),
       })
     } finally {
       setActiveGroupKey(null)
     }
   }
 
-  const decrementBy100g = async (
-    groupedItem: {
-      key: string
-      lineItems: HttpTypes.StoreCartLineItem[]
-      itemIds: string[]
-    },
-    groupKey: string
-  ) => {
-    setActiveGroupKey(groupKey)
+  const decrementBy100g = async (groupedItem: GroupedCartItem) => {
+    if (groupedItem.isBundle) {
+      return
+    }
+
+    setActiveGroupKey(groupedItem.key)
 
     try {
       const targetLineItem =
@@ -177,6 +269,42 @@ const CartDropdown = ({
       await updateLineItem({
         lineId: targetLineItem.id,
         quantity: currentQuantity - 1,
+      })
+    } finally {
+      setActiveGroupKey(null)
+    }
+  }
+
+  const incrementLineBy100g = async (lineItem: HttpTypes.StoreCartLineItem) => {
+    setActiveGroupKey(lineItem.id)
+
+    try {
+      await updateLineItem({
+        lineId: lineItem.id,
+        quantity:
+          Math.max(1, Number(lineItem.quantity || 0)) +
+          getBundleStepUnits(lineItem),
+      })
+    } finally {
+      setActiveGroupKey(null)
+    }
+  }
+
+  const decrementLineBy100g = async (lineItem: HttpTypes.StoreCartLineItem) => {
+    setActiveGroupKey(lineItem.id)
+
+    try {
+      const stepUnits = getBundleStepUnits(lineItem)
+      const currentQuantity = Math.max(1, Number(lineItem.quantity || 0))
+
+      if (currentQuantity <= stepUnits) {
+        await deleteLineItem(lineItem.id)
+        return
+      }
+
+      await updateLineItem({
+        lineId: lineItem.id,
+        quantity: currentQuantity - stepUnits,
       })
     } finally {
       setActiveGroupKey(null)
@@ -226,9 +354,32 @@ const CartDropdown = ({
                   {groupedItems.map((groupedItem) => {
                     const item = groupedItem.item
                     const quantityKg = groupedItem.totalQuantity / 10
-                    const isUpdating = activeGroupKey === groupedItem.key
+                    const isUpdating =
+                      activeGroupKey === groupedItem.key ||
+                      groupedItem.lineItems.some(
+                        (lineItem) => lineItem.id === activeGroupKey
+                      )
                     const hasReducedPrice =
                       groupedItem.total < groupedItem.originalTotal
+                    const canChangeQuantity = !groupedItem.isBundle
+                    const bundleLabel = groupedItem.isCustomBundle
+                      ? "Custom Bundle"
+                      : "Recommended Bundle"
+                    const title = groupedItem.isBundle
+                      ? getBundleTitle(item)
+                      : item.title
+                    const productDetails = groupedItem.lineItems.map(
+                      (lineItem) => ({
+                        id: lineItem.id,
+                        lineItem,
+                        title:
+                          lineItem.product_title || lineItem.title || "Item",
+                        weightG: getLineWeightG(lineItem),
+                        thumbnail: lineItem.thumbnail,
+                        images: lineItem.variant?.product?.images,
+                        handle: lineItem.product_handle,
+                      })
+                    )
 
                     return (
                       <div
@@ -255,9 +406,15 @@ const CartDropdown = ({
                                     href={`/products/${item.product_handle}`}
                                     data-testid="product-link"
                                   >
-                                    {item.title}
+                                    {title}
                                   </LocalizedClientLink>
                                 </h3>
+
+                                {groupedItem.isBundle ? (
+                                  <span className="text-xs text-ui-fg-muted">
+                                    {bundleLabel}
+                                  </span>
+                                ) : null}
 
                                 <span
                                   data-testid="cart-item-quantity"
@@ -269,6 +426,65 @@ const CartDropdown = ({
                                     : quantityKg.toFixed(1)}{" "}
                                   kg
                                 </span>
+                                {groupedItem.isBundle ? (
+                                  <div className="mt-2 flex flex-col gap-2 text-xs text-ui-fg-subtle whitespace-normal">
+                                    {productDetails.map((entry) => (
+                                      <div
+                                        key={entry.id}
+                                        className="flex items-start gap-2"
+                                      >
+                                        <LocalizedClientLink
+                                          href={`/products/${entry.handle}`}
+                                          className="w-10 h-10 shrink-0 overflow-hidden rounded-md border border-ui-border-base"
+                                        >
+                                          <Thumbnail
+                                            thumbnail={entry.thumbnail}
+                                            images={entry.images}
+                                            size="square"
+                                          />
+                                        </LocalizedClientLink>
+                                        <div className="flex min-w-0 flex-col gap-1">
+                                          <span>
+                                            {entry.title} -{" "}
+                                            {formatWeight(entry.weightG)}
+                                          </span>
+                                          {groupedItem.isCustomBundle ? (
+                                            <div className="flex items-center gap-2">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  decrementLineBy100g(
+                                                    entry.lineItem
+                                                  )
+                                                }
+                                                disabled={
+                                                  activeGroupKey === entry.id
+                                                }
+                                                className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
+                                              >
+                                                -100g
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  incrementLineBy100g(
+                                                    entry.lineItem
+                                                  )
+                                                }
+                                                disabled={
+                                                  activeGroupKey === entry.id
+                                                }
+                                                className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
+                                              >
+                                                +100g
+                                              </button>
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : null}
                               </div>
                               <div className="flex justify-end">
                                 <div className="flex flex-col gap-x-2 text-ui-fg-subtle items-end">
@@ -295,28 +511,26 @@ const CartDropdown = ({
                               </div>
                             </div>
                           </div>
-                          <div className="mt-2 flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                decrementBy100g(groupedItem, groupedItem.key)
-                              }
-                              disabled={isUpdating}
-                              className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
-                            >
-                              -100g
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                incrementBy100g(item, groupedItem.key)
-                              }
-                              disabled={isUpdating}
-                              className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
-                            >
-                              +100g
-                            </button>
-                          </div>
+                          {canChangeQuantity ? (
+                            <div className="mt-2 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => decrementBy100g(groupedItem)}
+                                disabled={isUpdating}
+                                className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
+                              >
+                                -100g
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => incrementBy100g(groupedItem)}
+                                disabled={isUpdating}
+                                className="px-2 py-1 text-xs border border-ui-border-base rounded-md hover:bg-ui-bg-subtle disabled:opacity-50"
+                              >
+                                +100g
+                              </button>
+                            </div>
+                          ) : null}
                           <button
                             onClick={() =>
                               removeGroupedItems(

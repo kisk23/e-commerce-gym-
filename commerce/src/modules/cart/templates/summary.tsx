@@ -169,7 +169,7 @@ const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
             <LocalizedClientLink href="/subscriptions">
               <button
                 type="button"
-                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white text-sm leading-5 font-medium text-[#0A0A0A]"
+                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white cursor-pointer hover:bg-primary/20 text-sm leading-5 font-medium text-[#0A0A0A]"
               >
                 Manage subscription
               </button>
@@ -183,7 +183,7 @@ const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
             <LocalizedClientLink href="/subscriptions">
               <button
                 type="button"
-                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white text-sm leading-5 font-medium text-[#0A0A0A]"
+                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white cursor-pointer hover:bg-primary/20 text-sm leading-5 font-medium text-[#0A0A0A]"
               >
                 View Plans
               </button>

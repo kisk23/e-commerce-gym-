@@ -31,7 +31,15 @@ export default function BundleView({
   const calories = bundle.total_calories
   const weightG = bundle.total_weight
   const productCount = bundle.items?.length || 0
-  const includes = bundle.items?.map((i) => i.product_title) || []
+  const includes =
+    bundle.items?.map((i) => ({
+      product_title: i.product_title,
+      weight: i.weight,
+      calories: i.calories,
+      carbs: i.carbs,
+      fat: i.fat,
+      protein: i.protein,
+    })) || []
 
   const discountPct = bundle.discount_percentage || 0
   const originalPrice = calculateBundleOriginalPrice(bundle)
@@ -46,16 +54,16 @@ export default function BundleView({
   }
 
   const getCurrencySymbol = (currencyCode: string, locale = "en") => {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: currencyCode.toUpperCase(),
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })
-    .format(0)
-    .replace(/\d/g, "")
-    .trim()
-}
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: currencyCode.toUpperCase(),
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+      .format(0)
+      .replace(/\d/g, "")
+      .trim()
+  }
 
   return (
     <div className="w-full max-w-[400px] rounded-[26px] overflow-hidden bg-white border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
@@ -117,14 +125,27 @@ export default function BundleView({
         {includes.length > 0 && (
           <div>
             <p className="text-sm text-gray-500 mb-2">Includes:</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-5">
               {includes.map((item, idx) => (
-                <span
-                  key={idx}
-                  className="text-sm font-semibold border border-gray-200 rounded-full px-3 py-1"
-                >
-                  {item}
-                </span>
+                <div key={idx} className="flex flex-col gap-2 ">
+                  <span className="text-sm font-semibold border border-gray-200 rounded-full px-3 py-1">
+                    {item.product_title} ({item.weight}g)
+                  </span>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className="px-3 py-1 rounded-full bg-orange-50">
+                      {item.calories} cal
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-blue-50">
+                      {item.carbs}g carbs
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-yellow-50">
+                      {item.fat}g fat
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-green-50">
+                      {item.protein}g protein
+                    </span>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -152,10 +173,6 @@ export default function BundleView({
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="text-sm font-medium text-gray-700 border-2 border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50 transition-colors">
-              Details
-            </button>
-
             <button
               onClick={handleAdd}
               disabled={isAdding}

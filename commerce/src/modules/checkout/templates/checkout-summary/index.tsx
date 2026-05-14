@@ -120,7 +120,7 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
             className="flex justify-between items-center text-sm"
           >
             <span className="text-gray-500">
-              {item.title} x {item.quantity}
+              {item.title}/100g x{item.quantity}
             </span>
             <span className="font-medium">
               {convertToLocale({

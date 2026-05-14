@@ -45,6 +45,25 @@ const getBundleStepUnits = (lineItem: HttpTypes.StoreCartLineItem) => {
   return Math.max(1, Math.round(weightG / 100))
 }
 
+/**
+ * Returns the sum of bundle-only adjustments for a line item.
+ * Subscription adjustments (SUBSCRIPTION_PLAN_DISCOUNT) are intentionally excluded
+ * so that item card totals show post-bundle-discount prices only.
+ */
+const getBundleAdjustmentAmount = (
+  lineItem: HttpTypes.StoreCartLineItem
+): number => {
+  const adjustments = ((lineItem as any).adjustments || []) as Array<{
+    code?: string
+    amount?: unknown
+  }>
+  return adjustments
+    .filter(
+      (adj) => typeof adj.code === "string" && adj.code.startsWith("BUNDLE_")
+    )
+    .reduce((sum, adj) => sum + Number(adj.amount ?? 0), 0)
+}
+
 const Item = ({
   item,
   groupedItems,
@@ -87,6 +106,14 @@ const Item = ({
     id: lineItem.id,
     title: lineItem.product_title || lineItem.title || "Item",
     weightG: selectedWeightByLine[index],
+    subtotal: lineItem.subtotal,
+    total: lineItem.total,
+    // Bundle-discounted total: subtotal minus bundle adjustments only.
+    // Subscription discount is intentionally excluded (shown in Summary instead).
+    bundleDiscountedTotal: Math.max(
+      0,
+      Number(lineItem.subtotal ?? 0) - getBundleAdjustmentAmount(lineItem)
+    ),
   }))
 
   const totalCalories = sourceItems.reduce((sum, lineItem, index) => {
@@ -112,10 +139,31 @@ const Item = ({
   }, 0)
 
   const hasCalories = totalCalories > 0
-  const totalAmount = sourceItems.reduce(
-    (sum, lineItem) => sum + Number(lineItem.total ?? 0),
+  // Original price before any discounts.
+  const originalTotalAmount = sourceItems.reduce(
+    (sum, lineItem) => sum + Number(lineItem.subtotal ?? 0),
     0
   )
+
+  // Post-bundle-discount total (subscription discount excluded — shown in Summary only).
+  const bundleDiscountedTotalAmount = sourceItems.reduce(
+    (sum, lineItem) =>
+      sum +
+      Math.max(
+        0,
+        Number(lineItem.subtotal ?? 0) - getBundleAdjustmentAmount(lineItem)
+      ),
+    0
+  )
+
+  // Custom bundles never have a bundle discount; recommended bundles show bundle-discounted price.
+  const totalAmount = isCustomBundle
+    ? originalTotalAmount
+    : bundleDiscountedTotalAmount
+
+  // Only show strikethrough for recommended bundles where a bundle discount actually exists.
+  const hasDiscount =
+    !isCustomBundle && bundleDiscountedTotalAmount < originalTotalAmount
   const bundleLineEntries = Array.from(
     sourceItems
       .reduce((map, lineItem) => {
@@ -259,11 +307,53 @@ const Item = ({
                     </p>
                   </div>
                   <div className="text-xs leading-4 text-[#717182]">
-                    {includes.slice(0, 4).map((entry) => (
-                      <p key={entry.id}>
-                        - {entry.title} ({entry.weightG}g)
-                      </p>
-                    ))}
+                    {includes.slice(0, 4).map((entry) => {
+                      // Show unit price for 1 bundle, not the accumulated total.
+                      // This keeps the displayed price stable as bundle count changes.
+                      const safeBundleCount = Math.max(1, bundleCount)
+                      const itemSubtotal = Number(entry.subtotal ?? 0)
+                      const unitSubtotal = Math.round(
+                        itemSubtotal / safeBundleCount
+                      )
+                      const unitBundleDiscountedTotal = Math.round(
+                        entry.bundleDiscountedTotal / safeBundleCount
+                      )
+                      const hasBundleDiscount =
+                        !isCustomBundle &&
+                        unitBundleDiscountedTotal < unitSubtotal
+
+                      return (
+                        <p key={entry.id}>
+                          - {entry.title} ({entry.weightG}g) (
+                          {hasBundleDiscount ? (
+                            <>
+                              <span className="line-through">
+                                {convertToLocale({
+                                  amount: unitSubtotal,
+                                  currency_code: currencyCode,
+                                })}
+                              </span>{" "}
+                              {convertToLocale({
+                                amount: unitBundleDiscountedTotal,
+                                currency_code: currencyCode,
+                              })}
+                            </>
+                          ) : (
+                            convertToLocale({
+                              amount: unitSubtotal,
+                              currency_code: currencyCode,
+                            })
+                          )}
+                          )
+                          {bundleCount > 1 && (
+                            <span className="font-medium text-[#0A0A0A]">
+                              {" "}
+                              ×{bundleCount}
+                            </span>
+                          )}
+                        </p>
+                      )
+                    })}
                     {includes.length > 4 ? (
                       <p>- +{includes.length - 4} more</p>
                     ) : null}
@@ -309,6 +399,14 @@ const Item = ({
 
                 <div className="text-right">
                   <p className="text-sm leading-5 text-[#717182]">Item total</p>
+                  {hasDiscount && (
+                    <p className="text-sm leading-5 line-through text-[#717182]">
+                      {convertToLocale({
+                        amount: originalTotalAmount,
+                        currency_code: currencyCode,
+                      })}
+                    </p>
+                  )}
                   <p className="text-[28px] leading-7 font-semibold text-[rgb(var(--primary))]">
                     {convertToLocale({
                       amount: totalAmount,

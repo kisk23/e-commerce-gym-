@@ -39,7 +39,7 @@ const CartTemplate = ({
               <ItemsTemplate cart={cart} />
             </div>
             <div className="relative">
-              <div className="flex flex-col gap-y-8 sticky top-12">
+              <div className="flex flex-col gap-y-8 sticky top-24">
                 {cart && cart.region && (
                   <>
                     <div className="bg-white py-6">

@@ -24,7 +24,7 @@ type Props = {
 }
 
 const WEIGHT_STEP_G = 100
-const MIN_ITEM_WEIGHT_G = 1000
+const MIN_ITEM_WEIGHT_G = 100
 
 export default function BundleCard({ product, onAdd }: Props) {
   const defaultVariant = useMemo(() => getDefaultVariant(product), [product])

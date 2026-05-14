@@ -22,8 +22,10 @@ type GroupedCartItem = {
   lineItems: HttpTypes.StoreCartLineItem[]
   itemIds: string[]
   totalQuantity: number
-  total: number
+  /** Sum of all line item subtotals (original price, no discounts). */
   originalTotal: number
+  /** Sum of subtotals minus bundle-only adjustments. Subscription discount excluded. */
+  bundleDiscountedTotal: number
   isBundle: boolean
   isCustomBundle: boolean
 }
@@ -56,6 +58,25 @@ const getBundleStepUnits = (item: HttpTypes.StoreCartLineItem) => {
   }
 
   return 1
+}
+
+/**
+ * Returns the sum of bundle-only adjustments for a line item.
+ * Subscription adjustments (SUBSCRIPTION_PLAN_DISCOUNT) are intentionally excluded
+ * so that item prices in the dropdown reflect post-bundle-discount only.
+ */
+const getBundleAdjustmentAmount = (
+  item: HttpTypes.StoreCartLineItem
+): number => {
+  const adjustments = ((item as any).adjustments || []) as Array<{
+    code?: string
+    amount?: unknown
+  }>
+  return adjustments
+    .filter(
+      (adj) => typeof adj.code === "string" && adj.code.startsWith("BUNDLE_")
+    )
+    .reduce((sum, adj) => sum + Number(adj.amount ?? 0), 0)
 }
 
 const getBundleTitle = (item: HttpTypes.StoreCartLineItem) => {
@@ -141,16 +162,24 @@ const CartDropdown = ({
           item.product_handle ||
           item.product_title ||
           item.id
-      const total = Number(item.total ?? 0)
-      const originalTotal = Number(item.original_total ?? item.total ?? 0)
+
+      // Original price (no discounts).
+      const itemOriginalTotal = Number(item.subtotal ?? 0)
+      // Bundle-discounted total: subtract only BUNDLE_ adjustments.
+      // Subscription discount intentionally excluded (shown in summary only).
+      const itemBundleDiscountedTotal = Math.max(
+        0,
+        itemOriginalTotal - getBundleAdjustmentAmount(item)
+      )
+
       const current = grouped.get(key)
 
       if (current) {
         current.lineItems.push(item)
         current.itemIds.push(item.id)
         current.totalQuantity += Number(item.quantity || 0)
-        current.total += total
-        current.originalTotal += originalTotal
+        current.originalTotal += itemOriginalTotal
+        current.bundleDiscountedTotal += itemBundleDiscountedTotal
         current.isBundle = current.isBundle || isBundle
         current.isCustomBundle = current.isCustomBundle || isCustomBundle
         continue
@@ -162,8 +191,8 @@ const CartDropdown = ({
         lineItems: [item],
         itemIds: [item.id],
         totalQuantity: Number(item.quantity || 0),
-        total,
-        originalTotal,
+        originalTotal: itemOriginalTotal,
+        bundleDiscountedTotal: itemBundleDiscountedTotal,
         isBundle,
         isCustomBundle,
       })
@@ -359,8 +388,15 @@ const CartDropdown = ({
                       groupedItem.lineItems.some(
                         (lineItem) => lineItem.id === activeGroupKey
                       )
+                    // For recommended bundles: show bundle-discounted price, strike original.
+                    // For custom bundles: show original price (no bundle discount ever applied).
+                    const displayTotal = groupedItem.isCustomBundle
+                      ? groupedItem.originalTotal
+                      : groupedItem.bundleDiscountedTotal
                     const hasReducedPrice =
-                      groupedItem.total < groupedItem.originalTotal
+                      !groupedItem.isCustomBundle &&
+                      groupedItem.bundleDiscountedTotal <
+                        groupedItem.originalTotal
                     const canChangeQuantity = !groupedItem.isBundle
                     const bundleLabel = groupedItem.isCustomBundle
                       ? "Custom Bundle"
@@ -387,27 +423,19 @@ const CartDropdown = ({
                         key={groupedItem.key}
                         data-testid="cart-item"
                       >
-                        <LocalizedClientLink
-                          href={`/products/${item.product_handle}`}
-                          className="w-24"
-                        >
+                        <div className="w-24">
                           <Thumbnail
                             thumbnail={item.thumbnail}
                             images={item.variant?.product?.images}
                             size="square"
                           />
-                        </LocalizedClientLink>
+                        </div>
                         <div className="flex flex-col justify-between flex-1">
                           <div className="flex flex-col flex-1">
                             <div className="flex items-start justify-between">
                               <div className="flex flex-col overflow-ellipsis whitespace-nowrap mr-4 w-[180px]">
                                 <h3 className="text-base-regular overflow-hidden text-ellipsis">
-                                  <LocalizedClientLink
-                                    href={`/products/${item.product_handle}`}
-                                    data-testid="product-link"
-                                  >
-                                    {title}
-                                  </LocalizedClientLink>
+                                  <div data-testid="product-link">{title}</div>
                                 </h3>
 
                                 {groupedItem.isBundle ? (
@@ -433,16 +461,13 @@ const CartDropdown = ({
                                         key={entry.id}
                                         className="flex items-start gap-2"
                                       >
-                                        <LocalizedClientLink
-                                          href={`/products/${entry.handle}`}
-                                          className="w-10 h-10 shrink-0 overflow-hidden rounded-md border border-ui-border-base"
-                                        >
+                                        <div className="w-10 h-10 shrink-0 overflow-hidden rounded-md border border-ui-border-base">
                                           <Thumbnail
                                             thumbnail={entry.thumbnail}
                                             images={entry.images}
                                             size="square"
                                           />
-                                        </LocalizedClientLink>
+                                        </div>
                                         <div className="flex min-w-0 flex-col gap-1">
                                           <span>
                                             {entry.title} -{" "}
@@ -502,7 +527,7 @@ const CartDropdown = ({
                                     ) : null}
                                     <span className="text-base-regular">
                                       {convertToLocale({
-                                        amount: groupedItem.total,
+                                        amount: displayTotal,
                                         currency_code: cartState.currency_code,
                                       })}
                                     </span>

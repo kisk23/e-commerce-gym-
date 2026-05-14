@@ -30,14 +30,19 @@ const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
   const delivery = Number(cart.shipping_subtotal ?? 0)
   const total = Number(cart.total ?? 0)
   const hasSelectedDeliveryMethod = (cart.shipping_methods?.length ?? 0) > 0
-  const subscriptionAdjustments = (cart.items || []).flatMap((item) =>
-    ((item as any).adjustments || []).filter((adjustment: any) => {
-      return (
-        adjustment?.code === "SUBSCRIPTION_PLAN_DISCOUNT" ||
-        adjustment?.provider_id === "subscription"
+  // Subscription discount is only shown for authenticated customers with an active subscription.
+  // We gate on the activeSubscription prop rather than reading raw adjustments from the cart,
+  // which prevents stale adjustments (from a prior logged-in session) from showing for guests.
+  const subscriptionAdjustments = activeSubscription
+    ? (cart.items || []).flatMap((item) =>
+        ((item as any).adjustments || []).filter((adjustment: any) => {
+          return (
+            adjustment?.code === "SUBSCRIPTION_PLAN_DISCOUNT" ||
+            adjustment?.provider_id === "subscription"
+          )
+        })
       )
-    })
-  )
+    : []
   const subscriptionDiscountAmount = subscriptionAdjustments.reduce(
     (sum, adjustment: any) => sum + Number(adjustment?.amount || 0),
     0

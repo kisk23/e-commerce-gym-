@@ -45,19 +45,10 @@ export const applySubscriptionDiscountToCart = async ({
     relations: ["items", "items.adjustments"],
   })
 
-  const resolvedCustomerId = customerId || cart.customer_id || undefined
-  const activeSubscription = resolvedCustomerId
-    ? await subscriptionService.getActiveSubscriptionForCustomer(resolvedCustomerId)
-    : null
-
-  const rawDiscountPercentage = Number(activeSubscription?.discount_percentage || 0)
-  const normalizedDiscountPercentage = Number.isFinite(rawDiscountPercentage)
-    ? Math.max(0, Math.min(99.99, rawDiscountPercentage))
-    : 0
-  const discountBps = Math.max(0, Math.min(MAX_DISCOUNT_BPS, Math.round(normalizedDiscountPercentage * 100)))
-  const discountPercentage = discountBps / 100
-
   const items = cart.items || []
+
+  // Always clean up stale subscription adjustments first, regardless of auth state.
+  // This ensures guest carts never carry over discounts from a previous logged-in session.
   const existingSubscriptionAdjustments = items.flatMap((item) =>
     (item.adjustments || []).filter(
       (adjustment) =>
@@ -72,11 +63,24 @@ export const applySubscriptionDiscountToCart = async ({
     )
   }
 
+  // Guests (no resolved customer) get no subscription discount — return early.
+  const resolvedCustomerId = customerId || cart.customer_id || undefined
+  if (!resolvedCustomerId) {
+    return { activeSubscription: null, discountPercentage: 0 }
+  }
+
+  const activeSubscription =
+    await subscriptionService.getActiveSubscriptionForCustomer(resolvedCustomerId)
+
+  const rawDiscountPercentage = Number(activeSubscription?.discount_percentage || 0)
+  const normalizedDiscountPercentage = Number.isFinite(rawDiscountPercentage)
+    ? Math.max(0, Math.min(99.99, rawDiscountPercentage))
+    : 0
+  const discountBps = Math.max(0, Math.min(MAX_DISCOUNT_BPS, Math.round(normalizedDiscountPercentage * 100)))
+  const discountPercentage = discountBps / 100
+
   if (discountPercentage <= 0) {
-    return {
-      activeSubscription,
-      discountPercentage,
-    }
+    return { activeSubscription, discountPercentage }
   }
 
   const eligibleItems = items
@@ -103,10 +107,7 @@ export const applySubscriptionDiscountToCart = async ({
   const discountLabel = `${discountPercentage.toFixed(2).replace(/\.?0+$/, "")}%`
 
   if (baseTotal <= 0 || discountValue <= 0) {
-    return {
-      activeSubscription,
-      discountPercentage,
-    }
+    return { activeSubscription, discountPercentage }
   }
 
   let remainingDiscount = discountValue
@@ -134,8 +135,5 @@ export const applySubscriptionDiscountToCart = async ({
     await cartModuleService.addLineItemAdjustments(adjustments)
   }
 
-  return {
-    activeSubscription,
-    discountPercentage,
-  }
+  return { activeSubscription, discountPercentage }
 }

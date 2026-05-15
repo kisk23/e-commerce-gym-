@@ -111,7 +111,7 @@ const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
             {discount > 0 ? (
               <div className="flex items-center justify-between">
                 <span className="text-sm leading-5 text-[#717182]">
-                  Discount
+                  Subscription Discount
                 </span>
                 <span
                   className="text-sm leading-5 font-medium text-[rgb(var(--primary))]"
@@ -188,7 +188,7 @@ const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
             <LocalizedClientLink href="/subscriptions">
               <button
                 type="button"
-                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white cursor-pointer hover:bg-primary/20 text-sm leading-5 font-medium text-[#0A0A0A]"
+                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-secondary/30 cursor-pointer hover:bg-primary/20 text-sm leading-5 font-medium text-[#0A0A0A]"
               >
                 Manage subscription
               </button>
@@ -197,12 +197,12 @@ const Summary = ({ cart, activeSubscription = null }: SummaryProps) => {
         ) : (
           <div className="rounded-xl border border-[#F0E1CF] bg-[#F5EBDF] p-4 flex flex-col gap-6">
             <p className="text-sm leading-5 text-center text-[#0A0A0A]">
-              Subscribe and save up to 12% on every order
+              Join today and save on every bundle
             </p>
             <LocalizedClientLink href="/subscriptions">
               <button
                 type="button"
-                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-white cursor-pointer hover:bg-primary/20 text-sm leading-5 font-medium text-[#0A0A0A]"
+                className="w-full h-8 rounded-lg border border-[#E6E6E6] bg-secondary/30 cursor-pointer hover:bg-primary/20 text-sm leading-5 font-medium text-[#0A0A0A]"
               >
                 View Plans
               </button>

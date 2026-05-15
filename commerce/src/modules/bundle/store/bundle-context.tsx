@@ -23,7 +23,7 @@ const BundleContext = createContext<BundleContextValue | null>(null)
 const toBundleItemKey = (productId: string, variantId: string) =>
   `${productId}:${variantId}`
 const WEIGHT_STEP_G = 100
-const MIN_ITEM_WEIGHT_G = 100
+const MIN_ITEM_WEIGHT_G = 1000
 const BUNDLE_STORAGE_KEY = "custom_bundle_items_v1"
 
 const toSafeWeight = (value: number) => {

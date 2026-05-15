@@ -13,7 +13,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Spinner from "@modules/common/icons/spinner"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { Trash } from "@medusajs/icons"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 type ItemProps = {
   item: HttpTypes.StoreCartLineItem
@@ -193,6 +193,20 @@ const Item = ({
       )
     )
   )
+  const [bundleInput, setBundleInput] = useState(bundleCount)
+  useEffect(() => {
+    setBundleInput(bundleCount)
+  }, [bundleCount])
+
+  useEffect(() => {
+    if (bundleInput === bundleCount) return
+
+    const timer = setTimeout(() => {
+      void updateBundleCount(bundleInput)
+    }, 1000)
+    
+    return () => clearTimeout(timer)
+  }, [bundleInput, bundleCount])
 
   const changeQuantity = async (quantity: number) => {
     setError(null)
@@ -267,6 +281,27 @@ const Item = ({
         setUpdating(false)
       })
   }
+  const updateBundleCount = async (nextBundleCount: number) => {
+    const safeCount = Math.max(1, Math.floor(nextBundleCount))
+
+    setError(null)
+    setUpdating(true)
+
+    await Promise.all(
+      bundleLineEntries.map(({ lineItem, stepUnits }) =>
+        updateLineItem({
+          lineId: lineItem.id,
+          quantity: safeCount * stepUnits,
+        })
+      )
+    )
+      .catch((err) => {
+        setError(err.message)
+      })
+      .finally(() => {
+        setUpdating(false)
+      })
+  }
 
   const removeLineItem = async () => {
     setRemoving(true)
@@ -280,16 +315,13 @@ const Item = ({
       <Table.Row className="w-full" data-testid="product-row">
         <Table.Cell className="!pl-0 !pr-0 py-4">
           <div className="rounded-[20px] border border-[#E6E6E6] p-6 flex gap-4 items-start">
-            <LocalizedClientLink
-              href={`/products/${item.product_handle}`}
-              className="w-24 h-24 rounded-xl overflow-hidden shrink-0"
-            >
+            <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
               <Thumbnail
                 thumbnail={item.thumbnail}
                 images={item.variant?.product?.images}
                 size="square"
               />
-            </LocalizedClientLink>
+            </div>
 
             <div className="flex-1 flex flex-col gap-4">
               <div className="flex items-start justify-between border-b border-[#E6E6E6] pb-6">
@@ -382,9 +414,22 @@ const Item = ({
                   >
                     -
                   </button>
-                  <span className="min-w-8 text-center text-base font-medium text-[#0A0A0A]">
-                    {bundleCount}
-                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    value={bundleInput}
+                    onChange={(e) => {
+                      const value = Math.max(1, Number(e.target.value))
+                      setBundleInput(value)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        void updateBundleCount(bundleInput)
+                        e.currentTarget.blur()
+                      }
+                    }}
+                    className="w-12 h-10 text-center text-base font-medium text-[#0A0A0A] border border-[#E6E6E6] rounded-[10px] outline-none focus:border-[rgb(var(--primary))] focus:ring-1 focus:ring-[rgb(var(--primary))] disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
                   <button
                     type="button"
                     onClick={() => void incrementBundleByStep()}

@@ -27,7 +27,7 @@ export default function ProductPreview({
   const categoryName = product.categories?.[0]?.name ?? null
 
   return (
-    <LocalizedClientLink href={`/products/${product.handle}`} className="group">
+    <div className="group mx-auto">
       {/* CARD */}
       <div className="w-full max-w-[302px] rounded-[26px] border border-gray-200 overflow-hidden bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
         {/* IMAGE */}
@@ -82,6 +82,6 @@ export default function ProductPreview({
           </div>
         </div>
       </div>
-    </LocalizedClientLink>
+    </div>
   )
 }

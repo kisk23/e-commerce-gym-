@@ -124,16 +124,29 @@ const Subscriptions = ({
       ) : null}
 
       {currentActive ? (
-        <div className="rounded-md border border-ui-border-base p-3 bg-ui-bg-subtle">
-          <p className="text-base-regular">
-            <span className="font-semibold">Current plan:</span>{" "}
+        <div className="rounded-2xl bg-primary text-white p-6">
+          <p className="text-sm opacity-80">Your active plan</p>
+
+          <h3 className="text-2xl font-bold mt-1">
             {currentActive.plan_title}
-          </p>
-          <p className="text-small-regular text-ui-fg-subtle mt-1">
-            Discount: {currentActive.discount_percentage}% - {remainingText}
-          </p>
-          <p className="text-small-regular text-ui-fg-subtle">
-            Ends at: {formatDate(currentActive.ends_at)}
+          </h3>
+
+          <div className="flex gap-6 mt-4">
+            <div>
+              <p className="text-xs opacity-70">Discount</p>
+              <p className="font-semibold">
+                {currentActive.discount_percentage}%
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs opacity-70">Remaining</p>
+              <p className="font-semibold">{remainingText}</p>
+            </div>
+          </div>
+
+          <p className="mt-4 text-sm opacity-80">
+            Ends {formatDate(currentActive.ends_at)}
           </p>
         </div>
       ) : (
@@ -150,38 +163,40 @@ const Subscriptions = ({
         {plans.map((plan) => (
           <article
             key={plan.id}
-            className="rounded-md border border-ui-border-base p-3 flex flex-col gap-2"
+            className="relative rounded-[24px] border border-beige-dark bg-white p-6 shadow-sm hover:shadow-xl transition-all flex flex-col"
           >
-            <h3 className="text-base-semi">{plan.title}</h3>
-            {plan.description ? (
-              <p className="text-small-regular text-ui-fg-subtle">
-                {plan.description}
+            <div className="mb-4">
+              <h3 className="text-2xl font-bold text-primary">{plan.title}</h3>
+
+              <p className="text-gray-500 mt-1">{plan.description}</p>
+            </div>
+
+            <div className="rounded-2xl bg-beige-light p-5 text-center mb-5">
+              <p className="text-sm text-gray-500">Save</p>
+              <p className="text-4xl font-bold text-primary">
+                {plan.discount_percentage}%
               </p>
-            ) : null}
-            <p className="text-small-regular text-ui-fg-subtle">
-              {plan.duration_months} month(s) - {plan.discount_percentage}%
-              discount
+              <p className="text-sm text-gray-500">
+                for {plan.duration_months} month(s)
+              </p>
+            </div>
+
+            <p className="text-sm text-gray-600 flex-1 leading-6">
+              Eat better, recover faster, and save more with a subscription
+              built for active lifestyles.
             </p>
-            <p className="text-small-regular text-ui-fg-subtle">
-              Price amount: {Number(plan.price_amount || 0)}
-            </p>
+
             <Button
-              variant="secondary"
+              className="mt-6 h-12 rounded-xl bg-primary hover:bg-primary-light text-white font-semibold"
               isLoading={isSubmittingPlanId === plan.id}
               disabled={isSubmittingPlanId !== null || !isAuthenticated}
               onClick={() => onSubscribe(plan)}
             >
-              {!isAuthenticated
-                ? "Sign in to subscribe"
-                : isSubmittingPlanId === plan.id
-                ? "Processing..."
-                : "Subscribe"}
+              Subscribe Now
             </Button>
           </article>
         ))}
       </div>
-
-      {message ? <p className="text-ui-fg-subtle">{message}</p> : null}
     </section>
   )
 }

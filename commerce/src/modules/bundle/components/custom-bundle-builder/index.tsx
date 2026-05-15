@@ -16,7 +16,7 @@ type CustomBundleBuilderProps = {
 }
 
 const WEIGHT_STEP_G = 100
-const MIN_ITEM_WEIGHT_G = 100
+const MIN_ITEM_WEIGHT_G = 1000
 const MIN_ITEM_UNITS = Math.round(MIN_ITEM_WEIGHT_G / WEIGHT_STEP_G)
 
 const BuilderContent = ({

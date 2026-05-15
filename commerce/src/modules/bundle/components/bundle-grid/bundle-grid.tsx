@@ -53,7 +53,10 @@ export default function BundleGrid({
   )
   const visibleStart =
     filteredBundles.length > 0 ? (safePage - 1) * BUNDLES_PER_PAGE + 1 : 0
-  const visibleEnd = Math.min(safePage * BUNDLES_PER_PAGE, filteredBundles.length)
+  const visibleEnd = Math.min(
+    safePage * BUNDLES_PER_PAGE,
+    filteredBundles.length
+  )
 
   const addBundleItemsToCart = async (bundle: StoreBundle) => {
     if (!bundle.items?.length) {
@@ -110,17 +113,22 @@ export default function BundleGrid({
 
       {/* showing products count */}
       <div className="text-lg text-gray-500 my-6" data-testid="bundle-count">
-        Showing {visibleStart} - {visibleEnd} of {filteredBundles.length} bundles
+        Showing {visibleStart} - {visibleEnd} of {filteredBundles.length}{" "}
+        bundles
       </div>
 
       {/* products grid */}
       <ul
-        className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 justify-items-center"
+        className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 justify-items-center items-stretch"
         data-testid="bundles-list"
       >
         {visibleBundles.map((bundle) => {
           return (
-            <li key={bundle.id} data-testid="bundle-card">
+            <li
+              key={bundle.id}
+              data-testid="bundle-card"
+              className="w-full h-full"
+            >
               <BundleView
                 bundle={bundle}
                 onAddToCart={() => addBundleItemsToCart(bundle)}

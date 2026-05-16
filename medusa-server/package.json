@@ -14,6 +14,8 @@
   ],
   "scripts": {
     "build": "medusa build",
+    "seed:products": "medusa exec ./src/scripts/seed-products-100.ts",
+    "setup:storefront-products": "medusa exec ./src/scripts/ensure-storefront-products.ts",
     "setup:subscription-plans": "medusa exec ./src/scripts/setup-subscription-plans.ts",
     "start": "medusa start",
     "dev": "medusa develop",

@@ -66,7 +66,7 @@ const parseStoredBundleItems = (value: string): BundleSelectionItem[] => {
 
       return {
         key,
-        product: product as HttpTypes.StoreProduct,
+        product: product as unknown as HttpTypes.StoreProduct,
         variantId,
         quantity,
       }

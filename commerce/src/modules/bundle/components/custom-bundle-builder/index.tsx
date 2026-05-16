@@ -7,12 +7,22 @@ import {
   BundleProvider,
   useBundleContext,
 } from "@modules/bundle/store/bundle-context"
+import {
+  BundleFilterOption,
+  BundleProductFilters,
+  BundleProductPagination,
+} from "@modules/bundle/types"
 import { HttpTypes } from "@medusajs/types"
 import { useState } from "react"
+import BundleProductControls from "../bundle-product-controls"
 
 type CustomBundleBuilderProps = {
   countryCode: string
   products: HttpTypes.StoreProduct[]
+  categories: BundleFilterOption[]
+  collections: BundleFilterOption[]
+  filters: BundleProductFilters
+  pagination: BundleProductPagination
 }
 
 const WEIGHT_STEP_G = 100
@@ -22,6 +32,10 @@ const MIN_ITEM_UNITS = Math.round(MIN_ITEM_WEIGHT_G / WEIGHT_STEP_G)
 const BuilderContent = ({
   countryCode,
   products,
+  categories,
+  collections,
+  filters,
+  pagination,
 }: CustomBundleBuilderProps) => {
   const { items, addItem, clearItems } = useBundleContext()
   const [title, setTitle] = useState("My Custom Bundle")
@@ -95,12 +109,21 @@ const BuilderContent = ({
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
-        <BundleList
-          products={products}
-          onAdd={({ product, quantity, variantId }) =>
-            addItem({ product, quantity, variantId })
-          }
-        />
+        <div>
+          <BundleProductControls
+            categories={categories}
+            collections={collections}
+            filters={filters}
+            pagination={pagination}
+          />
+
+          <BundleList
+            products={products}
+            onAdd={({ product, quantity, variantId }) =>
+              addItem({ product, quantity, variantId })
+            }
+          />
+        </div>
 
         <BundleSummary
           title={title}

@@ -15,6 +15,7 @@ type BundleProductControlsProps = {
   collections: BundleFilterOption[]
   filters: BundleProductFilters
   pagination: BundleProductPagination
+  filtration?: boolean
 }
 
 const sortOptions: { value: BundleProductSort; label: string }[] = [
@@ -41,6 +42,7 @@ export default function BundleProductControls({
   collections,
   filters,
   pagination,
+  filtration,
 }: BundleProductControlsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -110,7 +112,8 @@ export default function BundleProductControls({
 
   return (
     <div className="flex flex-col gap-4 mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_180px_160px_auto] gap-3 items-end">
+      {filtration && (
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_180px_160px_auto] gap-3 items-end">
         <form onSubmit={submitSearch} className="flex flex-col gap-1.5">
           <label
             htmlFor="bundle-product-search"
@@ -159,7 +162,7 @@ export default function BundleProductControls({
           </select>
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
+        {/* <label className="flex flex-col gap-1.5 text-sm font-medium">
           Collection
           <select
             value={filters.collectionId}
@@ -179,7 +182,7 @@ export default function BundleProductControls({
               </option>
             ))}
           </select>
-        </label>
+        </label> */}
 
         <label className="flex flex-col gap-1.5 text-sm font-medium">
           Sort
@@ -205,14 +208,15 @@ export default function BundleProductControls({
         <button
           type="button"
           onClick={clearFilters}
-          className="h-10 rounded-md border border-ui-border-base px-4 text-sm font-medium text-ui-fg-base disabled:opacity-50"
+          className="h-10 rounded-md bg-red-500 hover:bg-red-600 border border-ui-border-base px-4 text-sm font-medium text-white disabled:opacity-50"
           disabled={isPending}
         >
           Clear
         </button>
       </div>
+      )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-4">
         <p className="text-sm text-ui-fg-subtle">
           Showing page {safePage} of {totalPages} for {resultLabel}
         </p>

@@ -6,6 +6,7 @@ import { listBundles } from "@lib/data/bundles"
 // import VegetableCommerce from "@modules/home/components/vegetable-commerce"
 import { getRegion } from "@lib/data/regions"
 import BundleRecommender from "@modules/home/components/bundle-recommendation"
+import { getDynamicGoalsFromBundles } from "@modules/home/components/bundle-recommendation/goal-utils"
 import FreshPopular from "@/modules/home/components/fresh-popular"
 import WhyComponent from "@/modules/home/components/why-component"
 import SaveMore from "@/modules/home/components/save-More"
@@ -28,26 +29,30 @@ export default async function Home(props: {
     throw new Error("Region not found")
   }
 
+  // Extract dynamic goals from bundles
+  const dynamicGoals = getDynamicGoalsFromBundles(bundles)
+
   return (
     <>
       <Hero />
       <FreshPopular collection={null} region={region} />
+      <BundleRecommender
+        bundles={bundles}
+        countryCode={params.countryCode}
+        currencyCode={currencyCode}
+        goalOptions={dynamicGoals}
+      />
       <WhyComponent />
       <SaveMore />
       <MemberAchieved />
 
       {/* <VegetableCommerce vegetables={[]} bundles={[]} /> */}
-      <BundleRecommender
-        bundles={bundles}
-        countryCode={params.countryCode}
-        currencyCode={currencyCode}
-      />
 
-      <BundleCatalog
+      {/* <BundleCatalog
         bundles={bundles}
         countryCode={params.countryCode}
         currencyCode={currencyCode}
-      />
+      /> */}
     </>
   )
 }

@@ -115,6 +115,7 @@ const BuilderContent = ({
             collections={collections}
             filters={filters}
             pagination={pagination}
+            filtration={true}
           />
 
           <BundleList
@@ -132,7 +133,15 @@ const BuilderContent = ({
           isSubmitting={isSubmitting}
           message={message}
         />
+      <BundleProductControls
+            categories={categories}
+            collections={collections}
+            filters={filters}
+            pagination={pagination}
+            filtration={false}
+          />
       </div>
+
 
       {!products.length ? (
         <p className="mt-4 text-ui-fg-subtle">

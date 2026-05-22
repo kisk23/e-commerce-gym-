@@ -22,5 +22,13 @@ export default defineMiddlewares({
       matcher: /^\/store\/carts\/[^/]+\/subscription-discount(?:\/.*)?$/,
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
+    {
+      matcher: "/store/email-verification/status",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/email-verification/resend",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
   ],
 })

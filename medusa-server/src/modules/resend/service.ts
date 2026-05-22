@@ -12,6 +12,7 @@ import type { ReactNode } from "react"
 import { OrderPlacedEmail } from "./templates/order-placed"
 import { NewOrderEmail } from "./templates/new-order"
 import { SubscriptionActivatedEmail } from "./templates/subscription-activated"
+import { VerifyEmail } from "./templates/verify-email"
 
 type ResendOptions = {
   api_key: string
@@ -27,7 +28,8 @@ type InjectedDependencies = {
 enum Templates {
   ORDER_PLACED = "order-placed",
   NEW_ORDER = "new-order",
-  SUBSCRIPTION_ACTIVATED = "subscription-activated"
+  SUBSCRIPTION_ACTIVATED = "subscription-activated",
+  VERIFY_EMAIL = "verify-email"
 }
 
 type TemplateContent = string | ((props: unknown) => ReactNode)
@@ -35,7 +37,8 @@ type TemplateContent = string | ((props: unknown) => ReactNode)
 const templates: Record<Templates, TemplateContent> = {
   [Templates.ORDER_PLACED]: OrderPlacedEmail,
   [Templates.NEW_ORDER]: NewOrderEmail,
-  [Templates.SUBSCRIPTION_ACTIVATED]: SubscriptionActivatedEmail
+  [Templates.SUBSCRIPTION_ACTIVATED]: SubscriptionActivatedEmail,
+  [Templates.VERIFY_EMAIL]: VerifyEmail
 }
 
 class ResendNotificationProviderService extends AbstractNotificationProviderService {
@@ -93,6 +96,8 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
         return "New Elvar order received"
       case Templates.SUBSCRIPTION_ACTIVATED:
         return "Your Elvar subscription is active"
+      case Templates.VERIFY_EMAIL:
+        return "Verify your Elvar email"
       default:
         return "New Email"
     }

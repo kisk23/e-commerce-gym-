@@ -16,6 +16,76 @@ import {
 } from "./cookies"
 import { syncSubscriptionDiscount } from "./cart"
 
+export type EmailVerificationStatus = "verified" | "not_yet"
+
+export type SignupState =
+  | {
+      type: "success" | "error"
+      message: string
+    }
+  | null
+
+const getErrorMessage = (error: any) => error?.message || error.toString()
+
+export const retrieveEmailVerificationStatus = async (): Promise<EmailVerificationStatus> => {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  if (!Object.keys(headers).length) {
+    return "not_yet"
+  }
+
+  return sdk.client
+    .fetch<{ status: EmailVerificationStatus }>(
+      `/store/email-verification/status`,
+      {
+        method: "GET",
+        headers,
+        cache: "no-store",
+      }
+    )
+    .then(({ status }) => status)
+    .catch(() => "not_yet")
+}
+
+export const resendVerificationEmail = async () => {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return sdk.client.fetch<{ status: EmailVerificationStatus }>(
+    `/store/email-verification/resend`,
+    {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    }
+  )
+}
+
+export const confirmEmailVerification = async (token: string) => {
+  return sdk.client
+    .fetch<{ status: EmailVerificationStatus }>(
+      `/store/email-verification/confirm`,
+      {
+        method: "POST",
+        body: { token },
+        cache: "no-store",
+      }
+    )
+    .then(() => ({
+      success: true,
+      message: "Your email is verified. You can sign in now.",
+    }))
+    .catch((error) => ({
+      success: false,
+      message:
+        error?.message ||
+        "This verification link is invalid or expired. Please request a new one.",
+    }))
+}
+
 export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
     const authHeaders = await getAuthHeaders()
@@ -38,7 +108,11 @@ export const retrieveCustomer =
 
         cache: "no-store",
       })
-      .then(({ customer }) => customer)
+      .then(async ({ customer }) => {
+        const status = await retrieveEmailVerificationStatus()
+
+        return status === "verified" ? customer : null
+      })
       .catch(() => null)
   }
 
@@ -58,7 +132,10 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
   return updateRes
 }
 
-export async function signup(_currentState: unknown, formData: FormData) {
+export async function signup(
+  _currentState: SignupState,
+  formData: FormData
+): Promise<SignupState> {
   const password = formData.get("password") as string
   const customerForm = {
     email: formData.get("email") as string,
@@ -79,27 +156,29 @@ export async function signup(_currentState: unknown, formData: FormData) {
       ...(await getAuthHeaders()),
     }
 
-    const { customer: createdCustomer } = await sdk.store.customer.create(
+    await sdk.store.customer.create(
       customerForm,
       {},
       headers
     )
 
-    const loginToken = await sdk.auth.login("customer", "emailpass", {
-      email: customerForm.email,
-      password,
-    })
-
-    await setAuthToken(loginToken as string)
+    await removeAuthToken()
 
     const customerCacheTag = await getCacheTag("customers")
     revalidateTag(customerCacheTag)
 
-    await transferCart()
-
-    return createdCustomer
+    return {
+      type: "success",
+      message:
+        "Account created. Check your email and verify it before signing in.",
+    }
   } catch (error: any) {
-    return error.toString()
+    await removeAuthToken().catch(() => {})
+
+    return {
+      type: "error",
+      message: getErrorMessage(error),
+    }
   }
 }
 
@@ -115,17 +194,29 @@ export async function login(_currentState: unknown, formData: FormData) {
       .login("customer", "emailpass", { email, password })
       .then(async (token) => {
         await setAuthToken(token as string)
+        const status = await retrieveEmailVerificationStatus()
+
+        if (status !== "verified") {
+          await resendVerificationEmail().catch(() => null)
+          await removeAuthToken()
+          const customerCacheTag = await getCacheTag("customers")
+          revalidateTag(customerCacheTag)
+          throw new Error(
+            "Please verify your email before signing in. We sent a verification email if one was not sent recently."
+          )
+        }
+
         const customerCacheTag = await getCacheTag("customers")
         revalidateTag(customerCacheTag)
       })
   } catch (error: any) {
-    return error.toString()
+    return getErrorMessage(error)
   }
 
   try {
     await transferCart()
   } catch (error: any) {
-    return error.toString()
+    return getErrorMessage(error)
   }
 
   redirect(redirectTo + "?step=address")

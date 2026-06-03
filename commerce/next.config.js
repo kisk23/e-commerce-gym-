@@ -25,33 +25,37 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: "http",
-        hostname: "localhost",
-      },
-      {
-        protocol: "https",
-        hostname: "medusa-public-images.s3.eu-west-1.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "medusa-server-testing.s3.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
-      },
-      ...(S3_HOSTNAME && S3_PATHNAME
-        ? [
-            {
-              protocol: "https",
-              hostname: S3_HOSTNAME,
-              pathname: S3_PATHNAME,
-            },
-          ]
-        : []),
-    ],
+   remotePatterns: [
+    {
+      protocol: "http",
+      hostname: "localhost",
+    },
+    {
+      protocol: "https",
+      hostname: "medusa-public-images.s3.eu-west-1.amazonaws.com",
+    },
+    {
+      protocol: "https",
+      hostname: "medusa-server-testing.s3.amazonaws.com",
+    },
+    {
+      protocol: "https",
+      hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
+    },
+    {
+      protocol: "https",
+      hostname: "elvar-s3-bucket.s3.ap-south-1.amazonaws.com",
+    },
+    ...(S3_HOSTNAME && S3_PATHNAME
+      ? [
+          {
+            protocol: "https",
+            hostname: S3_HOSTNAME,
+            pathname: S3_PATHNAME,
+          },
+        ]
+      : []),
+  ],
   },
 }
 

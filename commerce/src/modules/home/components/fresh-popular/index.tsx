@@ -39,11 +39,11 @@ export default async function FreshPopular({
         </div>
 
         {/* MOBILE: horizontal scroll */}
-        <div className="w-full flex overflow-x-auto no-scrollbar snap-x snap-mandatory md:hidden pb-2">
+        <div className="w-full flex overflow-x-auto gap-2 no-scrollbar snap-x snap-mandatory md:hidden pb-2">
           {pricedProducts.slice(0, 4).map((product) => (
             <div
               key={product.id}
-              className="min-w-[62%] sm:min-w-[48%] snap-start"
+              className="min-w-[80%] sm:min-w-[60%] snap-start"
             >
               <ProductPreview product={product} region={region} />
             </div>
@@ -51,7 +51,7 @@ export default async function FreshPopular({
         </div>
 
         {/* DESKTOP: grid */}
-        <div className="hidden md:grid w-full grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="hidden md:grid w-full grid-cols-3 lg:grid-cols-4 gap-6">
           {pricedProducts.slice(0, 4).map((product) => (
             <ProductPreview
               key={product.id}

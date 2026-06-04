@@ -15,7 +15,7 @@ const Login = ({ setCurrentView, redirectTo }: Props) => {
 
   return (
     <div
-      className="max-w-sm w-full flex flex-col items-center"
+      className="max-w-sm w-full flex flex-col items-center mx-auto lg:mx-0"
       data-testid="login-page"
     >
       <h1 className="text-large-semi uppercase mb-6">Welcome back</h1>

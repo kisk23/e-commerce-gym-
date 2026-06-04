@@ -30,9 +30,9 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
             </span>
           </div>
           <div>
-            <UnderlineLink href="/customer-service">
+            <a href="mailto:info@elvardubai.com" className="text-blue-600 underline-offset-4 hover:underline cursor-pointer">
               Customer Service
-            </UnderlineLink>
+            </a>
           </div>
         </div>
       </div>

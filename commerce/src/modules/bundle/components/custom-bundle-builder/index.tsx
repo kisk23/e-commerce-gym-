@@ -41,6 +41,7 @@ const BuilderContent = ({
   const [title, setTitle] = useState("My Custom Bundle")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false)
 
   const submit = async () => {
     setIsSubmitting(true)
@@ -99,17 +100,22 @@ const BuilderContent = ({
   }
 
   return (
-    <section className="content-container py-8">
+    <section className="content-container py-6 sm:py-8">
+      {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-2xl-semi">Build Your Custom Bundle</h1>
-        <p className="text-ui-fg-subtle mt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          Build Your Custom Bundle
+        </h1>
+        <p className="text-gray-500 mt-1 text-sm sm:text-base">
           Add products from the catalog, adjust quantities, and checkout with
           one bundle line item.
         </p>
       </div>
 
+      {/* Main 2-col layout: [products] [sidebar] */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
-        <div>
+        {/* Left: controls + product grid */}
+        <div className="min-w-0">
           <BundleProductControls
             categories={categories}
             collections={collections}
@@ -124,37 +130,94 @@ const BuilderContent = ({
               addItem({ product, quantity, variantId })
             }
           />
+
+          {/* Bottom pagination */}
+          <div className="mt-4">
+            <BundleProductControls
+              categories={categories}
+              collections={collections}
+              filters={filters}
+              pagination={pagination}
+              filtration={false}
+            />
+          </div>
         </div>
 
-        <BundleSummary
-          title={title}
-          onTitleChange={setTitle}
-          onSubmit={submit}
-          isSubmitting={isSubmitting}
-          message={message}
-        />
-      <BundleProductControls
-            categories={categories}
-            collections={collections}
-            filters={filters}
-            pagination={pagination}
-            filtration={false}
+        {/* Right: summary sidebar — hidden on mobile, visible xl+ */}
+        <div className="hidden xl:block">
+          <BundleSummary
+            title={title}
+            onTitleChange={setTitle}
+            onSubmit={submit}
+            isSubmitting={isSubmitting}
+            message={message}
           />
+        </div>
       </div>
 
-
       {!products.length ? (
-        <p className="mt-4 text-ui-fg-subtle">
+        <p className="mt-4 text-gray-400 text-sm">
           No purchasable products are available for this region yet.
         </p>
       ) : null}
 
       {items.length > 0 ? (
-        <p className="mt-4 text-sm text-ui-fg-subtle">
+        <p className="mt-4 text-xs text-gray-400">
           Tip: adding the same variant multiple times will merge weights in the
           summary.
         </p>
       ) : null}
+
+      {/* ── Mobile sticky bottom bar ── */}
+      <div className="xl:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+        {/* Expandable summary drawer */}
+        {mobileSummaryOpen && (
+          <div className="max-h-[70vh] overflow-y-auto px-4 pt-4 pb-2">
+            <BundleSummary
+              title={title}
+              onTitleChange={setTitle}
+              onSubmit={async () => {
+                await submit()
+                setMobileSummaryOpen(false)
+              }}
+              isSubmitting={isSubmitting}
+              message={message}
+            />
+          </div>
+        )}
+
+        {/* Bottom pill bar */}
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
+          <button
+            onClick={() => setMobileSummaryOpen((o) => !o)}
+            className="flex items-center gap-2 text-sm font-medium text-gray-700"
+          >
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">
+              {items.length}
+            </span>
+            {mobileSummaryOpen ? "Hide" : "View"} Bundle
+            <svg
+              className={`w-4 h-4 transition-transform duration-200 ${mobileSummaryOpen ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={submit}
+            disabled={isSubmitting || !items.length}
+            className="flex-1 max-w-[180px] h-10 rounded-xl bg-primary text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition"
+          >
+            {isSubmitting ? "Adding…" : "Add to Cart"}
+          </button>
+        </div>
+      </div>
+
+      {/* Spacer so content isn't hidden behind the sticky bar on mobile */}
+      <div className="xl:hidden h-20" aria-hidden="true" />
     </section>
   )
 }

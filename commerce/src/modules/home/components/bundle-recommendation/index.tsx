@@ -72,7 +72,7 @@ function BundleRecommenderContent({
   return (
     <>
       <FitnessGoalOverlay goalOptions={goalOptions} />
-      <section className="content-container py-8">
+      <section id="bundle-recommendations" className="content-container py-8">
         <div className="mb-6">
           <button
             onClick={resetSelection}

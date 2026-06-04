@@ -44,7 +44,7 @@ export default function BundleSummary({
       : "aed"
 
   return (
-    <aside className="w-full max-w-[302px] md:sticky md:top-24 flex flex-col gap-4">
+    <aside className="w-full xl:sticky xl:top-24 flex flex-col gap-4">
       <div className="rounded-xl p-3 bg-[linear-gradient(135deg,rgba(223,208,189,0.4)_0%,rgba(223,208,189,0.2)_100%)]">
         <div className="flex flex-col gap-[18px]">
           <div className="flex items-center justify-between gap-9">

@@ -1,6 +1,6 @@
 import repeat from "@lib/util/repeat"
 import { HttpTypes } from "@medusajs/types"
-import { Heading, Table } from "@medusajs/ui"
+import { Heading } from "@medusajs/ui"
 
 import Item from "@modules/cart/components/item"
 import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
@@ -76,25 +76,20 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
       <div className="pb-3 flex items-center">
         <Heading className="text-[2rem] leading-[2.75rem]">Cart</Heading>
       </div>
-      <Table>
-        <Table.Header className="border-t-0"></Table.Header>
-        <Table.Body>
-          {items
-            ? renderEntries.map((entry) => {
-                return (
-                  <Item
-                    key={entry.key}
-                    item={entry.item}
-                    groupedItems={entry.groupedItems}
-                    currencyCode={cart?.currency_code}
-                  />
-                )
-              })
-            : repeat(5).map((i) => {
-                return <SkeletonLineItem key={i} />
-              })}
-        </Table.Body>
-      </Table>
+
+      {/* Responsive card stack — no Table, no horizontal scroll */}
+      <div className="flex flex-col gap-3">
+        {items
+          ? renderEntries.map((entry) => (
+              <Item
+                key={entry.key}
+                item={entry.item}
+                groupedItems={entry.groupedItems}
+                currencyCode={cart?.currency_code}
+              />
+            ))
+          : repeat(5).map((i) => <SkeletonLineItem key={i} />)}
+      </div>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { LOGIN_VIEW } from "@modules/account/templates/login-template"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import Input from "@modules/common/components/input"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { useActionState } from "react"
 
 type Props = {
@@ -45,6 +46,16 @@ const Login = ({ setCurrentView, redirectTo }: Props) => {
           />
         </div>
         <ErrorMessage error={message} data-testid="login-error-message" />
+        <div className="flex justify-end mt-3">
+          <LocalizedClientLink
+            href={`/forgot-password?redirect=${encodeURIComponent(
+              redirectTo ?? "/"
+            )}`}
+            className="text-small-regular underline"
+          >
+            Forgot password?
+          </LocalizedClientLink>
+        </div>
         <SubmitButton data-testid="sign-in-button" className="w-full mt-6">
           Sign in
         </SubmitButton>

@@ -9,6 +9,7 @@ import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import Image from "next/image"
 import NavLinks from "@modules/layout/components/nav-links"
+import AccountLink from "@modules/layout/components/account-link"
 
 export default async function Nav() {
   const [regions, locales, currentLocale] = await Promise.all([
@@ -50,13 +51,12 @@ export default async function Nav() {
 
           <div className="hidden md:flex items-center w-1/2 md:w-1/4 gap-x-6 h-full flex-1 basis-0 justify-end">
             <div className="flex items-center gap-x-6 h-full">
-              <LocalizedClientLink
+              <AccountLink
                 className="hover:text-ui-fg-base"
-                href="/account"
                 data-testid="nav-account-link"
               >
                 Account
-              </LocalizedClientLink>
+              </AccountLink>
             </div>
             <Suspense
               fallback={

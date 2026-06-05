@@ -9,4 +9,5 @@ export const EmailVerification = model.define("email_verification", {
   token_expires_at: model.text().nullable(),
   last_sent_at: model.text().nullable(),
   verified_at: model.text().nullable(),
+  redirect_url: model.text().nullable(),
 })

@@ -20,7 +20,7 @@ const LoginTemplate = ({ redirectTo }: { redirectTo?: string }) => {
       {currentView === "sign-in" ? (
         <Login setCurrentView={setCurrentView} redirectTo={redirectTo} />
       ) : (
-        <Register setCurrentView={setCurrentView} />
+        <Register setCurrentView={setCurrentView} redirectTo={redirectTo} />
       )}
     </div>
   )

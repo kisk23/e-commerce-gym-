@@ -15,6 +15,16 @@ const RESEND_COOLDOWN_SECONDS = 60
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase()
 
+const normalizeRedirectUrl = (redirectUrl?: string | null) => {
+  const trimmed = redirectUrl?.trim()
+
+  if (!trimmed || !trimmed.startsWith("/") || trimmed.startsWith("//")) {
+    return null
+  }
+
+  return trimmed
+}
+
 const getTokenTtlMs = () => {
   const configured = Number(process.env.EMAIL_VERIFICATION_TOKEN_TTL_HOURS)
   const hours = Number.isFinite(configured) && configured > 0
@@ -57,11 +67,14 @@ class EmailVerificationModuleService extends MedusaService({
   async issueVerification({
     customerId,
     email,
+    redirectUrl,
   }: {
     customerId: string
     email: string
+    redirectUrl?: string | null
   }) {
     const normalizedEmail = normalizeEmail(email)
+    const normalizedRedirectUrl = normalizeRedirectUrl(redirectUrl)
     const existing = await this.getLatestVerification(customerId)
 
     if (existing?.status === EMAIL_VERIFICATION_STATUS.VERIFIED) {
@@ -82,6 +95,7 @@ class EmailVerificationModuleService extends MedusaService({
       token_expires_at: tokenExpiresAt,
       last_sent_at: nowIso,
       verified_at: null,
+      redirect_url: normalizedRedirectUrl,
     }
 
     const verification = existing
@@ -100,11 +114,14 @@ class EmailVerificationModuleService extends MedusaService({
   async resendVerification({
     customerId,
     email,
+    redirectUrl,
   }: {
     customerId: string
     email: string
+    redirectUrl?: string | null
   }) {
     const existing = await this.getLatestVerification(customerId)
+    const normalizedRedirectUrl = normalizeRedirectUrl(redirectUrl)
 
     if (existing?.status === EMAIL_VERIFICATION_STATUS.VERIFIED) {
       return {
@@ -116,8 +133,14 @@ class EmailVerificationModuleService extends MedusaService({
     if (existing?.last_sent_at) {
       const lastSent = new Date(existing.last_sent_at).getTime()
       const elapsedSeconds = (Date.now() - lastSent) / 1000
+      const shouldRefreshRedirectLink =
+        !!normalizedRedirectUrl && existing.redirect_url !== normalizedRedirectUrl
 
-      if (Number.isFinite(elapsedSeconds) && elapsedSeconds < RESEND_COOLDOWN_SECONDS) {
+      if (
+        Number.isFinite(elapsedSeconds) &&
+        elapsedSeconds < RESEND_COOLDOWN_SECONDS &&
+        !shouldRefreshRedirectLink
+      ) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
           "Please wait before requesting another verification email."
@@ -125,7 +148,7 @@ class EmailVerificationModuleService extends MedusaService({
       }
     }
 
-    return this.issueVerification({ customerId, email })
+    return this.issueVerification({ customerId, email, redirectUrl })
   }
 
   async verifyToken(token: string) {

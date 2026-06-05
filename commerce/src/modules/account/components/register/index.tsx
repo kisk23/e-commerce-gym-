@@ -10,9 +10,10 @@ import { signup } from "@lib/data/customer"
 
 type Props = {
   setCurrentView: (_view: LOGIN_VIEW) => void
+  redirectTo?: string
 }
 
-const Register = ({ setCurrentView }: Props) => {
+const Register = ({ setCurrentView, redirectTo }: Props) => {
   const [message, formAction] = useActionState(signup, null)
   const isSuccess = message?.type === "success"
 
@@ -30,6 +31,8 @@ const Register = ({ setCurrentView }: Props) => {
       </p>
       <form className="w-full flex flex-col" action={formAction}>
         <div className="flex flex-col w-full gap-y-2">
+          <input type="hidden" name="redirect" value={redirectTo ?? "/"} />
+
           <Input
             label="First name"
             name="first_name"

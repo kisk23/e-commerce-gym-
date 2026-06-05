@@ -10,8 +10,12 @@ import EmailVerificationModuleService, {
 } from "../../../../modules/email-verification/service"
 import { sendVerificationEmail } from "../../../../modules/email-verification/utils"
 
+type ResendBody = {
+  redirect?: string
+}
+
 export async function POST(
-  req: AuthenticatedMedusaRequest,
+  req: AuthenticatedMedusaRequest<ResendBody>,
   res: MedusaResponse
 ) {
   const customerId = req.auth_context?.actor_id
@@ -33,6 +37,7 @@ export async function POST(
     await emailVerificationService.resendVerification({
       customerId,
       email: customer.email,
+      redirectUrl: req.body?.redirect,
     })
 
   if (token) {
@@ -42,6 +47,7 @@ export async function POST(
       email: customer.email,
       firstName: customer.first_name,
       token,
+      redirectUrl: verification.redirect_url,
     })
   }
 

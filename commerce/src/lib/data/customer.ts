@@ -27,6 +27,25 @@ export type SignupState =
 
 const getErrorMessage = (error: any) => error?.message || error.toString()
 
+const normalizeRedirectPath = (value?: string | null) => {
+  const trimmed = value?.trim()
+
+  if (!trimmed || !trimmed.startsWith("/") || trimmed.startsWith("//")) {
+    return "/"
+  }
+
+  return trimmed
+}
+
+const isExistingIdentityError = (error: any) => {
+  const message = getErrorMessage(error).toLowerCase()
+
+  return (
+    message.includes("identity with email already exists") ||
+    message.includes("already exists")
+  )
+}
+
 export const retrieveEmailVerificationStatus = async (): Promise<EmailVerificationStatus> => {
   const headers = {
     ...(await getAuthHeaders()),
@@ -49,7 +68,7 @@ export const retrieveEmailVerificationStatus = async (): Promise<EmailVerificati
     .catch(() => "not_yet")
 }
 
-export const resendVerificationEmail = async () => {
+export const resendVerificationEmail = async (redirectTo?: string) => {
   const headers = {
     ...(await getAuthHeaders()),
   }
@@ -58,6 +77,11 @@ export const resendVerificationEmail = async () => {
     `/store/email-verification/resend`,
     {
       method: "POST",
+      body: redirectTo
+        ? {
+            redirect: normalizeRedirectPath(redirectTo),
+          }
+        : undefined,
       headers,
       cache: "no-store",
     }
@@ -66,7 +90,7 @@ export const resendVerificationEmail = async () => {
 
 export const confirmEmailVerification = async (token: string) => {
   return sdk.client
-    .fetch<{ status: EmailVerificationStatus }>(
+    .fetch<{ status: EmailVerificationStatus; redirect?: string | null }>(
       `/store/email-verification/confirm`,
       {
         method: "POST",
@@ -74,15 +98,17 @@ export const confirmEmailVerification = async (token: string) => {
         cache: "no-store",
       }
     )
-    .then(() => ({
+    .then(({ redirect }) => ({
       success: true,
       message: "Your email is verified. You can sign in now.",
+      redirectTo: redirect || null,
     }))
     .catch((error) => ({
       success: false,
       message:
         error?.message ||
         "This verification link is invalid or expired. Please request a new one.",
+      redirectTo: null,
     }))
 }
 
@@ -137,6 +163,9 @@ export async function signup(
   formData: FormData
 ): Promise<SignupState> {
   const password = formData.get("password") as string
+  const rawRedirect = formData.get("redirect")?.toString()
+  const redirectTo = normalizeRedirectPath(rawRedirect)
+  const verificationRedirect = rawRedirect && redirectTo !== "/" ? redirectTo : undefined
   const customerForm = {
     email: formData.get("email") as string,
     first_name: formData.get("first_name") as string,
@@ -162,6 +191,10 @@ export async function signup(
       headers
     )
 
+    if (verificationRedirect) {
+      await resendVerificationEmail(verificationRedirect).catch(() => null)
+    }
+
     await removeAuthToken()
 
     const customerCacheTag = await getCacheTag("customers")
@@ -174,6 +207,27 @@ export async function signup(
     }
   } catch (error: any) {
     await removeAuthToken().catch(() => {})
+
+    if (isExistingIdentityError(error)) {
+      try {
+        const token = await sdk.auth.login("customer", "emailpass", {
+          email: customerForm.email,
+          password,
+        })
+
+        await setAuthToken(token as string)
+        await resendVerificationEmail(verificationRedirect)
+        await removeAuthToken()
+
+        return {
+          type: "success",
+          message:
+            "If this account still needs verification, we sent a new verification email.",
+        }
+      } catch {
+        await removeAuthToken().catch(() => {})
+      }
+    }
 
     return {
       type: "error",
@@ -197,7 +251,7 @@ export async function login(_currentState: unknown, formData: FormData) {
         const status = await retrieveEmailVerificationStatus()
 
         if (status !== "verified") {
-          await resendVerificationEmail().catch(() => null)
+          await resendVerificationEmail(redirectTo).catch(() => null)
           await removeAuthToken()
           const customerCacheTag = await getCacheTag("customers")
           revalidateTag(customerCacheTag)
@@ -219,7 +273,91 @@ export async function login(_currentState: unknown, formData: FormData) {
     return getErrorMessage(error)
   }
 
-  redirect(redirectTo + "?step=address")
+  const separator = redirectTo.includes("?") ? "&" : "?"
+  redirect(`${redirectTo}${separator}step=address`)
+}
+
+export async function requestPasswordReset(
+  _currentState: SignupState,
+  formData: FormData
+): Promise<SignupState> {
+  const email = formData.get("email")?.toString().trim().toLowerCase() || ""
+  const redirectTo = normalizeRedirectPath(formData.get("redirect")?.toString())
+
+  if (!email) {
+    return {
+      type: "error",
+      message: "Email is required.",
+    }
+  }
+
+  try {
+    await sdk.auth.resetPassword("customer", "emailpass", {
+      identifier: email,
+      metadata: {
+        redirect: redirectTo,
+      },
+    } as { identifier: string; metadata: Record<string, unknown> })
+  } catch {
+    // Keep the response neutral to avoid exposing whether an account exists.
+  }
+
+  return {
+    type: "success",
+    message:
+      "If an account exists for that email, we sent password reset instructions.",
+  }
+}
+
+export async function resetPassword(
+  _currentState: SignupState,
+  formData: FormData
+): Promise<SignupState> {
+  const token = formData.get("token")?.toString() || ""
+  const password = formData.get("password")?.toString() || ""
+  const confirmPassword = formData.get("confirm_password")?.toString() || ""
+  const redirectTo = normalizeRedirectPath(formData.get("redirect")?.toString())
+
+  if (!token) {
+    return {
+      type: "error",
+      message: "Reset token is missing.",
+    }
+  }
+
+  if (!password || password.length < 8) {
+    return {
+      type: "error",
+      message: "Password must be at least 8 characters.",
+    }
+  }
+
+  if (password !== confirmPassword) {
+    return {
+      type: "error",
+      message: "Passwords do not match.",
+    }
+  }
+
+  try {
+    await sdk.auth.updateProvider(
+      "customer",
+      "emailpass",
+      {
+        password,
+      },
+      token
+    )
+  } catch (error: any) {
+    return {
+      type: "error",
+      message:
+        error?.message ||
+        "This password reset link is invalid or expired. Please request a new one.",
+    }
+  }
+
+  redirect(`/account?redirect=${encodeURIComponent(redirectTo)}`)
 }
 
 export async function signout(countryCode: string) {

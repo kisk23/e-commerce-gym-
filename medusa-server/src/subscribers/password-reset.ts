@@ -1,5 +1,15 @@
+import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
 import type { INotificationModuleService } from "@medusajs/types"
+
+type PasswordResetData = {
+  actor_type?: string
+  entity_id?: string
+  token?: string
+  metadata?: {
+    redirect?: string
+  }
+}
 
 const DEFAULT_COUNTRY_CODE = "ae"
 
@@ -19,7 +29,15 @@ const normalizeRedirectUrl = (redirectUrl?: string | null) => {
   return trimmed
 }
 
-export const buildVerificationUrl = (token: string, redirectUrl?: string | null) => {
+const buildResetPasswordUrl = ({
+  token,
+  email,
+  redirect,
+}: {
+  token: string
+  email: string
+  redirect?: string | null
+}) => {
   const storefrontUrl =
     process.env.STOREFRONT_URL ||
     process.env.NEXT_PUBLIC_STOREFRONT_URL ||
@@ -30,47 +48,50 @@ export const buildVerificationUrl = (token: string, redirectUrl?: string | null)
     process.env.NEXT_PUBLIC_DEFAULT_REGION ||
     DEFAULT_COUNTRY_CODE
 
-  const url = new URL(`/${countryCode}/verify-email`, storefrontUrl)
+  const url = new URL(`/${countryCode}/reset-password`, storefrontUrl)
   url.searchParams.set("token", token)
+  url.searchParams.set("email", email)
 
-  const normalizedRedirectUrl = normalizeRedirectUrl(redirectUrl)
-  if (normalizedRedirectUrl) {
-    url.searchParams.set("redirect", normalizedRedirectUrl)
+  const normalizedRedirect = normalizeRedirectUrl(redirect)
+  if (normalizedRedirect) {
+    url.searchParams.set("redirect", normalizedRedirect)
   }
 
   return url.toString()
 }
 
-export const sendVerificationEmail = async ({
+export default async function sendPasswordResetEmail({
+  event,
   container,
-  customerId,
-  email,
-  firstName,
-  token,
-  redirectUrl,
-}: {
-  container: { resolve: <T = unknown>(key: string) => T }
-  customerId: string
-  email: string
-  firstName?: string | null
-  token: string
-  redirectUrl?: string | null
-}) => {
+}: SubscriberArgs<PasswordResetData>) {
+  const { actor_type, entity_id: email, token, metadata } = event.data
+
+  if (actor_type !== "customer" || !email || !token) {
+    return
+  }
+
   const notificationModuleService: INotificationModuleService =
     container.resolve(Modules.NOTIFICATION)
 
   await notificationModuleService.createNotifications({
     to: email,
     channel: "email",
-    template: "verify-email",
+    template: "reset-password",
     data: {
-      first_name: firstName || "",
       email,
-      verification_url: buildVerificationUrl(token, redirectUrl),
+      reset_url: buildResetPasswordUrl({
+        token,
+        email,
+        redirect: metadata?.redirect,
+      }),
     },
-    trigger_type: "customer.email_verification",
-    resource_id: customerId,
+    trigger_type: "auth.password_reset",
+    resource_id: email,
     resource_type: "customer",
-    receiver_id: customerId,
+    receiver_id: null,
   })
+}
+
+export const config: SubscriberConfig = {
+  event: "auth.password_reset",
 }

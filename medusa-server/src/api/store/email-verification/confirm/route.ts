@@ -21,5 +21,6 @@ export async function POST(
   res.status(200).json({
     status: EMAIL_VERIFICATION_STATUS.VERIFIED,
     customer_id: verification.customer_id,
+    redirect: verification.redirect_url,
   })
 }

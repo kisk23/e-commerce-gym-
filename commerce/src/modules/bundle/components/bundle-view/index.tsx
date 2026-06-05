@@ -53,21 +53,21 @@ export default function BundleView({
     onAddToCart()
   }
 
-  const getCurrencySymbol = (currencyCode: string, locale = "en") => {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: currencyCode.toUpperCase(),
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    })
-      .format(0)
-      .replace(/\d/g, "")
-      .trim()
-  }
+  // const getCurrencySymbol = (currencyCode: string, locale = "en") => {
+  //   return new Intl.NumberFormat(locale, {
+  //     style: "currency",
+  //     currency: currencyCode.toUpperCase(),
+  //     minimumFractionDigits: 0,
+  //     maximumFractionDigits: 0,
+  //   })
+  //     .format(0)
+  //     .replace(/\d/g, "")
+  //     .trim()
+  // }
 
   return (
     <div
-      className="w-full h-full max-w-[400px] flex flex-col rounded-[26px] overflow-hidden bg-white border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
+      className="w-full h-full max-w-[400px] mx-auto flex flex-col rounded-[26px] overflow-hidden bg-white border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
       data-testid="bundle-view"
       data-bundle-id={bundle.id}
     >

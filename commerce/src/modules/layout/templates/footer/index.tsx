@@ -19,7 +19,7 @@ export default async function Footer() {
               Shop smart, eat healthy. Your nutrition goals made simple.
             </p>
           </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
+          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 me-4">
             <div className="flex flex-col gap-y-2">
               <span className="txt-large-plus">Quick Links</span>
               <ul
@@ -65,54 +65,9 @@ export default async function Footer() {
               </ul>
             </div>
 
-            <div className="flex flex-col gap-y-2">
-              <span className="txt-large-plus txt-ui-fg-base">Support</span>
-              <ul
-                className="grid grid-cols-1 gap-2 text-white/70 mt-4"
-                data-testid="footer-links"
-              >
-                <li>
-                  <LocalizedClientLink
-                    className="hover:text-white cursor-pointer"
-                    href={`#`}
-                    data-testid="category-link"
-                  >
-                    Help Center
-                  </LocalizedClientLink>
-                </li>
-                <li>
-                  <LocalizedClientLink
-                    className="hover:text-white cursor-pointer"
-                    href={`#`}
-                    data-testid="category-link"
-                  >
-                    Contact Us
-                  </LocalizedClientLink>
-                </li>
-                <li>
-                  <LocalizedClientLink
-                    className="hover:text-white cursor-pointer"
-                    href={`#`}
-                    data-testid="category-link"
-                  >
-                    Shipping Info
-                  </LocalizedClientLink>
-                </li>
-                <li>
-                  <LocalizedClientLink
-                    className="hover:text-white cursor-pointer"
-                    href={`#`}
-                    data-testid="category-link"
-                  >
-                    Returns
-                  </LocalizedClientLink>
-                </li>
-              </ul>
-            </div>
-
             <div>
               <span className="txt-large-plus">Connect With Us</span>
-              <ul className="flex flex-wrap gap-4 mt-4">
+              <ul className="flex flex-wrap gap-4 my-4">
                 <li>
                   <LocalizedClientLink
                     className="cursor-pointer"
@@ -159,6 +114,9 @@ export default async function Footer() {
                   </LocalizedClientLink>
                 </li>
               </ul>
+              <a href="mailto:info@elvardubai.com" className="text-blue-400 underline-offset-4 hover:underline cursor-pointer">
+              Customer Service
+            </a>
             </div>
           </div>
         </div>

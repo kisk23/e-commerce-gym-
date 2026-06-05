@@ -19,7 +19,7 @@ const Register = ({ setCurrentView, redirectTo }: Props) => {
 
   return (
     <div
-      className="max-w-sm flex flex-col items-center"
+      className="max-w-sm flex flex-col items-center mx-auto lg:mx-0"
       data-testid="register-page"
     >
       <h1 className="text-large-semi uppercase mb-6">

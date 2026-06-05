@@ -112,8 +112,8 @@ export default function BundleProductControls({
 
   return (
     <div className="flex flex-col gap-4 mb-6">
-      {filtration && (
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_180px_160px_auto] gap-3 items-end">
+      {filtration ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_180px_180px_160px_auto] gap-3 items-end">
         <form onSubmit={submitSearch} className="flex flex-col gap-1.5">
           <label
             htmlFor="bundle-product-search"
@@ -214,9 +214,7 @@ export default function BundleProductControls({
           Clear
         </button>
       </div>
-      )}
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-4">
+      ):<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-4">
         <p className="text-sm text-ui-fg-subtle">
           Showing page {safePage} of {totalPages} for {resultLabel}
         </p>
@@ -269,7 +267,7 @@ export default function BundleProductControls({
             </button>
           </nav>
         ) : null}
-      </div>
+      </div>}
     </div>
   )
 }

@@ -30,12 +30,14 @@
     "@medusajs/cli": "2.13.1",
     "@medusajs/framework": "2.13.1",
     "@medusajs/medusa": "2.13.1",
+    "helmet": "^8.2.0",
     "resend": "^4.8.0"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.13.1",
     "@swc/core": "^1.7.28",
     "@swc/jest": "^0.2.36",
+    "@types/helmet": "^0.0.48",
     "@types/jest": "^29.5.13",
     "@types/node": "^20.12.11",
     "@types/react": "^18.3.2",

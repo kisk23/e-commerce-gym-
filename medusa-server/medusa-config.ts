@@ -10,9 +10,14 @@ const toOptionalNumber = (value?: string) => {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : undefined
 }
-
+console.log("ENV : "+process.env.NODE_ENV)
 module.exports = defineConfig({
+  
   projectConfig: {
+    cookieOptions: {
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    },
     databaseUrl: process.env.DATABASE_URL,
     http: {
       storeCors: process.env.STORE_CORS!,

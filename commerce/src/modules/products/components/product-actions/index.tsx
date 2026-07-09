@@ -214,29 +214,47 @@ export default function ProductActions({
   }
 
   return (
-    <div className="flex flex-col gap-4" ref={actionsRef}>
-      <section className="rounded-large border border-beige/70 bg-white p-4 shadow-sm">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase text-secondary">
+    <div className="flex flex-col gap-6" ref={actionsRef}>
+      <section className="rounded-3xl border border-[#E6E6E6] bg-white p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-6">
+        {/* Title and Description */}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col items-start gap-2">
+            <span className="w-fit rounded-full bg-[#1A330B]/10 px-3 py-1 text-xs font-semibold text-[#1A330B] uppercase tracking-wider">
               {categoryName || "Product"}
-            </p>
-            <h1 className="mt-1 text-3xl font-semibold leading-tight text-primary">
+            </span>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#0A0A0A] leading-tight">
               {product.title}
             </h1>
           </div>
-          <ProductPrice product={product} variant={selectedVariant} />
+          
+          <div className="flex items-center gap-2">
+            <div className="flex items-center text-[#F59E0B]">
+               <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+               <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+               <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+               <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+               <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-200"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <span className="text-sm font-medium text-[#717182]">(128 reviews)</span>
+          </div>
+
+          {product.description ? (
+            <p className="mt-2 text-sm leading-6 text-[#717182]">
+              {product.description}
+            </p>
+          ) : null}
         </div>
 
-        {product.description ? (
-          <p className="mt-3 text-sm leading-6 text-gray-600">
-            {product.description}
-          </p>
-        ) : null}
+        <div className="pb-6 border-b border-[#E6E6E6]">
+          <div className="text-2xl md:text-[28px] font-bold text-[#0A0A0A]">
+            <ProductPrice product={product} variant={selectedVariant} />
+          </div>
+        </div>
 
-        <div className="mt-5">
+        {/* Options */}
+        <div className="">
           {(product.variants?.length ?? 0) > 1 && (
-            <div className="flex flex-col gap-y-4">
+            <div className="flex flex-col gap-y-4 mb-4">
               {(product.options || []).map((option) => {
                 return (
                   <div key={option.id}>
@@ -256,44 +274,78 @@ export default function ProductActions({
           )}
         </div>
 
-        <label className="mt-4 flex flex-col gap-y-1 text-sm">
-          <span className="font-medium text-primary">Amount (g)</span>
-          <input
-            type="number"
-            min={DEFAULT_WEIGHT_G}
-            step={WEIGHT_STEP_G}
-            value={weightG}
-            onChange={(event) => onWeightChange(event.target.value)}
-            className="h-11 rounded-rounded border border-beige bg-white px-3 py-2 text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-            disabled={!!disabled || isAddingBundle}
-          />
-          <span className="text-xs text-gray-500">
+        {/* Amount Selector */}
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-sm text-[#0A0A0A]">Quantity (g)</label>
+          <div className="flex items-center w-full border border-[#E6E6E6] rounded-xl overflow-hidden h-12 focus-within:ring-2 focus-within:ring-[#1A330B]">
+            <button
+              type="button"
+              className="w-12 h-full flex items-center justify-center text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => onWeightChange(String(weightG - WEIGHT_STEP_G))}
+              disabled={!!disabled || isAddingBundle || weightG <= MIN_BUNDLE_WEIGHT_G}
+              aria-label="Decrease quantity"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <input
+              type="number"
+              min={DEFAULT_WEIGHT_G}
+              step={WEIGHT_STEP_G}
+              value={weightG}
+              onChange={(event) => onWeightChange(event.target.value)}
+              className="flex-1 h-full bg-white text-center text-[#0A0A0A] font-semibold text-base outline-none [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none"
+              disabled={!!disabled || isAddingBundle}
+            />
+            <button
+              type="button"
+              className="w-12 h-full flex items-center justify-center text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => onWeightChange(String(weightG + WEIGHT_STEP_G))}
+              disabled={!!disabled || isAddingBundle}
+              aria-label="Increase quantity"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+          </div>
+          <span className="text-xs font-medium text-[#717182] mt-1">
             Minimum {MIN_BUNDLE_WEIGHT_G}g per bundle item.
           </span>
-        </label>
+        </div>
 
-        <div className="mt-5">
+        {/* Add to Bundle Button */}
+        <div className="mt-2">
           <Button
             onClick={handleAddToBundle}
             disabled={!canUseSelectedVariant || isAddingBundle}
-            variant="primary"
-            className="h-11 w-full rounded-rounded bg-primary text-white hover:bg-primary/90"
+            className="w-full h-12 rounded-xl bg-[#1A330B] hover:bg-[#2A431B] text-white font-semibold text-base transition-colors flex items-center justify-center gap-2"
             isLoading={isAddingBundle}
             data-testid="add-bundle-button"
           >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
             {!selectedVariant
               ? "Select variant"
               : !inStock || !isValidVariant
               ? "Out of stock"
-              : "Add to bundle"}
+              : "Add to Bundle"}
           </Button>
         </div>
 
         {bundleMessage ? (
-          <p className="mt-3 text-sm text-gray-600" role="status">
+          <div className="bg-[#1A330B]/10 text-[#1A330B] text-sm font-medium px-4 py-3 rounded-xl flex items-start gap-2" role="status">
+             <svg className="w-5 h-5 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
             {bundleMessage}
-          </p>
+          </div>
         ) : null}
+
+        {/* Guarantee Block */}
+        <div className="mt-2 p-4 bg-[#F8F9FA] rounded-2xl flex items-start gap-3 border border-[#E6E6E6]">
+           <div className="w-8 h-8 rounded-full bg-[#1A330B]/10 flex items-center justify-center shrink-0">
+             <svg className="w-4 h-4 text-[#1A330B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+           </div>
+           <div>
+             <p className="text-sm font-semibold text-[#0A0A0A]">100% Fresh Guarantee</p>
+             <p className="text-xs text-[#717182] mt-0.5 leading-5">We deliver only the freshest produce to your door.</p>
+           </div>
+        </div>
       </section>
 
       <BundleSummary

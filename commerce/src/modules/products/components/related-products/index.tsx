@@ -3,6 +3,8 @@ import { getRegion } from "@lib/data/regions"
 import { HttpTypes } from "@medusajs/types"
 import Product from "../product-preview"
 
+import RelatedProductsCarousel from "./related-products-carousel"
+
 type RelatedProductsProps = {
   product: HttpTypes.StoreProduct
   countryCode: string
@@ -46,24 +48,5 @@ export default async function RelatedProducts({
     return null
   }
 
-  return (
-    <div>
-      <div className="mb-5">
-        <p className="text-xs font-semibold uppercase text-secondary">
-          You may also like
-        </p>
-        <h2 className="mt-1 text-2xl font-semibold text-primary">
-          Bundles with {product.title}
-        </h2>
-      </div>
-
-      <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 small:grid-cols-3">
-        {products.map((product) => (
-          <li key={product.id}>
-            <Product region={region} product={product} />
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+  return <RelatedProductsCarousel products={products} region={region} />
 }

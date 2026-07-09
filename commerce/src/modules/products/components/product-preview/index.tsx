@@ -40,20 +40,20 @@ export default function ProductPreview({
   const card = (
     <>
       {/* CARD */}
-      <div className="w-full max-w-[302px] rounded-[26px] border border-gray-200 overflow-hidden bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+      <div className="group/card w-full max-w-[302px] rounded-[26px] border border-[#E6E6E6] overflow-hidden bg-white hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-all duration-500 ease-out">
         {/* IMAGE */}
-        <div className="relative w-full h-[302px] bg-beige/20">
+        <div className="relative w-full h-[302px] bg-[#F5F5F5] overflow-hidden">
           {product.thumbnail && (
             <Image
               src={product.thumbnail}
               alt={`${product.title} product image`}
               fill
-              className="object-cover rounded-t-[26px]"
+              className="object-cover rounded-t-[26px] transition-transform duration-700 ease-out group-hover/card:scale-110"
             />
           )}
 
           {/* BADGE */}
-          <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-medium text-primary capitalize">
+          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-semibold text-[#1A330B] capitalize shadow-sm transition-transform duration-300 group-hover/card:scale-105">
             {categoryName}
           </div>
         </div>
@@ -62,31 +62,30 @@ export default function ProductPreview({
         <div className="flex flex-col gap-2 px-6 py-5">
           {/* TITLE + DESCRIPTION */}
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg sm:text-xl font-semibold text-black">
+            <h3 className="text-lg sm:text-xl font-bold text-[#0A0A0A]">
               {product.title}
             </h3>
 
-            <p className="text-primary/70 text-sm">
+            <p className="text-[#717182] text-sm">
               {product.subtitle ||
                 "Fresh and nutritious, perfect for your healthy meals"}
             </p>
           </div>
 
           {/* INFO ROW */}
-          <div className="flex justify-between items-end">
+          <div className="flex justify-between items-end mt-2">
             {/* LEFT */}
             <div className="flex flex-col">
-              <span className="text-primary/60 text-sm">Per 100g</span>
-              <span className="text-base font-semibold text-primary">
+              <span className="text-[#717182] text-xs font-medium">Per 100g</span>
+              <span className="text-sm font-bold text-[#1A330B]">
                 {calories} kcal
               </span>
             </div>
 
             {/* RIGHT */}
             <div className="flex flex-col items-end">
-              <span className="text-primary/60 text-sm">Price</span>
-
-              <span className="text-base font-semibold text-black">
+              <span className="text-[#717182] text-xs font-medium">Price</span>
+              <span className="text-base font-bold text-[#0A0A0A]">
                 {cheapestPrice?.calculated_price ?? "$0.00"}
               </span>
             </div>

@@ -44,56 +44,56 @@ export default function BundleSummary({
       : "aed"
 
   return (
-    <aside className="w-full xl:sticky xl:top-24 flex flex-col gap-4">
-      <div className="rounded-xl p-3 bg-[linear-gradient(135deg,rgba(223,208,189,0.4)_0%,rgba(223,208,189,0.2)_100%)]">
-        <div className="flex flex-col gap-[18px]">
-          <div className="flex items-center justify-between gap-9">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#D3D8CC]" />
-              <div>
-                <p className="text-sm leading-5 font-medium text-[#0A0A0A]">
-                  Total Calories
-                </p>
-                <p className="text-xs leading-4 text-[#717182]">
-                  Recommended: {RECOMMENDED_CALORIES} cal
-                </p>
-              </div>
+    <aside className="w-full xl:sticky xl:top-24 flex flex-col gap-6">
+      <div className="rounded-3xl p-6 bg-[#F8F9FA] border border-[#E6E6E6]">
+        <div className="flex flex-col gap-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col">
+              <p className="text-base font-semibold text-[#0A0A0A]">
+                Total Calories
+              </p>
+              <p className="text-xs font-medium text-[#717182] mt-1">
+                Recommended {RECOMMENDED_CALORIES} cal
+              </p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl leading-8 font-semibold text-[rgb(var(--primary))]">
+            <div className="text-right">
+              <p className="text-2xl font-bold text-[#1A330B]">
                 {roundedCalories}
               </p>
-              <p className="text-xs leading-4 text-[#717182]">calories</p>
             </div>
           </div>
 
-          <div className="w-full h-2 bg-[#D3D8CC] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[rgb(var(--primary))] rounded-full transition-all"
-              style={{ width: `${calorieProgressPct}%` }}
-            />
+          <div className="flex flex-col gap-2">
+            <div className="w-full h-2.5 bg-[#E6E6E6] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#1A330B] rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${calorieProgressPct}%` }}
+              />
+            </div>
+            <p className="text-xs font-medium text-center text-[#717182] mt-1">
+              {remainingCalories} cal remaining
+            </p>
           </div>
         </div>
-
-        <p className="mt-3 text-xs leading-4 font-medium text-center text-[#717182]">
-          {remainingCalories} cal remaining
-        </p>
       </div>
 
-      <div className="rounded-xl border border-[#E6E6E6] bg-white px-5 py-6">
-        <h2 className="text-[20px] leading-7 font-semibold text-[#0A0A0A]">
+      <div className="rounded-3xl border border-[#E6E6E6] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+        <h2 className="text-xl font-bold text-[#0A0A0A]">
           Your Bundle
         </h2>
-        <p className="text-xs leading-4 text-[#717182] mt-1">{title}</p>
+        <p className="text-sm text-[#717182] mt-1 font-medium">{title}</p>
 
-        <div className="mt-6 px-0.5">
+        <div className="mt-6">
           {!items.length ? (
-            <p className="text-sm leading-5 text-[#717182] text-center py-8">
-              Add products from the list to build your custom bundle.
-            </p>
+            <div className="flex flex-col items-center justify-center py-10 bg-[#F5F5F5] rounded-2xl border border-dashed border-[#D1D1D1]">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#A3A3A3] mb-3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              <p className="text-sm font-medium text-[#717182] text-center max-w-[200px]">
+                Add products from the list to build your custom bundle.
+              </p>
+            </div>
           ) : (
             <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2.5 pb-6 border-b border-[#E6E6E6]">
+              <div className="flex flex-col gap-3 pb-6 border-b border-[#E6E6E6]">
                 {items.map((item) => {
                   const itemTotals = calculateProductTotals({
                     product: item.product,
@@ -108,24 +108,22 @@ export default function BundleSummary({
                   return (
                     <div
                       key={item.key}
-                      className="w-full bg-[#FAF5EF] p-3 flex items-center justify-between gap-3"
+                      className="w-full bg-[#F8F9FA] rounded-2xl p-3 flex items-center justify-between gap-4 border border-[#E6E6E6]"
                     >
-                      <div className="flex items-center gap-[11px] min-w-0">
+                      <div className="flex items-center gap-3 min-w-0">
                         <Image
                           src={item.product.thumbnail || "/placeholder.png"}
                           alt={item.product.title || "Bundle item"}
                           width={48}
                           height={48}
-                          className="w-12 h-12 rounded-xl object-cover shrink-0"
+                          className="w-12 h-12 rounded-xl object-cover shrink-0 bg-white"
                         />
-                        <div className="min-w-0">
-                          <p className="text-sm leading-5 font-medium text-[#0A0A0A] truncate">
+                        <div className="min-w-0 flex flex-col gap-1">
+                          <p className="text-sm font-semibold text-[#0A0A0A] truncate">
                             {item.product.title}
                           </p>
-                          <p className="text-xs leading-4 text-[#717182]">
-                            {item.quantity}g - {Math.round(itemTotals.calories)}{" "}
-                            cal -{" "}
-                            {convertToLocale({
+                          <p className="text-xs font-medium text-[#717182]">
+                            {item.quantity}g · {Math.round(itemTotals.calories)} cal · {convertToLocale({
                               amount: itemTotals.price,
                               currency_code: itemCurrency,
                             })}
@@ -136,42 +134,36 @@ export default function BundleSummary({
                       <button
                         type="button"
                         onClick={() => removeItem(item.key)}
-                        className="w-8 h-8 rounded-xl shrink-0"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[#A3A3A3] hover:text-red-500 hover:bg-white transition-colors shrink-0"
                         aria-label={`Remove ${item.product.title}`}
                       >
-                        <span className="block w-4 h-4 mx-auto" />
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                       </button>
                     </div>
                   )
                 })}
               </div>
 
-              <div className="flex flex-col gap-[10px]">
-                <div className="pb-4 border-b border-[#E6E6E6] flex flex-col gap-[10px]">
-                  <div className="flex items-center justify-between text-sm leading-5">
-                    <span className="text-[#717182]">Total Items</span>
-                    <span className="font-medium text-[#0A0A0A]">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#717182] font-medium">Total Items</span>
+                    <span className="font-semibold text-[#0A0A0A]">
                       {items.length}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-sm leading-5">
-                    <span className="text-[#717182]">Total Weight</span>
-                    <span className="font-medium text-[#0A0A0A]">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#717182] font-medium">Total Weight</span>
+                    <span className="font-semibold text-[#0A0A0A]">
                       {totalWeightG}g
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-sm leading-5">
-                    <span className="text-[#717182]">Total Calories</span>
-                    <span className="font-medium text-[#0A0A0A]">
-                      {roundedCalories}
-                    </span>
-                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-base leading-6 font-semibold text-[#0A0A0A]">
+                <div className="pt-4 border-t border-[#E6E6E6] flex items-center justify-between">
+                  <span className="text-base font-bold text-[#0A0A0A]">
                     Total Price
                   </span>
-                  <span className="text-[20px] leading-7 font-semibold text-[rgb(var(--primary))]">
+                  <span className="text-xl font-bold text-[#0A0A0A]">
                     {convertToLocale({
                       amount: totals.price,
                       currency_code: currencyCode,
@@ -188,18 +180,20 @@ export default function BundleSummary({
             onClick={onSubmit}
             isLoading={isSubmitting}
             disabled={isSubmitting || !items.length}
-            className="w-full h-10 rounded-[10px] bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary-light))] text-white text-sm font-medium"
+            className="w-full h-12 rounded-xl bg-[#1A330B] hover:bg-[#2A431B] text-white font-semibold text-base transition-colors flex items-center justify-center"
           >
-            Add to Cart
+            Add Bundle to Cart
           </Button>
-          <Button
-            variant="secondary"
-            onClick={clearItems}
-            disabled={!items.length || isSubmitting}
-            className="w-full h-8 rounded-[10px] border border-[#E6E6E6] bg-white text-sm font-medium text-[#0A0A0A]"
-          >
-            Clear All
-          </Button>
+          {items.length > 0 && (
+            <Button
+              variant="secondary"
+              onClick={clearItems}
+              disabled={isSubmitting}
+              className="w-full h-12 rounded-xl border border-[#E6E6E6] bg-white hover:bg-[#F5F5F5] font-semibold text-sm text-[#0A0A0A] transition-colors"
+            >
+              Clear Bundle
+            </Button>
+          )}
         </div>
 
         {message ? (

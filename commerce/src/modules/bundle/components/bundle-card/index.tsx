@@ -10,7 +10,8 @@ import {
 } from "@modules/bundle/utils/bundle-calculations"
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { KeyboardEvent, MouseEvent, useEffect, useMemo, useRef, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
 
 export type BundleCardAddPayload = {
   product: HttpTypes.StoreProduct
@@ -28,7 +29,12 @@ const MIN_ITEM_WEIGHT_G = 1000
 
 type AnimState = "idle" | "ripple" | "success"
 
+const INTERACTIVE_SELECTOR =
+  "a,button,input,select,textarea,[role='button'],[data-no-card-navigation]"
+
 export default function BundleCard({ product, onAdd }: Props) {
+  const router = useRouter()
+  const countryCode = useParams().countryCode as string
   const defaultVariant = useMemo(() => getDefaultVariant(product), [product])
   const [quantity, setQuantity] = useState(MIN_ITEM_WEIGHT_G)
   const [variantId, setVariantId] = useState(defaultVariant?.id || "")
@@ -55,6 +61,42 @@ export default function BundleCard({ product, onAdd }: Props) {
   })
 
   const canAdd = !!variantId && quantity > 0
+  const productHref = product.handle
+    ? `/${countryCode}/products/${product.handle}`
+    : null
+
+  const shouldSkipCardNavigation = (target: EventTarget | null) => {
+    return target instanceof HTMLElement && !!target.closest(INTERACTIVE_SELECTOR)
+  }
+
+  const navigateToProduct = () => {
+    if (!productHref) {
+      return
+    }
+
+    router.push(productHref)
+  }
+
+  const onCardClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.defaultPrevented || shouldSkipCardNavigation(event.target)) {
+      return
+    }
+
+    navigateToProduct()
+  }
+
+  const onCardKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) {
+      return
+    }
+
+    if (event.key !== "Enter" && event.key !== " ") {
+      return
+    }
+
+    event.preventDefault()
+    navigateToProduct()
+  }
 
   const onAddToBundle = () => {
     if (!canAdd || animState !== "idle") return
@@ -84,7 +126,12 @@ export default function BundleCard({ product, onAdd }: Props) {
 
   return (
     <div
-      className="w-full rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg transition-shadow duration-300 p-4 flex flex-col gap-3"
+      role={productHref ? "link" : undefined}
+      tabIndex={productHref ? 0 : undefined}
+      aria-label={productHref ? `View ${product.title}` : undefined}
+      onClick={onCardClick}
+      onKeyDown={onCardKeyDown}
+      className="w-full rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg transition-shadow duration-300 p-4 flex flex-col gap-3 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       style={{ contain: "layout" }}
     >
       {/* Product header */}
@@ -212,13 +259,6 @@ export default function BundleCard({ product, onAdd }: Props) {
         )}
         <span className="relative">{btnLabel}</span>
       </button>
-
-      <style jsx>{`
-        @keyframes shimmer {
-          from { transform: translateX(-100%); }
-          to   { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   )
 }

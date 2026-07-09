@@ -1,17 +1,23 @@
 "use client"
 
-import { addToCart } from "@lib/data/cart"
+import { addCustomBundleToCart } from "@lib/data/bundles"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
+import BundleSummary from "@modules/bundle/components/bundle-summary"
+import { useBundleContext } from "@modules/bundle/store/bundle-context"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
-import { useParams, usePathname, useSearchParams } from "next/navigation"
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
-import { useRouter } from "next/navigation"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -20,7 +26,9 @@ type ProductActionsProps = {
 }
 
 const WEIGHT_STEP_G = 100
-const DEFAULT_WEIGHT_G = 100
+const DEFAULT_WEIGHT_G = 1000
+const MIN_BUNDLE_WEIGHT_G = 1000
+const MIN_BUNDLE_UNITS = Math.round(MIN_BUNDLE_WEIGHT_G / WEIGHT_STEP_G)
 
 const optionsAsKeymap = (
   variantOptions: HttpTypes.StoreProductVariant["options"]
@@ -38,9 +46,12 @@ export default function ProductActions({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { items, addItem, clearItems } = useBundleContext()
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
-  const [isAdding, setIsAdding] = useState(false)
+  const [isAddingBundle, setIsAddingBundle] = useState(false)
+  const [isSubmittingBundle, setIsSubmittingBundle] = useState(false)
+  const [bundleMessage, setBundleMessage] = useState<string | null>(null)
   const [weightG, setWeightG] = useState(DEFAULT_WEIGHT_G)
   const countryCode = useParams().countryCode as string
 
@@ -123,7 +134,10 @@ export default function ProductActions({
   const actionsRef = useRef<HTMLDivElement>(null)
 
   const inView = useIntersection(actionsRef, "0px")
-  const quantityByWeight = Math.max(1, Math.round(weightG / WEIGHT_STEP_G))
+  const bundleQuantityG = Math.max(MIN_BUNDLE_WEIGHT_G, weightG)
+  const categoryName = product.categories?.[0]?.name || product.type?.value
+  const canUseSelectedVariant =
+    !!selectedVariant && !!isValidVariant && !!inStock && !disabled
 
   const onWeightChange = (value: string) => {
     const parsed = Number(value)
@@ -134,35 +148,93 @@ export default function ProductActions({
     }
 
     const roundedToStep = Math.round(parsed / WEIGHT_STEP_G) * WEIGHT_STEP_G
-    setWeightG(Math.max(WEIGHT_STEP_G, roundedToStep))
+    setWeightG(Math.max(DEFAULT_WEIGHT_G, roundedToStep))
   }
 
-  // add the selected variant to the cart
-  const handleAddToCart = async () => {
-    if (!selectedVariant?.id) {
-      return null
+  const handleAddToBundle = () => {
+    if (!selectedVariant?.id || !canUseSelectedVariant) {
+      return
     }
 
-    setIsAdding(true)
-
-    await addToCart({
+    setIsAddingBundle(true)
+    addItem({
+      product,
       variantId: selectedVariant.id,
-      quantity: quantityByWeight,
-      countryCode,
-      metadata: {
-        weight_g: WEIGHT_STEP_G,
-        selected_weight_g: quantityByWeight * WEIGHT_STEP_G,
-        selected_weight_unit_g: WEIGHT_STEP_G,
-      },
+      quantity: bundleQuantityG,
     })
+    setBundleMessage(`${product.title} added to your bundle.`)
+    window.setTimeout(() => setIsAddingBundle(false), 250)
+  }
 
-    setIsAdding(false)
+  const submitBundle = async () => {
+    setIsSubmittingBundle(true)
+    setBundleMessage(null)
+
+    if (!items.length) {
+      setIsSubmittingBundle(false)
+      setBundleMessage("Please add at least one item to your bundle.")
+      return
+    }
+
+    const sanitizedItems = items
+      .filter((item) => !!item.variantId)
+      .map((item) => ({
+        variant_id: item.variantId,
+        quantity: Math.max(
+          MIN_BUNDLE_UNITS,
+          Math.round(
+            (Number(item.quantity) || MIN_BUNDLE_WEIGHT_G) / WEIGHT_STEP_G
+          )
+        ),
+      }))
+
+    if (!sanitizedItems.length) {
+      setIsSubmittingBundle(false)
+      setBundleMessage("Please choose at least one product variant.")
+      return
+    }
+
+    try {
+      await addCustomBundleToCart({
+        countryCode,
+        title: "My Custom Bundle",
+        items: sanitizedItems,
+      })
+      setBundleMessage("Custom bundle added to cart.")
+      clearItems()
+    } catch (error) {
+      setBundleMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not add custom bundle to cart."
+      )
+    } finally {
+      setIsSubmittingBundle(false)
+    }
   }
 
   return (
-    <>
-      <div className="flex flex-col gap-y-2" ref={actionsRef}>
-        <div>
+    <div className="flex flex-col gap-4" ref={actionsRef}>
+      <section className="rounded-large border border-beige/70 bg-white p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase text-secondary">
+              {categoryName || "Product"}
+            </p>
+            <h1 className="mt-1 text-3xl font-semibold leading-tight text-primary">
+              {product.title}
+            </h1>
+          </div>
+          <ProductPrice product={product} variant={selectedVariant} />
+        </div>
+
+        {product.description ? (
+          <p className="mt-3 text-sm leading-6 text-gray-600">
+            {product.description}
+          </p>
+        ) : null}
+
+        <div className="mt-5">
           {(product.variants?.length ?? 0) > 1 && (
             <div className="flex flex-col gap-y-4">
               {(product.options || []).map((option) => {
@@ -174,7 +246,7 @@ export default function ProductActions({
                       updateOption={setOptionValue}
                       title={option.title ?? ""}
                       data-testid="product-options"
-                      disabled={!!disabled || isAdding}
+                      disabled={!!disabled || isAddingBundle}
                     />
                   </div>
                 )
@@ -184,55 +256,65 @@ export default function ProductActions({
           )}
         </div>
 
-        <ProductPrice product={product} variant={selectedVariant} />
-        <label className="mt-2 flex flex-col gap-y-1 text-sm">
-          <span className="text-ui-fg-subtle">Amount (g)</span>
+        <label className="mt-4 flex flex-col gap-y-1 text-sm">
+          <span className="font-medium text-primary">Amount (g)</span>
           <input
             type="number"
-            min={WEIGHT_STEP_G}
+            min={DEFAULT_WEIGHT_G}
             step={WEIGHT_STEP_G}
             value={weightG}
             onChange={(event) => onWeightChange(event.target.value)}
-            className="rounded-md border border-ui-border-base px-3 py-2"
-            disabled={!!disabled || isAdding}
+            className="h-11 rounded-rounded border border-beige bg-white px-3 py-2 text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+            disabled={!!disabled || isAddingBundle}
           />
-          <span className="text-xs text-ui-fg-subtle">
-            {quantityByWeight} unit(s) of 100g
+          <span className="text-xs text-gray-500">
+            Minimum {MIN_BUNDLE_WEIGHT_G}g per bundle item.
           </span>
         </label>
 
-        <Button
-          onClick={handleAddToCart}
-          disabled={
-            !inStock ||
-            !selectedVariant ||
-            !!disabled ||
-            isAdding ||
-            !isValidVariant
-          }
-          variant="primary"
-          className="w-full h-10"
-          isLoading={isAdding}
-          data-testid="add-product-button"
-        >
-          {!selectedVariant && !options
-            ? "Select variant"
-            : !inStock || !isValidVariant
-            ? "Out of stock"
-            : "Add to cart"}
-        </Button>
-        <MobileActions
-          product={product}
-          variant={selectedVariant}
-          options={options}
-          updateOptions={setOptionValue}
-          inStock={inStock}
-          handleAddToCart={handleAddToCart}
-          isAdding={isAdding}
-          show={!inView}
-          optionsDisabled={!!disabled || isAdding}
-        />
-      </div>
-    </>
+        <div className="mt-5">
+          <Button
+            onClick={handleAddToBundle}
+            disabled={!canUseSelectedVariant || isAddingBundle}
+            variant="primary"
+            className="h-11 w-full rounded-rounded bg-primary text-white hover:bg-primary/90"
+            isLoading={isAddingBundle}
+            data-testid="add-bundle-button"
+          >
+            {!selectedVariant
+              ? "Select variant"
+              : !inStock || !isValidVariant
+              ? "Out of stock"
+              : "Add to bundle"}
+          </Button>
+        </div>
+
+        {bundleMessage ? (
+          <p className="mt-3 text-sm text-gray-600" role="status">
+            {bundleMessage}
+          </p>
+        ) : null}
+      </section>
+
+      <BundleSummary
+        title="My Custom Bundle"
+        onTitleChange={() => null}
+        onSubmit={submitBundle}
+        isSubmitting={isSubmittingBundle}
+        message={bundleMessage}
+      />
+
+      <MobileActions
+        product={product}
+        variant={selectedVariant}
+        options={options}
+        updateOptions={setOptionValue}
+        inStock={inStock}
+        handleAddToBundle={handleAddToBundle}
+        isAddingBundle={isAddingBundle}
+        show={!inView}
+        optionsDisabled={!!disabled || isAddingBundle}
+      />
+    </div>
   )
 }

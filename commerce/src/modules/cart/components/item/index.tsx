@@ -1,7 +1,7 @@
 "use client"
 
 import { Text, clx } from "@medusajs/ui"
-import { deleteLineItem, updateLineItem } from "@lib/data/cart"
+import { deleteLineItem } from "@lib/data/cart"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -204,22 +204,7 @@ const Item = ({
     return () => clearTimeout(timer)
   }, [bundleInput, bundleCount])
 
-  const changeQuantity = async (quantity: number) => {
-    setError(null)
-    setUpdating(true)
-    await updateLineItem({ lineId: item.id, quantity })
-      .catch((err) => setError(err.message))
-      .finally(() => setUpdating(false))
-  }
 
-  const incrementBy100g = () =>
-    void changeQuantity(Math.max(1, Number(item.quantity || 0) + 1))
-
-  const decrementBy100g = () => {
-    const current = Math.max(1, Number(item.quantity || 0))
-    if (current <= 1) return
-    void changeQuantity(current - 1)
-  }
 
   const incrementBundleByStep = async () => {
     setError(null)
@@ -486,39 +471,16 @@ const Item = ({
         {/* Quantity + price for full view */}
         {type === "full" && (
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={decrementBy100g}
-                disabled={
-                  updating || Math.max(1, Number(item.quantity || 0)) <= 1
-                }
-                className="w-8 h-8 text-sm border border-ui-border-base rounded-lg hover:bg-ui-bg-subtle disabled:opacity-50 flex items-center justify-center"
-                data-testid="product-decrement-100g"
-              >
-                −
-              </button>
-              <span className="text-sm text-ui-fg-subtle min-w-[48px] text-center">
-                {Number.isInteger(
-                  Math.max(1, Number(item.quantity || 0)) / 10
-                )
-                  ? Math.max(1, Number(item.quantity || 0)) / 10
-                  : (Math.max(1, Number(item.quantity || 0)) / 10).toFixed(
-                      1
-                    )}{" "}
-                kg
-              </span>
-              <button
-                type="button"
-                onClick={incrementBy100g}
-                disabled={updating}
-                className="w-8 h-8 text-sm border border-ui-border-base rounded-lg hover:bg-ui-bg-subtle disabled:opacity-50 flex items-center justify-center"
-                data-testid="product-increment-100g"
-              >
-                +
-              </button>
-              {updating ? <Spinner /> : null}
-            </div>
+            <span className="text-sm text-ui-fg-subtle">
+              {Number.isInteger(
+                Math.max(1, Number(item.quantity || 0)) / 10
+              )
+                ? Math.max(1, Number(item.quantity || 0)) / 10
+                : (Math.max(1, Number(item.quantity || 0)) / 10).toFixed(
+                    1
+                  )}{" "}
+              kg
+            </span>
 
             <div className="text-right">
               <LineItemUnitPrice

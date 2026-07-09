@@ -70,7 +70,7 @@ export default async function CustomBundlePage(props: {
     order: sortOrders[filters.sortBy],
     is_giftcard: false,
     fields:
-      "id,title,thumbnail,collection_id,type_id,+metadata,+tags,*categories.id,*categories.name,*variants.id,*variants.title,*variants.calculated_price",
+      "id,title,handle,thumbnail,collection_id,type_id,+metadata,+tags,*categories.id,*categories.name,*variants.id,*variants.title,*variants.calculated_price",
   }
 
   if (filters.q) {
@@ -111,7 +111,6 @@ export default async function CustomBundlePage(props: {
       limit: "100",
     }).catch(() => ({ collections: [], count: 0 })),
   ])
-  console.log(JSON.stringify(productResult.response.products, null, 2))
 
   const hasCalculatedAmount = (variant: {
     calculated_price?: { calculated_amount?: number | string | null } | null

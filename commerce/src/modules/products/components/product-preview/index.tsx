@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
 import { getProductPrice } from "@lib/util/get-product-price"
+import { KeyboardEvent } from "react"
 
 type ProductMetadata = {
   nutrition_per_100g?: {
@@ -25,9 +26,19 @@ export default function ProductPreview({
   const calories = metadata?.nutrition_per_100g?.calories
 
   const categoryName = product.categories?.[0]?.name ?? null
+  const href = product.handle ? `/products/${product.handle}` : null
 
-  return (
-    <div className="group mx-auto">
+  const openOnSpace = (event: KeyboardEvent<HTMLAnchorElement>) => {
+    if (event.key !== " ") {
+      return
+    }
+
+    event.preventDefault()
+    event.currentTarget.click()
+  }
+
+  const card = (
+    <>
       {/* CARD */}
       <div className="w-full max-w-[302px] rounded-[26px] border border-gray-200 overflow-hidden bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
         {/* IMAGE */}
@@ -82,6 +93,21 @@ export default function ProductPreview({
           </div>
         </div>
       </div>
-    </div>
+    </>
+  )
+
+  if (!href) {
+    return <div className="group mx-auto">{card}</div>
+  }
+
+  return (
+    <LocalizedClientLink
+      href={href}
+      className="group mx-auto block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"
+      aria-label={`View ${product.title}`}
+      onKeyDown={openOnSpace}
+    >
+      {card}
+    </LocalizedClientLink>
   )
 }

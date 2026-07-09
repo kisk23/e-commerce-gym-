@@ -17,8 +17,8 @@ type MobileActionsProps = {
   options: Record<string, string | undefined>
   updateOptions: (_title: string, _value: string) => void
   inStock?: boolean
-  handleAddToCart: () => void
-  isAdding?: boolean
+  handleAddToBundle: () => void
+  isAddingBundle?: boolean
   show: boolean
   optionsDisabled: boolean
 }
@@ -29,8 +29,8 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   options,
   updateOptions,
   inStock,
-  handleAddToCart,
-  isAdding,
+  handleAddToBundle,
+  isAddingBundle,
   show,
   optionsDisabled,
 }) => {
@@ -98,11 +98,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                 <div></div>
               )}
             </div>
-            <div
-              className={clx("grid grid-cols-2 w-full gap-x-4", {
-                "!grid-cols-1": isSimple,
-              })}
-            >
+            <div className="grid grid-cols-1 w-full gap-2">
               {!isSimple && (
                 <Button
                   onClick={open}
@@ -113,7 +109,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <div className="flex items-center justify-between w-full">
                     <span>
                       {variant
-                        ? Object.values(options).join(" / ")
+                        ? Object.values(options).join(" / ")
                         : "Select Options"}
                     </span>
                     <ChevronDown />
@@ -121,17 +117,18 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                 </Button>
               )}
               <Button
-                onClick={handleAddToCart}
+                onClick={handleAddToBundle}
                 disabled={!inStock || !variant}
+                variant="primary"
                 className="w-full"
-                isLoading={isAdding}
-                data-testid="mobile-cart-button"
+                isLoading={isAddingBundle}
+                data-testid="mobile-bundle-button"
               >
                 {!variant
                   ? "Select variant"
                   : !inStock
                   ? "Out of stock"
-                  : "Add to cart"}
+                  : "Add to bundle"}
               </Button>
             </div>
           </div>

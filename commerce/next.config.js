@@ -46,6 +46,10 @@ const nextConfig = {
       protocol: "https",
       hostname: "elvar-s3-bucket.s3.ap-south-1.amazonaws.com",
     },
+    {
+      protocol: "https",
+      hostname: "lh3.googleusercontent.com",
+    },
     ...(S3_HOSTNAME && S3_PATHNAME
       ? [
           {

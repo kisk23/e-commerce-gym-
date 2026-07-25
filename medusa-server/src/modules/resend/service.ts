@@ -2,11 +2,7 @@ import {
   AbstractNotificationProviderService,
   MedusaError,
 } from "@medusajs/framework/utils";
-import type {
-  Logger,
-  ProviderSendNotificationDTO,
-  ProviderSendNotificationResultsDTO,
-} from "@medusajs/framework/types";
+import type { Logger, NotificationTypes } from "@medusajs/types";
 import { Resend, type CreateEmailOptions } from "resend";
 import type { ReactNode } from "react";
 import { OrderPlacedEmail } from "./templates/order-placed";
@@ -109,8 +105,8 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
   }
 
   async send(
-    notification: ProviderSendNotificationDTO,
-  ): Promise<ProviderSendNotificationResultsDTO> {
+    notification: NotificationTypes.ProviderSendNotificationDTO,
+  ): Promise<NotificationTypes.ProviderSendNotificationResultsDTO> {
     const template = this.getTemplate(notification.template as Templates);
 
     if (!template) {

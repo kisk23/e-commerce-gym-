@@ -1,4 +1,4 @@
-import { ExecArgs } from "@medusajs/framework/types";
+import { ExecArgs } from "@medusajs/types";
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import { upsertVariantPricesWorkflow } from "@medusajs/medusa/core-flows";
 

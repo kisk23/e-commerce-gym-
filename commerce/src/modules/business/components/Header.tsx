@@ -8,7 +8,7 @@ export function Header() {
         <div
           className="font-display text-headline-md font-semibold text-[rgb(var(--primary))] tracking-tight"
         >
-          <Image src="/logo.svg" alt="Logo" width={100} height={100} />
+          <Image src="/Logo.svg" alt="Logo" width={100} height={100} />
         </div>
         <div className="flex items-center gap-3">
           <a

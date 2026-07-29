@@ -4,11 +4,11 @@
  */
 export const assets = {
   hero: {
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBeQGLhc9ZaeQhz3t9LL0S0kod8dzL_COEo3XLR_Px2RjlKq0nrj8RmSHlRggHo-Wg8_fRJliaLbMe9sJFC2rvVxs5mlG224u22nHgYJ82OKCYS8CGujplB_MNGT1yPx5h8Dryj5oiOSO9T-VC0ohRcrzbykpfqRDcJk9r18rDKhEuDNrHBvLrl7002NH-68Ln4awXVUwluYyOZPlWIn6K5CAPOHngRLoh0d-kyUri2gNfkIZGnW8IOjorIqXLdiKZigp2FKFW-6LA",
+    src: "/B2Bhero.jpg",
     alt: "Quality control specialist inspecting premium fresh produce",
   },
   about: {
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuA95pfaKFYOFG4brLF1sM9hrxtkNm-pUzSAv_Cp3H0Lv43u3s22k6vMwju0YNflhFR6fUHSYi4lbOMITbDzKx9WI8BRMgS9tbqsIASYKgSZklvdhEZk0NES58LTLE-D6FFhF1HNXv0fNuDw1OZIfX85Pcgr20m_IYngvgME3w6bDV43WiteAiaGbHQVgTH1-E5UivGxETGyfG0jI5-3LmN52UbTXmdF1dlKwcP3JWdxeLWmHmM2JkZapU85lEbZE4VV06ZDmAbjPzk",
+    src: "/elvarCompany.jpg",
     alt: "Interior of an AI-monitored vertical farming facility in Dubai",
   },
   products: {

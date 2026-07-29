@@ -1,7 +1,7 @@
 import type {
   CreateProductWorkflowInputDTO,
   ExecArgs,
-} from "@medusajs/framework/types";
+} from "@medusajs/types";
 import {
   ContainerRegistrationKeys,
   Modules,
@@ -136,7 +136,7 @@ async function ensureCategories(container: ExecArgs["container"]) {
 
   const existingCategories = await productModuleService.listProductCategories(
     { handle: handles },
-    { withDeleted: false },          // <-- add this second arg
+    { withDeleted: false }, // <-- add this second arg
   );
 
   const existingByHandle = new Map(

@@ -93,7 +93,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       discountPercentage = bundle.discount_percentage
       const variantIds = Array.from(
         new Set(bundle.items.map((item) => item.variant_id).filter(Boolean))
-      )
+      ) as string[]
       const priceMap = await getVariantPriceMap(query, variantIds, cartCurrency)
 
       itemsToAdd = bundle.items.map((item) => {

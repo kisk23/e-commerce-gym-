@@ -5,12 +5,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-xl border-b border-[rgb(var(--primary))]/5 shadow-sm">
       <div className="content-container flex items-center justify-between py-5">
-        <a
-          href="#"
+        <div
           className="font-display text-headline-md font-semibold text-[rgb(var(--primary))] tracking-tight"
         >
-          <Image src="/logo.svg" alt="Logo" width={100} height={100} />
-        </a>
+          <Image src="/Logo.svg" alt="Logo" width={100} height={100} />
+        </div>
         <div className="flex items-center gap-3">
           <a
             href="/company-profile/company%20profile.pdf"

@@ -10,18 +10,20 @@ export function Hero() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-20 items-center">
           <div>
             <span className="font-label text-label-sm text-[rgb(var(--secondary))] uppercase mb-6 inline-block">
-              B2B AgriTech Excellence
+              Fresh. Reliable. Responsible.
             </span>
             <h1 className="text-7xl mb-6 leading-[1.08] text-primary font-semibold">
               Premium fresh produce,
               <br />
               <span className="text-[rgb(var(--secondary))] italic">
-                powered by technology.
+                for Businesses Across the UAE.
               </span>
             </h1>
             <p className="text-body-lg text-foreground/70 mb-10 max-w-lg">
-              The UAE&rsquo;s most trusted farm-to-business partner, delivering
-              quality, sustainability, and transparency across the MENA region.
+              We source and supply high-quality fruits, vegetables, and herbs
+              through trusted producers and reliable logistics, helping hotels,
+              restaurants, supermarkets, and distributors operate with
+              confidence.
             </p>
             <div className="flex flex-wrap gap-4">
               <a
@@ -30,7 +32,11 @@ export function Hero() {
               >
                 Request a Partnership
               </a>
-              <a href="/company-profile/company%20profile.pdf" target="_blank" className="border-2 border-[rgb(var(--primary))] text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))] hover:text-secondary px-8 py-4 text-base sm:px-10 sm:py-5 sm:text-lg inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-300">
+              <a
+                href="/company-profile/company%20profile.pdf"
+                target="_blank"
+                className="border-2 border-[rgb(var(--primary))] text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))] hover:text-secondary px-8 py-4 text-base sm:px-10 sm:py-5 sm:text-lg inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-300"
+              >
                 Company Profile
               </a>
             </div>

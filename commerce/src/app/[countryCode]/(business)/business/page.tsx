@@ -3,7 +3,6 @@ import { Hero } from "@/modules/business/components/Hero"
 import { About } from "@/modules/business/components/About"
 import { VisionMission } from "@/modules/business/components/VisionMission"
 import { Products } from "@/modules/business/components/Products"
-import { Sustainability } from "@/modules/business/components/Sustainability"
 import { Industries } from "@/modules/business/components/Industries"
 import { FarmJourney } from "@/modules/business/components/FarmJourney"
 import { WhyChoose } from "@/modules/business/components/WhyChoose"
@@ -19,10 +18,9 @@ export default function BusinessPage() {
         <About />
         <VisionMission />
         <Products />
-        <Sustainability />
+        <WhyChoose />
         <Industries />
         <FarmJourney />
-        <WhyChoose />
         <Motto />
         <CTA />
       </main>

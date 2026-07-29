@@ -9,8 +9,8 @@ export function Products() {
     <Section id="products" tone="beige">
       <div className="content-container">
         <SectionHeading
-          title="Our Harvest Selection"
-          description="Grown under monitored conditions and handled through a fully traceable cold chain, from field to shelf."
+          title="Our Products"
+          description="We supply a wide selection of premium fresh produce carefully sourced to meet the requirements of professional food businesses."
           className="mb-16"
         />
 

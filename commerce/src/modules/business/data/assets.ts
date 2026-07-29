@@ -9,7 +9,7 @@ export const assets = {
   },
   about: {
     src: "/elvarCompany.jpg",
-    alt: "Interior of an AI-monitored vertical farming facility in Dubai",
+    alt: "Elvar Company",
   },
   products: {
     vegetables: {
@@ -25,12 +25,8 @@ export const assets = {
       alt: "Fresh basil, coriander, and micro greens",
     },
   },
-  sustainability: {
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAXkwrLBsa1IVqVXnDMmcy4RDUZEcsRl290ngAqbV8dCWOB4tjnLOQzIjwvhYW7vpGGo8RqouoNo3ZMvgDCgZ5s1Yj7qM30qu1RZeYR0zzn-WJXo73n_hbg-JVwOFkjZVuk77OhN6RIpq8LA93Fo-vX3-WNfyGdK6SvXdxrKv44gWDYiAT41LPI6cqmo0PR45NnkIM963Ua-rHehA7TmTJoxFVy1CB2S04r_eLRmge8r0AmbF7o6vbVriNAElVW7z90yCRTZ69itvc",
-    alt: "IoT sensor equipment monitoring crop rows",
-  },
   whyChoose: {
     src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAXkwrLBsa1IVqVXnDMmcy4RDUZEcsRl290ngAqbV8dCWOB4tjnLOQzIjwvhYW7vpGGo8RqouoNo3ZMvgDCgZ5s1Yj7qM30qu1RZeYR0zzn-WJXo73n_hbg-JVwOFkjZVuk77OhN6RIpq8LA93Fo-vX3-WNfyGdK6SvXdxrKv44gWDYiAT41LPI6cqmo0PR45NnkIM963Ua-rHehA7TmTJoxFVy1CB2S04r_eLRmge8r0AmbF7o6vbVriNAElVW7z90yCRTZ69itvc",
-    alt: "Crop rows monitored by precision agriculture technology",
+    alt: "Fresh fruits and vegetables prepared for commercial distribution",
   },
 } as const

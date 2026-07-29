@@ -1,9 +1,7 @@
 import { assets } from "@/modules/business/data/assets"
-import { Linkedin } from "@medusajs/icons"
 import {
   Eye,
   Rocket,
-  Leaf,
   Building2,
   UtensilsCrossed,
   ShoppingBasket,
@@ -12,25 +10,20 @@ import {
   ClipboardCheck,
   Snowflake,
   PackageCheck,
-  Zap,
-  LayoutGrid,
-  FlaskConical,
-  QrCode,
   Handshake,
   ShieldCheck,
-  Bot,
-  Thermometer,
   MapPin,
   Phone,
   Mail,
   MessageCircle,
+  Package,
+  Apple,
 } from "lucide-react"
 
 import type {
   StatItem,
   VisionMissionItem,
   ProductCategory,
-  SustainabilityPillar,
   Industry,
   JourneyStep,
   FeatureItem,
@@ -48,7 +41,6 @@ export const siteConfig = {
 export const navLinks = [
   { label: "About", href: "#about" },
   { label: "Products", href: "#products" },
-  { label: "Sustainability", href: "#sustainability" },
   { label: "Partnership", href: "#partnership" },
 ]
 
@@ -63,12 +55,12 @@ export const visionMissionItems: VisionMissionItem[] = [
   {
     icon: Eye,
     title: "Our Vision",
-    body: "To be the UAE's most trusted farm-to-business partner, setting the regional benchmark for quality, sustainability, and supply chain transparency across MENA.",
+    body: "To become one of the UAE’s most trusted B2B fresh produce suppliers by building lasting partnerships based on quality, reliability, and transparency.",
   },
   {
     icon: Rocket,
     title: "Our Mission",
-    body: "To deliver premium fresh produce through sustainable agriculture, AI-guided production, and efficient logistics, ensuring product safety and environmental responsibility at every step.",
+    body: "To supply businesses across the UAE with premium fresh produce through dependable sourcing, strict quality standards, efficient logistics, and outstanding customer service.",
   },
 ]
 
@@ -90,24 +82,6 @@ export const productCategories: ProductCategory[] = [
     title: "Aromatic Herb Collection",
     image: assets.products.herbs,
     items: ["Basil & peppermint", "Coriander & parsley", "Micro greens"],
-  },
-]
-
-export const sustainabilityPillars: SustainabilityPillar[] = [
-  {
-    index: "01",
-    title: "IoT Monitoring",
-    body: "Real-time sensors track soil health, temperature, and moisture to keep every growing cycle within its optimal range.",
-  },
-  {
-    index: "02",
-    title: "AI-Guided Farming",
-    body: "Predictive models fine-tune irrigation and nutrition schedules, optimizing yield while keeping quality consistent year-round.",
-  },
-  {
-    index: "03",
-    title: "Eco-Optimized Logistics",
-    body: "Efficient routing and temperature-controlled distribution designed to reduce waste, improve freshness, and lower environmental impact.",
   },
 ]
 
@@ -136,71 +110,83 @@ export const industries: Industry[] = [
 
 export const journeySteps: JourneyStep[] = [
   {
-    icon: Sprout,
-    title: "Sustainable Farm",
-    body: "AI-monitored growth in carefully optimized environments.",
+    icon: Handshake,
+    title: "Trusted Sourcing",
+    body: "We partner with trusted producers, exporters, and wholesale markets to source premium fresh produce.",
   },
   {
     icon: ClipboardCheck,
-    title: "Quality Control",
-    body: "Digital batch testing and automated sorting for every harvest.",
-  },
-  {
-    icon: Snowflake,
-    title: "Cold Storage",
-    body: "Immediate cooling to lock in peak nutrient value.",
+    title: "Quality Inspection",
+    body: "Every order is carefully selected and checked to ensure freshness and consistent quality.",
   },
   {
     icon: PackageCheck,
-    title: "Eco-Friendly Packing",
-    body: "Sustainable packaging tailored to each sector's needs.",
+    title: "Professional Packaging",
+    body: "Products are prepared and packed according to your business and operational requirements.",
   },
   {
     icon: Truck,
-    title: "24H Delivery",
-    body: "Final delivery to your business, anywhere across the UAE.",
+    title: "Reliable Delivery",
+    body: "Efficient logistics ensure your orders arrive on time and in excellent condition across the UAE.",
+  },
+  {
+    icon: Handshake,
+    title: "Ongoing Partnership",
+    body: "We provide responsive service and dependable support to build lasting business relationships.",
   },
 ]
 
 export const whyChooseFeatures: FeatureItem[] = [
   {
-    icon: Zap,
-    title: "Speed",
-    body: "Farm-to-delivery within 24 hours across the UAE, preserving absolute freshness.",
+    icon: Package,
+    title: "Reliable Sourcing",
+    body: "We work with trusted producers and suppliers to ensure consistent availability and dependable quality.",
   },
   {
-    icon: LayoutGrid,
-    title: "One Supplier",
-    body: "Fruits, vegetables, and herbs under one roof — fewer vendors, less complexity.",
+    icon: ShieldCheck,
+    title: "Quality First",
+    body: "Every order is carefully selected and handled to meet the highest standards of freshness and quality.",
   },
   {
-    icon: FlaskConical,
-    title: "Tech-Backed Quality",
-    body: "AI and IoT monitoring ensure every harvest meets global premium standards.",
+    icon: MessageCircle,
+    title: "Responsive Service",
+    body: "From your first inquiry to final delivery, our team provides fast communication and dedicated support.",
   },
   {
-    icon: QrCode,
-    title: "Full Traceability",
-    body: "End-to-end digital tracking gives total confidence in origin and safety.",
-  },
-  {
-    icon: Leaf,
-    title: "Sustainability",
-    body: "Committed to eco-optimized logistics and zero-waste agricultural practices.",
+    icon: PackageCheck,
+    title: "Flexible Supply",
+    body: "Whether you need scheduled deliveries or special product requests, we adapt to your business requirements.",
   },
   {
     icon: Handshake,
-    title: "Dedicated Partnership",
-    body: "A personal account manager focused on your business's growth and success.",
+    title: "Long-Term Partnerships",
+    body: "We believe lasting business relationships are built on trust, consistency, and mutual growth.",
+  },
+  {
+    icon: MapPin,
+    title: "UAE-Based Operations",
+    body: "Operating from Dubai allows us to respond quickly and efficiently to customer needs across the UAE.",
   },
 ]
 
 export const mottoBadges: MottoBadge[] = [
-  { icon: ShieldCheck, label: "Food Safety Compliant" },
-  { icon: Bot, label: "AI Powered" },
-  { icon: Thermometer, label: "Cold Chain Logistics" },
-  { icon: Leaf, label: "Sustainable Farming" },
-]
+  {
+    icon: Apple,
+    label: "Premium Fresh Produce",
+  },
+  {
+    icon: Truck,
+    label: "Reliable Supply",
+  },
+  {
+    icon: MessageCircle,
+    label: "Responsive Service",
+  },
+  {
+    icon: Handshake,
+    label: "Trusted Partnerships",
+  },
+];
 
 export const contactItems: ContactItem[] = [
   { icon: MapPin, label: siteConfig.location },

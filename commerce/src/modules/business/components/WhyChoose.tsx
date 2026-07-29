@@ -37,10 +37,10 @@ export function WhyChoose() {
             </div>
             <div className="absolute -bottom-6 -left-6 sm:-bottom-8 sm:-left-8 bg-white/60 backdrop-blur-xl p-6 sm:p-8 rounded-xl shadow-xl border border-[rgb(var(--primary))]/10">
               <div className="text-4xl sm:text-5xl font-display text-[rgb(var(--primary))] mb-1">
-                100%
+                Trusted
               </div>
               <div className="text-[rgb(var(--secondary))] font-semibold uppercase tracking-widest text-xs">
-                Quality Controlled
+                Business Partner
               </div>
             </div>
           </div>

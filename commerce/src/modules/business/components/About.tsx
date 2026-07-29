@@ -21,13 +21,23 @@ export function About() {
 
           <div className="order-1 md:order-2">
             <h2 className="text-5xl mb-6 leading-tight text-primary font-semibold">
-              Fixing inefficiencies in the food supply chain
+              Building Reliable Produce Partnerships
             </h2>
             <p className="text-body-lg text-foreground/70 mb-10">
-              Founded in Dubai in 2024, Elvar sources, produces, and distributes
-              premium fresh fruits, vegetables, and herbs. We pair AI-guided
-              farming with IoT monitoring to deliver consistent quality from
-              soil to shelf.
+              ELVAR is a Dubai-based fresh produce trading company committed to
+              supplying businesses across the UAE with premium-quality fruits,
+              vegetables, and herbs. We partner with trusted producers,
+              exporters, and wholesale markets to deliver fresh products that
+              meet the expectations of hotels, restaurants, supermarkets,
+              catering companies, and food distributors.
+              <br />
+              <br />
+              Built on reliability, quality, and long-term partnerships, ELVAR
+              provides dependable sourcing, responsive service, and consistent
+              supply solutions tailored to the needs of the UAE's fast-moving
+              food industry. Our focus is simple: helping businesses operate
+              with confidence through fresh produce they can rely on and service
+              they can trust.
             </p>
             <div className="grid grid-cols-2 gap-x-10 gap-y-8">
               {aboutStats.map((stat) => (

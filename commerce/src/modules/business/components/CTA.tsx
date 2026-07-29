@@ -5,10 +5,9 @@ export function CTA() {
   return (
     <Section id="partnership" tone="paper" className="text-center pb-0 md:pb-0 lg:pb-0">
       <div className="content-container">
-        <h2 className="text-6xl max-w-5xl mx-auto font-semibold text-primary mb-8">Ready to upgrade your supply chain?</h2>
+        <h2 className="text-6xl max-w-5xl mx-auto font-semibold text-primary mb-8">Ready to discuss your fresh produce requirements?</h2>
         <p className="text-xl sm:text-2xl text-black/70 max-w-3xl mx-auto mb-14">
-          Elvar helps businesses source premium fresh produce with reliable
-          logistics and AI-guided farming.
+          Elvar helps businesses source premium fresh produce with dependable sourcing and reliable fresh produce supply.
         </p>
         <div className="flex flex-wrap justify-center gap-5 mb-20">
           <a

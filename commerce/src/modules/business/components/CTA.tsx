@@ -5,7 +5,7 @@ export function CTA() {
   return (
     <Section id="partnership" tone="paper" className="text-center pb-0 md:pb-0 lg:pb-0">
       <div className="content-container">
-        <h2 className="text-6xl max-w-5xl mx-auto font-semibold text-primary mb-8">Ready to discuss your fresh produce requirements?</h2>
+        <h2 className="text-4xl md:text-5xl max-w-5xl mx-auto font-semibold text-primary mb-8">Ready to discuss your fresh produce requirements?</h2>
         <p className="text-xl sm:text-2xl text-black/70 max-w-3xl mx-auto mb-14">
           Elvar helps businesses source premium fresh produce with dependable sourcing and reliable fresh produce supply.
         </p>
@@ -18,10 +18,10 @@ export function CTA() {
           </a>
           <a
             href="/company-profile/company%20profile.pdf"
-            download="Elvar company profile.pdf"
+            target="_blank"
             className="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-300 border-2 border-[rgb(var(--primary))] text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))] hover:text-secondary px-8 py-4 text-base sm:px-10 sm:py-5 sm:text-lg"
           >
-            Download Company Profile
+            Company Profile
           </a>
         </div>
 

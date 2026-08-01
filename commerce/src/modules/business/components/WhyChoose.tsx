@@ -10,7 +10,7 @@ export function WhyChoose() {
       <div className="content-container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
           <div>
-            <h2 className="text-5xl text-primary font-semibold mb-12">Why Choose Elvar?</h2>
+            <h2 className="text-4xl md:text-5xl text-primary font-semibold mb-12">Why Choose Elvar?</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
               {whyChooseFeatures.map((feature) => (
                 <FeatureCard

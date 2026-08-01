@@ -12,7 +12,7 @@ export function Hero() {
             <span className="font-label text-label-sm text-[rgb(var(--secondary))] uppercase mb-6 inline-block">
               Fresh. Reliable. Responsible.
             </span>
-            <h1 className="text-7xl mb-6 leading-[1.08] text-primary font-semibold">
+            <h1 className="text-5xl md:text-7xl mb-6 leading-[1.08] text-primary font-semibold">
               Premium fresh produce,
               <br />
               <span className="text-[rgb(var(--secondary))] italic">

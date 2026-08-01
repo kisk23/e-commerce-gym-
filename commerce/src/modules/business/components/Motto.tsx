@@ -11,7 +11,7 @@ export function Motto() {
           strokeWidth={2}
           aria-hidden="true"
         />
-        <h2 className="text-5xl font-semibold text-primary italic max-w-4xl mx-auto leading-tight mb-16">
+        <h2 className="text-4xl md:text-5xl font-semibold text-primary italic max-w-4xl mx-auto leading-tight mb-16">
           &ldquo;Fresh Produce. Reliable Supply. Trusted Partnership.&rdquo;
         </h2>
 

@@ -7,7 +7,7 @@ export function FarmJourney() {
   return (
     <Section tone="beige">
       <div className="content-container">
-        <h2 className="text-5xl text-primary font-semibold text-center mb-20">
+        <h2 className="text-4xl md:text-5xl text-primary font-semibold text-center mb-20">
           The Farm-to-Shelf Journey
         </h2>
 

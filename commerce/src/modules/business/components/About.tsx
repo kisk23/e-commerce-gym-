@@ -20,7 +20,7 @@ export function About() {
           </div>
 
           <div className="order-1 md:order-2">
-            <h2 className="text-5xl mb-6 leading-tight text-primary font-semibold">
+            <h2 className="text-4xl md:text-5xl mb-6 leading-tight text-primary font-semibold">
               Building Reliable Produce Partnerships
             </h2>
             <p className="text-body-lg text-foreground/70 mb-10">

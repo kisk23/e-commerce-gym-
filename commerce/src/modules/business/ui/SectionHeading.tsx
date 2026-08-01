@@ -27,7 +27,7 @@ export function SectionHeading({
         </span>
       )}
       <h2
-        className={`text-5xl mb-4 font-semibold ${
+        className={`text-4xl md:text-5xl mb-4 font-semibold ${
           tone === "light" ? "" : "text-primary"
         }`}
       >

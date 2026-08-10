@@ -34,7 +34,7 @@ import type {
 export const siteConfig = {
   name: "Elvar",
   location: "Dubai, UAE",
-  phone: "+971 54 709 9555",
+  phone: "+971 50 520 7438",
   email: "sales@elvardubai.com",
 }
 

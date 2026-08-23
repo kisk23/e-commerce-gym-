@@ -40,7 +40,7 @@ export default function ProductPreview({
   const card = (
     <>
       {/* CARD */}
-      <div className="group/card w-full max-w-[302px] rounded-[26px] border border-[#E6E6E6] overflow-hidden bg-white hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-all duration-500 ease-out">
+      <div className="group/card flex h-full w-full flex-col rounded-[26px] border border-[#E6E6E6] overflow-hidden bg-white hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-all duration-500 ease-out">
         {/* IMAGE */}
         <div className="relative w-full h-[302px] bg-[#F5F5F5] overflow-hidden">
           {product.thumbnail && (
@@ -59,7 +59,7 @@ export default function ProductPreview({
         </div>
 
         {/* CONTENT */}
-        <div className="flex flex-col gap-2 px-6 py-5">
+        <div className="flex flex-1 flex-col gap-2 px-6 py-5">
           {/* TITLE + DESCRIPTION */}
           <div className="flex flex-col gap-1">
             <h3 className="text-lg sm:text-xl font-bold text-[#0A0A0A]">
@@ -73,7 +73,7 @@ export default function ProductPreview({
           </div>
 
           {/* INFO ROW */}
-          <div className="flex justify-between items-end mt-2">
+          <div className="mt-auto flex justify-between items-end pt-2">
             {/* LEFT */}
             <div className="flex flex-col">
               <span className="text-[#717182] text-xs font-medium">Per 100g</span>
@@ -96,13 +96,13 @@ export default function ProductPreview({
   )
 
   if (!href) {
-    return <div className="group mx-auto">{card}</div>
+    return <div className="group h-full">{card}</div>
   }
 
   return (
     <LocalizedClientLink
       href={href}
-      className="group mx-auto block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"
+      className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"
       aria-label={`View ${product.title}`}
       onKeyDown={openOnSpace}
     >

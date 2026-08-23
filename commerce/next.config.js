@@ -25,6 +25,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+   // Serve own static SVGs (e.g. /Logo.svg) through next/image instead of
+   // failing with "image type is not allowed" (HTTP 400).
+   dangerouslyAllowSVG: true,
+   contentDispositionType: "inline",
    remotePatterns: [
     {
       protocol: "http",

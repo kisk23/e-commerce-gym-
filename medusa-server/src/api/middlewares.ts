@@ -78,6 +78,7 @@ const REFERENCE_CHECKS: Array<{
   { table: "cart_line_item", column: "thumbnail", hasSoftDelete: false },
   { table: "order_line_item", column: "thumbnail", hasSoftDelete: false },
   { table: "bundle_item", column: "thumbnail", hasSoftDelete: false },
+  { table: "order_claim_item_image", column: "url", hasSoftDelete: true },
 ]
 
 const isUrlStillReferenced = async (req: MedusaRequest, url: string) => {

@@ -56,6 +56,10 @@ const TARGETS: Array<{
   { table: "product", column: "thumbnail", hasSoftDelete: true },
   { table: "cart_line_item", column: "thumbnail", hasSoftDelete: false },
   { table: "order_line_item", column: "thumbnail", hasSoftDelete: false },
+  // Bundle items copy product.thumbnail at bundle creation time, so they can
+  // still hold legacy/double-slash URLs even after products were repaired.
+  { table: "bundle_item", column: "thumbnail", hasSoftDelete: false },
+  { table: "order_claim_item_image", column: "url", hasSoftDelete: true },
 ]
 
 type Row = { id: string; value: string }

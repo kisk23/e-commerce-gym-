@@ -110,10 +110,19 @@ export default function BundleProductControls({
       ? "1 product"
       : `${pagination.count.toLocaleString()} products`
 
+  const showCategoryFilter = categories.length > 0
+
   return (
     <div className="flex flex-col gap-4 mb-6">
       {filtration ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_180px_180px_160px_auto] gap-3 items-end">
+        <div
+          className={clx(
+            "grid grid-cols-1 md:grid-cols-2 gap-3 items-end",
+            showCategoryFilter
+              ? "lg:grid-cols-[1fr_180px_180px_160px_auto]"
+              : "lg:grid-cols-[1fr_180px_160px_auto]"
+          )}
+        >
         <form onSubmit={submitSearch} className="flex flex-col gap-1.5">
           <label
             htmlFor="bundle-product-search"
@@ -140,27 +149,29 @@ export default function BundleProductControls({
           </div>
         </form>
 
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Category
-          <select
-            value={filters.categoryId}
-            onChange={(event) =>
-              pushParams(
-                { category_id: event.target.value || null },
-                { resetPage: true }
-              )
-            }
-            className="h-10 rounded-md border border-ui-border-base bg-white px-3 text-sm outline-none focus:border-ui-fg-base"
-            disabled={isPending}
-          >
-            <option value="">All categories</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        {showCategoryFilter && (
+          <label className="flex flex-col gap-1.5 text-sm font-medium">
+            Category
+            <select
+              value={filters.categoryId}
+              onChange={(event) =>
+                pushParams(
+                  { category_id: event.target.value || null },
+                  { resetPage: true }
+                )
+              }
+              className="h-10 rounded-md border border-ui-border-base bg-white px-3 text-sm outline-none focus:border-ui-fg-base"
+              disabled={isPending}
+            >
+              <option value="">All categories</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         {/* <label className="flex flex-col gap-1.5 text-sm font-medium">
           Collection

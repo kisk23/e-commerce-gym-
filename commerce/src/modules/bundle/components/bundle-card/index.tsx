@@ -50,7 +50,7 @@ export default function BundleCard({ product, onAdd }: Props) {
 
   const nutritionPer100g = getProductNutritionPer100g(product)
   const categoryName = product.categories?.[0]?.name ?? "Unknown"
-  const image = product.thumbnail ?? "/placeholder.png"
+  const image = product.thumbnail ?? "/Logo.svg"
 
   const unitPrice = getUnitPriceForVariant(product, variantId)
   const currencyCode = getCurrencyCodeForVariant(product, variantId)

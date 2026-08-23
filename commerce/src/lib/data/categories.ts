@@ -4,6 +4,11 @@ import { getCacheOptions } from "./cookies"
 
 export const listCategories = async (query?: Record<string, any>) => {
   const next = {
+    // Re-validate hourly. `cache: "force-cache"` without a revalidate window
+    // cached the first response forever, so an empty/failed fetch during a
+    // deploy (backend still booting) left the category filter permanently
+    // empty in production.
+    revalidate: 3600,
     ...(await getCacheOptions("categories")),
   }
 
@@ -20,7 +25,6 @@ export const listCategories = async (query?: Record<string, any>) => {
           ...query,
         },
         next,
-        cache: "force-cache",
       }
     )
     .then(({ product_categories }) => product_categories)

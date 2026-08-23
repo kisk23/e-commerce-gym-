@@ -105,7 +105,10 @@ export default async function CustomBundlePage(props: {
     listCategories({
       fields: "id,name,handle",
       limit: 100,
-    }).catch(() => []),
+    }).catch((error) => {
+      console.error("Failed to load bundle categories:", error)
+      return []
+    }),
     listCollections({
       fields: "id,title,handle",
       limit: "100",

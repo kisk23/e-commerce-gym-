@@ -67,7 +67,7 @@ export default function ProductPreview({
             </h3>
 
             <p className="text-[#717182] text-sm">
-              {product.subtitle ||
+              {product.subtitle || product.description ||
                 "Fresh and nutritious, perfect for your healthy meals"}
             </p>
           </div>

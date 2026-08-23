@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { clx } from "@medusajs/ui"
 import { Fire, ShoppingBag, ShoppingCart } from "@medusajs/icons"
 import { StoreBundle } from "@lib/types/bundle"
 import { convertToLocale } from "@lib/util/money"
@@ -15,6 +16,9 @@ type Props = {
   isAdding?: boolean
 }
 
+const FALLBACK_THUMBNAIL = "/Logo.svg"
+const MAX_THUMBNAILS = 4
+
 export default function BundleView({
   bundle,
   onAddToCart,
@@ -23,14 +27,28 @@ export default function BundleView({
   const title = bundle.title
   const subtitle = bundle.description || "Fresh and nutritious"
 
-  const thumbnail =
-    bundle.thumbnail ||
-    bundle.items?.find((i) => i.thumbnail)?.thumbnail ||
-    "/Logo.svg"
+  const totalProducts = bundle.items?.length || 0
+
+  // Unique, non-empty item thumbnails in bundle order.
+  const itemThumbnails: string[] = []
+  for (const item of bundle.items || []) {
+    if (item.thumbnail && !itemThumbnails.includes(item.thumbnail)) {
+      itemThumbnails.push(item.thumbnail)
+    }
+  }
+
+  const shownThumbnails =
+    itemThumbnails.length > 0
+      ? itemThumbnails.slice(0, MAX_THUMBNAILS)
+      : [FALLBACK_THUMBNAIL]
+
+  // Products not represented by a displayed thumbnail (e.g. 7-product bundle
+  // showing 4 images -> "+3").
+  const hiddenCount = Math.max(0, totalProducts - shownThumbnails.length)
 
   const calories = bundle.total_calories
   const weightG = bundle.total_weight
-  const productCount = bundle.items?.length || 0
+  const productCount = totalProducts
   const includes =
     bundle.items?.map((i) => ({
       product_title: i.product_title,
@@ -73,12 +91,58 @@ export default function BundleView({
     >
       {/* IMAGE */}
       <div className="relative w-full h-[300px] bg-[#c8d8b0]">
-        <Image
-          src={thumbnail}
-          alt={`${title} thumbnail`}
-          fill
-          className="object-cover"
-        />
+        {shownThumbnails.length === 1 ? (
+          <Image
+            src={shownThumbnails[0]}
+            alt={`${title} thumbnail`}
+            fill
+            sizes="400px"
+            className="object-cover"
+          />
+        ) : (
+          <div
+            className={clx(
+              "absolute inset-0 grid gap-0.5",
+              shownThumbnails.length === 2
+                ? "grid-cols-2 grid-rows-1"
+                : "grid-cols-2 grid-rows-2"
+            )}
+          >
+            {shownThumbnails.map((src, index) => {
+              // 3-product bundles: third image spans the full bottom row.
+              const isFullWidth =
+                shownThumbnails.length === 3 && index === 2
+              const showOverlay =
+                index === shownThumbnails.length - 1 && hiddenCount > 0
+
+              return (
+                <div
+                  key={src}
+                  className={clx(
+                    "relative overflow-hidden rounded-md",
+                    isFullWidth && "col-span-2"
+                  )}
+                >
+                  <Image
+                    src={src}
+                    alt={`${title} product image ${index + 1}`}
+                    fill
+                    sizes={isFullWidth ? "400px" : "200px"}
+                    className="object-cover"
+                  />
+
+                  {showOverlay && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/55">
+                      <span className="text-lg font-semibold text-white">
+                        +{hiddenCount}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {discountPct > 0 && (
           <div className="absolute top-3 right-3 text-white text-sm font-semibold px-3 py-1 rounded-full bg-accent">

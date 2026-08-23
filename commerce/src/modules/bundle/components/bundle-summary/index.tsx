@@ -112,7 +112,7 @@ export default function BundleSummary({
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <Image
-                          src={item.product.thumbnail || "/placeholder.png"}
+                          src={item.product.thumbnail || "/Logo.svg"}
                           alt={item.product.title || "Bundle item"}
                           width={48}
                           height={48}

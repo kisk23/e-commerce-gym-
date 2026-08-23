@@ -65,7 +65,11 @@ module.exports = defineConfig({
             resolve: "@medusajs/medusa/file-s3",
             id: "s3",
             options: {
-              file_url: process.env.S3_FILE_URL,
+              // The provider builds URLs as `${file_url}/${key}`; a trailing
+              // slash in the env value produced https://bucket//key URLs,
+              // which S3 rejects with AccessDenied. Normalize it here so the
+              // env format can never reintroduce the bug.
+              file_url: process.env.S3_FILE_URL?.replace(/\/+$/, ""),
               access_key_id: process.env.S3_ACCESS_KEY_ID,
               secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
               region: process.env.S3_REGION,

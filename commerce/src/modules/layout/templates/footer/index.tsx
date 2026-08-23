@@ -68,7 +68,7 @@ export default async function Footer() {
             <div>
               <span className="txt-large-plus">Connect With Us</span>
               <ul className="flex flex-wrap gap-4 my-4">
-                <li>
+                {/* <li>
                   <LocalizedClientLink
                     className="cursor-pointer"
                     href={`/`}
@@ -84,6 +84,7 @@ export default async function Footer() {
                   </LocalizedClientLink>
                 </li>
                 <li>
+                  
                   <LocalizedClientLink
                     className="cursor-pointer"
                     href={`/`}
@@ -97,11 +98,11 @@ export default async function Footer() {
                       height={32}
                     />
                   </LocalizedClientLink>
-                </li>
+                </li> */}
                 <li>
                   <LocalizedClientLink
                     className="cursor-pointer"
-                    href={`/`}
+                    href={`https://www.instagram.com/elvaruae`}
                     data-testid="category-link"
                   >
                     <Image
@@ -113,10 +114,28 @@ export default async function Footer() {
                     />
                   </LocalizedClientLink>
                 </li>
+                <li>
+                  <LocalizedClientLink
+                    className="cursor-pointer"
+                    href={`https://www.tiktok.com/@elvaruae`}
+                    data-testid="category-link"
+                  >
+                    <Image
+                      src="/tiktok.svg"
+                      alt="Tiktok"
+                      className="hover:opacity-70"
+                      width={32}
+                      height={32}
+                    />
+                  </LocalizedClientLink>
+                </li>
               </ul>
-              <a href="mailto:info@elvardubai.com" className="text-blue-400 underline-offset-4 hover:underline cursor-pointer">
-              Customer Service
-            </a>
+              <a
+                href="mailto:info@elvardubai.com"
+                className="text-blue-400 underline-offset-4 hover:underline cursor-pointer"
+              >
+                Customer Service
+              </a>
             </div>
           </div>
         </div>
